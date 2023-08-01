@@ -29,3 +29,29 @@ include(cmake/StaticAnalyzers.cmake)
 # doxygen support
 include(cmake/Doxygen.cmake)
 enable_doxygen()
+
+# all headers
+set(TARGET_H
+    )
+
+# all cpps
+set(TARGET_SRC
+    main.cpp)
+
+# add the actual executable
+add_executable(crypto_trader ${TARGET_H} ${TARGET_SRC})
+
+
+# handle all subdirectories
+set(subdirs strategies test)
+foreach(dir strategies test)
+    add_subdirectory(${dir})
+endforeach()
+target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
+
+# link everything together
+target_link_libraries(${PROJECT_NAME}
+                      PRIVATE
+                      ${project_warnings}
+                      ${subdirs}
+                      )
