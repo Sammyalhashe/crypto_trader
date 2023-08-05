@@ -3,12 +3,8 @@ cmake_minimum_required(VERSION 3.23)
 project(crypto_trader C CXX)
 
 # specify the cmake standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-# This is required if we want to do a debug build and build against Release
-# build conan packages.
-set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG RELEASE)
 
 # use ccache to improve build times
 find_program(CCACHE ccache)

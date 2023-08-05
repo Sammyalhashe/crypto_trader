@@ -15,11 +15,11 @@ build: prepare
 
 .PHONY: prepare
 prepare: conan
-	pushd ${BUILD_DIR} && cmake .. ${CMAKE_OPTS} && popd
+	pushd ${BUILD_DIR} && cmake .. ${CMAKE_OPTS} && ln -f compile_commands.json .. && popd
 
 .PHONY: conan
 conan: build_dir_prep
-	conan install . --output-folder=${BUILD_DIR} --build=missing
+	conan install . --output-folder=${BUILD_DIR} --build=missing -s build_type=${BUILD_TYPE}
 
 .PHONY: build_dir_prep
 build_dir_prep:
