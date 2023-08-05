@@ -6,6 +6,10 @@ project(crypto_trader C CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# This is required if we want to do a debug build and build against Release
+# build conan packages.
+set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG RELEASE)
+
 # use ccache to improve build times
 find_program(CCACHE ccache)
 if(CCACHE)
@@ -29,6 +33,9 @@ include(cmake/StaticAnalyzers.cmake)
 # doxygen support
 include(cmake/Doxygen.cmake)
 enable_doxygen()
+
+# project definitions below
+find_package(fmt REQUIRED)
 
 # all headers
 set(TARGET_H
@@ -54,4 +61,4 @@ target_link_libraries(${PROJECT_NAME}
                       PRIVATE
                       ${project_warnings}
                       ${subdirs}
-                      )
+                      fmt::fmt)

@@ -36,3 +36,9 @@ build
 
 # cache
 .cache
+
+# cmake
+CMakePresets.json
+CMakeUserPresets.json
+
+# conan
