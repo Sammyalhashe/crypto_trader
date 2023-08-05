@@ -41,4 +41,5 @@ build
 CMakePresets.json
 CMakeUserPresets.json
 
-# conan
+# build
+compile_commands.json
