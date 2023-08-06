@@ -29,3 +29,6 @@ build_dir_prep:
 clean:
 	rm -rf ${BUILD_DIR}
 
+.PHONY: test
+test:
+	echo "test"
