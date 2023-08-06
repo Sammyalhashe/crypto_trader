@@ -8,8 +8,8 @@ on:
 
 jobs:
   build-and-test:
-      runs-on: ubuntu-latest
-      steps:
+    runs-on: ubuntu-latest
+    steps:
       - name: install python3
       run: sudo apt install -y python3.8
       - name: install conan
