@@ -11,11 +11,11 @@ run: build
 
 .PHONY: build
 build: prepare
-	pushd ${BUILD_DIR} && cmake --build . && popd
+	cd ${BUILD_DIR} && cmake --build . && cd -
 
 .PHONY: prepare
 prepare: conan
-	pushd ${BUILD_DIR} && cmake .. ${CMAKE_OPTS} && ln -f compile_commands.json .. && popd
+	cd ${BUILD_DIR} && cmake .. ${CMAKE_OPTS} && ln -f compile_commands.json .. && cd -
 
 .PHONY: conan
 conan: build_dir_prep
