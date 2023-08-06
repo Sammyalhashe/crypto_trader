@@ -10,8 +10,10 @@ jobs:
   build-and-test:
       runs-on: ubuntu-latest
       steps:
-      - name: install cppunit
+      - name: install python3
       run: sudo apt install -y python3.8
+      - name: install conan
+      run: python3 -m pip install conan
       - name: build
       run: make build
       - name: make test
