@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install python3
-      run: sudo apt install -y python3.8
+        run: sudo apt install -y python3.8
       - name: install conan
-      run: python3 -m pip install conan
+        run: python3 -m pip install conan
       - name: build
-      run: make build
+        run: make build
       - name: make test
-      run: make test
+        run: make test
