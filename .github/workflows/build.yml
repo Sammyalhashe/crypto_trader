@@ -10,10 +10,12 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: install python3
-        run: sudo apt install -y python3.8
+      - uses: actions/checkout@v3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
       - name: install conan
-        run: python3 -m pip install conan
+        run: python3.10 -m pip install conan
       - name: build
         run: make build
       - name: make test
