@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-      branches: [ master ]
+      branches: [ main ]
   pull_request:
-      branches: [ master ]
+      branches: [ main ]
 
 jobs:
   build-and-test:
@@ -14,3 +14,5 @@ jobs:
       run: sudo apt install -y python3.8
       - name: build
       run: make build
+      - name: make test
+      run: make test
