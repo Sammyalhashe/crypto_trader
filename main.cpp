@@ -14,8 +14,5 @@ int main() {
     using namespace crypto_trader;
     strategies::simpleStrategy();
 
-    return EXIT_SUCCESS;
-
-
     return 0;
 }

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.23)
 project(crypto_trader C CXX)
 
 # specify the cmake standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # use ccache to improve build times
@@ -42,7 +42,7 @@ set(TARGET_SRC
     main.cpp)
 
 # add the actual executable
-add_executable(crypto_trader ${TARGET_H} ${TARGET_SRC})
+add_executable(${PROJECT_NAME} ${TARGET_H} ${TARGET_SRC})
 
 
 # handle all subdirectories
