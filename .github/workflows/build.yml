@@ -1,0 +1,25 @@
+name: C/C++ CI
+
+on:
+  push:
+      branches: [ main ]
+  pull_request:
+      branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4.7.0
+        with:
+          python-version: '3.10' 
+      - name: install conan
+        run: python3.10 -m pip install conan
+      - name: configure conan
+        run: conan profile detect --force
+      - name: build
+        run: make build
+      - name: make test
+        run: make test
