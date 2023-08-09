@@ -31,4 +31,4 @@ clean:
 
 .PHONY: test
 test:
-	echo "test"
+	cd ${BUILD_DIR} && ctest && cd -
