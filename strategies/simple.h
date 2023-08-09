@@ -5,7 +5,7 @@ namespace crypto_trader {
 
 namespace strategies {
 
-void simpleStrategy();
+int simpleStrategy();
 
 } // strategies
 } // crypto_trader

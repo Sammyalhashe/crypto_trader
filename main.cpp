@@ -1,5 +1,5 @@
 #include "strategies/simple.h"
-#include "test/test.h"
+#include "testlib/test.h"
 
 #include <cstdlib>
 #include <cstring>
