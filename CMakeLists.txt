@@ -32,6 +32,7 @@ enable_doxygen()
 
 # project definitions below
 find_package(fmt REQUIRED)
+find_package(GTest REQUIRED)
 
 # all headers
 set(TARGET_H
@@ -46,8 +47,8 @@ add_executable(${PROJECT_NAME} ${TARGET_H} ${TARGET_SRC})
 
 
 # handle all subdirectories
-set(subdirs strategies test)
-foreach(dir strategies test)
+set(subdirs strategies testlib)
+foreach(dir ${subdirs})
     add_subdirectory(${dir})
 endforeach()
 target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
@@ -58,3 +59,11 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_warnings}
                       ${subdirs}
                       fmt::fmt)
+# testing
+enable_testing()
+add_executable(simple_test strategies/simple.t.cpp)
+
+target_link_libraries(simple_test GTest::gtest_main ${subdirs})
+
+include(GoogleTest)
+gtest_discover_tests(simple_test)
