@@ -47,10 +47,13 @@ add_executable(${PROJECT_NAME} ${TARGET_H} ${TARGET_SRC})
 
 
 # handle all subdirectories
-set(subdirs strategies testlib)
+set(subdirs strategies testlib protocols adaptors)
 foreach(dir ${subdirs})
+    message("\tadding dir ${dir}...")
     add_subdirectory(${dir})
 endforeach()
+
+# target_link_directories(adaptors PRIVATE protocols)
 target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
 
 # link everything together
