@@ -52,7 +52,6 @@ bool CoinbaseWebSocketClient::open()
                 "\"ETH-EUR\""
             "],"
             "\"channels\": ["
-                "\"level2\","
                 "\"heartbeat\","
                 "{"
                     "\"name\": \"ticker\","
