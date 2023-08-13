@@ -70,6 +70,7 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_warnings}
                       ${subdirs}
                       Boost::system
+                      nlohmann_json::nlohmann_json
                       )
 # testing
 enable_testing()

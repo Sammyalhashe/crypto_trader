@@ -2,6 +2,7 @@
 
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/websocket.hpp>
@@ -22,11 +23,31 @@ namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 // CoinbaseWebSocketClient
+std::string CoinbaseWebSocketClient::s_port = "443";
 
 // CREATORS
-CoinbaseWebSocketClient::CoinbaseWebSocketClient()
+CoinbaseWebSocketClient::CoinbaseWebSocketClient(net::io_context& ioc, ssl::context& ctx)
+: d_resolver(net::make_strand(ioc))
+, d_host()
+, d_ws(net::make_strand(ioc), ctx)
+, d_text()
 {
     open();
+}
+
+
+CoinbaseWebSocketClient::CoinbaseWebSocketClient(net::io_context& ioc, ssl::context& ctx, const std::string& host, const nlohmann::json& text)
+: d_resolver(net::make_strand(ioc))
+, d_host(host)
+, d_ws(net::make_strand(ioc), ctx)
+, d_text(text)
+{
+    open();
+}
+
+CoinbaseWebSocketClient::CoinbaseWebSocketClient(const CoinbaseWebSocketClientConfig& config)
+: CoinbaseWebSocketClient(config.d_ioc, config.d_ctx, config.d_host, config.d_text)
+{
 }
 
 CoinbaseWebSocketClient::~CoinbaseWebSocketClient()
@@ -40,45 +61,15 @@ CoinbaseWebSocketClient::~CoinbaseWebSocketClient()
 // WebsocketClient
 bool CoinbaseWebSocketClient::open()
 {
-    // TODO: Move these to constants file
-    static const std::string& ws_feed_host =
-                                  "ws-feed-public.sandbox.exchange.coinbase.com";
-    static const std::string& port = "443";
-
-    static const nlohmann::json& json =
-        "{"
-            "\"type\": \"subscribe\","
-            "\"product_ids\": ["
-                "\"ETH-EUR\""
-            "],"
-            "\"channels\": ["
-                "\"heartbeat\","
-                "{"
-                    "\"name\": \"ticker\","
-                    "\"product_ids\": [\"ETH-EUR\"]"
-                "}"
-            "]"
-          "}"_json
-        ;
-
-    // The io_context is required for all I/O
-    net::io_context ioc;
-
-    // The ssl context is required, and holds all certs
-    ssl::context ctx{ssl::context::tlsv12_client};
-
-    // These perform our I/O
-    tcp::resolver resolver{ioc};
-    websocket::stream<beast::ssl_stream<tcp::socket>> ws{ioc, ctx};
 
     // Look up the domain name
-    const auto results = resolver.resolve(ws_feed_host, port);
+    const auto results = d_resolver.resolve(d_host, s_port);
 
     // Make the connection on the IP address we get from a lookup
-    auto ep = net::connect(boost::beast::get_lowest_layer(ws), results);
+    auto ep = net::connect(boost::beast::get_lowest_layer(d_ws), results);
 
     // Set SNI Hostname, which many hosts need to handshake successfully
-    if(!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), ws_feed_host.c_str()))
+    if(!SSL_set_tlsext_host_name(d_ws.next_layer().native_handle(), d_host.c_str()))
     {
         throw beast::system_error(
           beast::error_code(
@@ -89,10 +80,10 @@ bool CoinbaseWebSocketClient::open()
 
     // perform ssl handshake
     std::cout << "performing ssl handshake" << std::endl;
-    ws.next_layer().handshake(ssl::stream_base::client);
+    d_ws.next_layer().handshake(ssl::stream_base::client);
 
     // Set a decorator to change the user-agent of the request.
-    ws.set_option(
+    d_ws.set_option(
         websocket::stream_base::decorator([](websocket::request_type& req) {
           req.set(http::field::user_agent,
                   std::string(BOOST_BEAST_VERSION_STRING) + " crypto_trader");
@@ -100,21 +91,21 @@ bool CoinbaseWebSocketClient::open()
         }));
 
     // perform the websocket handshake
-    ws.handshake(ws_feed_host + ":" + std::to_string(ep.port()), "/");
+    d_ws.handshake(d_host + ":" + std::to_string(ep.port()), "/");
 
     // Send the message
     std::cout << "Writing the request:\n"
-              << json.dump(4) // NOTE: pretty printing
+              << d_text.dump(4) // NOTE: pretty printing
               << "\nto coinbase"
               << std::endl;
-    ws.write(net::buffer(json.dump()));
+    d_ws.write(net::buffer(d_text.dump()));
 
     // read a message into the buffer
     beast::flat_buffer buffer;
-    ws.read(buffer);
+    d_ws.read(buffer);
 
     // Close the WebSocket connection
-    ws.close(websocket::close_code::normal);
+    d_ws.close(websocket::close_code::normal);
 
     // write message received to stdout
     std::cout << beast::make_printable(buffer.data()) << std::endl;
