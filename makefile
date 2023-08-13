@@ -5,13 +5,25 @@ BUILD_TYPE := Debug
 CMAKE_OPTS := -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
 EXE := crypto_trader
 
+RUN_CMD:=./${BUILD_DIR}/${EXE}
+
 .PHONY: run
-run:
-	./${BUILD_DIR}/${EXE}
+run: build
+	${RUN_CMD}
+
+.PHONY: ro
+ro:
+	${RUN_CMD}
+
+BUILD_CMD:=cd ${BUILD_DIR} && cmake --build . && cd -
 
 .PHONY: build
-build:
-	cd ${BUILD_DIR} && cmake --build . && cd -
+build: prepare
+	${BUILD_CMD}
+	
+.PHONY: bo
+bo:
+	${BUILD_CMD}
 
 .PHONY: prepare
 prepare: conan
