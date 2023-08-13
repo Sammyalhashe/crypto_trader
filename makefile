@@ -6,11 +6,11 @@ CMAKE_OPTS := -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${
 EXE := crypto_trader
 
 .PHONY: run
-run: build
+run:
 	./${BUILD_DIR}/${EXE}
 
 .PHONY: build
-build: prepare
+build:
 	cd ${BUILD_DIR} && cmake --build . && cd -
 
 .PHONY: prepare

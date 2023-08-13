@@ -7,5 +7,8 @@ namespace protocols {
 WebsocketClient::WebsocketClient()
 {}
 
+WebsocketClient::~WebsocketClient()
+{}
+
 } // protocols
 } // crypto_trader

@@ -31,7 +31,15 @@ include(cmake/Doxygen.cmake)
 enable_doxygen()
 
 # project definitions below
-find_package(fmt REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(Boost 1.82.0 COMPONENTS beast REQUIRED)
+
+# NOTE: This may not be needed.
+if (Boost_Found)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
+find_package(nlohmann_json 3.11.2 REQUIRED)
 find_package(GTest REQUIRED)
 
 # all headers
@@ -54,14 +62,15 @@ foreach(dir ${subdirs})
 endforeach()
 
 # target_link_directories(adaptors PRIVATE protocols)
-target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
+# target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
 
 # link everything together
 target_link_libraries(${PROJECT_NAME}
                       PRIVATE
                       ${project_warnings}
                       ${subdirs}
-                      fmt::fmt)
+                      Boost::system
+                      )
 # testing
 enable_testing()
 add_executable(simple_test strategies/simple.t.cpp)
