@@ -26,7 +26,8 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 std::string CoinbaseWebSocketClient::s_port = "443";
 
 // CREATORS
-CoinbaseWebSocketClient::CoinbaseWebSocketClient(net::io_context& ioc, ssl::context& ctx)
+CoinbaseWebSocketClient::CoinbaseWebSocketClient(net::io_context& ioc,
+                                                 ssl::context&    ctx)
 : d_resolver(net::make_strand(ioc))
 , d_host()
 , d_ws(net::make_strand(ioc), ctx)
@@ -36,7 +37,10 @@ CoinbaseWebSocketClient::CoinbaseWebSocketClient(net::io_context& ioc, ssl::cont
 }
 
 
-CoinbaseWebSocketClient::CoinbaseWebSocketClient(net::io_context& ioc, ssl::context& ctx, const std::string& host, const nlohmann::json& text)
+CoinbaseWebSocketClient::CoinbaseWebSocketClient(net::io_context&      ioc,
+                                                 ssl::context&         ctx,
+                                                 const std::string&    host,
+                                                 const nlohmann::json& text)
 : d_resolver(net::make_strand(ioc))
 , d_host(host)
 , d_ws(net::make_strand(ioc), ctx)
@@ -45,8 +49,12 @@ CoinbaseWebSocketClient::CoinbaseWebSocketClient(net::io_context& ioc, ssl::cont
     open();
 }
 
-CoinbaseWebSocketClient::CoinbaseWebSocketClient(const CoinbaseWebSocketClientConfig& config)
-: CoinbaseWebSocketClient(config.d_ioc, config.d_ctx, config.d_host, config.d_text)
+CoinbaseWebSocketClient::CoinbaseWebSocketClient(
+                                   const CoinbaseWebSocketClientConfig& config)
+: CoinbaseWebSocketClient(config.d_ioc,
+                          config.d_ctx,
+                          config.d_host,
+                          config.d_text)
 {
 }
 
@@ -69,7 +77,8 @@ bool CoinbaseWebSocketClient::open()
     auto ep = net::connect(boost::beast::get_lowest_layer(d_ws), results);
 
     // Set SNI Hostname, which many hosts need to handshake successfully
-    if(!SSL_set_tlsext_host_name(d_ws.next_layer().native_handle(), d_host.c_str()))
+    if(!SSL_set_tlsext_host_name(d_ws.next_layer().native_handle(),
+                                 d_host.c_str()))
     {
         throw beast::system_error(
           beast::error_code(

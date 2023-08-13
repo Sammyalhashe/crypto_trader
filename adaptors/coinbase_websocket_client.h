@@ -33,7 +33,10 @@ struct CoinbaseWebSocketClientConfig {
     nlohmann::json d_text;
     
     // CREATORS
-    CoinbaseWebSocketClientConfig(net::io_context& ioc, ssl::context& ctx, const std::string& host, const nlohmann::json& text)
+    CoinbaseWebSocketClientConfig(net::io_context&      ioc,
+                                  ssl::context&         ctx,
+                                  const std::string&    host,
+                                  const nlohmann::json& text)
     : d_ioc(ioc)
     , d_ctx(ctx)
     , d_host(host)

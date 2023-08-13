@@ -36,7 +36,10 @@ int main() {
         ;
     net::io_context ioc;
     ssl::context ctx{ssl::context::tlsv12_client};
-    adaptors::CoinbaseWebSocketClientConfig config(ioc, ctx, ws_feed_host, json);
+    adaptors::CoinbaseWebSocketClientConfig config(ioc,
+                                                   ctx,
+                                                   ws_feed_host,
+                                                   json);
     adaptors::CoinbaseWebSocketClient client(config);
 
     return 0;
