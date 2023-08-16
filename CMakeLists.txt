@@ -31,7 +31,15 @@ include(cmake/Doxygen.cmake)
 enable_doxygen()
 
 # project definitions below
-find_package(fmt REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(Boost 1.82.0 COMPONENTS beast REQUIRED)
+
+# NOTE: This may not be needed.
+if (Boost_Found)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
+find_package(nlohmann_json 3.11.2 REQUIRED)
 find_package(GTest REQUIRED)
 
 # all headers
@@ -47,18 +55,23 @@ add_executable(${PROJECT_NAME} ${TARGET_H} ${TARGET_SRC})
 
 
 # handle all subdirectories
-set(subdirs strategies testlib)
+set(subdirs strategies testlib protocols adaptors)
 foreach(dir ${subdirs})
+    message("\tadding dir ${dir}...")
     add_subdirectory(${dir})
 endforeach()
-target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
+
+# target_link_directories(adaptors PRIVATE protocols)
+# target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
 
 # link everything together
 target_link_libraries(${PROJECT_NAME}
                       PRIVATE
                       ${project_warnings}
                       ${subdirs}
-                      fmt::fmt)
+                      Boost::system
+                      nlohmann_json::nlohmann_json
+                      )
 # testing
 enable_testing()
 add_executable(simple_test strategies/simple.t.cpp)
