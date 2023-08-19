@@ -23,6 +23,17 @@ add_library(project_warnings INTERFACE)
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
+# other compiler options
+add_library(project_flags INTERFACE)
+set(SANITIZE "")
+message("sanitize_flag: ${custom_build_type}")
+if (custom_build_type)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=${custom_build_type}")
+    set(SANITIZE "${CMAKE_CXX_FLAGS} -fsanitize=${custom_build_type}")
+endif()
+
+target_compile_options(project_flags INTERFACE ${SANITIZE})
+
 # setup static analysis
 include(cmake/StaticAnalyzers.cmake)
 
@@ -65,12 +76,15 @@ endforeach()
 # target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
 
 # link everything together
+message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
 target_link_libraries(${PROJECT_NAME}
                       PRIVATE
                       ${project_warnings}
+                      ${project_flags}
                       ${subdirs}
                       Boost::system
                       nlohmann_json::nlohmann_json
+                      openssl::openssl
                       )
 # testing
 enable_testing()

@@ -43,3 +43,4 @@ CMakeUserPresets.json
 
 # build
 compile_commands.json
+cmake.bld/
