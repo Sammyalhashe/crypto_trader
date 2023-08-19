@@ -1,8 +1,27 @@
-BUILD_DIR := build
+SUFFIX=
+ifneq ($(strip $(SANITIZE)),)
+	ifeq ($(strip $(SANITIZE)), $(filter $(strip $(SANITIZE)), thread address ub))
+		SUFFIX=_$(SANITIZE)
+	endif
+
+	ifneq ($(strip $(SANITIZE)), $(filter $(strip $(SANITIZE)), thread address ub))
+        $(error SANITIZE either needs to be thread, address, or ub)
+	endif
+	
+endif
+
+BUILD_DIR_PREFIX=cmake.bld
+BUILD_DIR := $(BUILD_DIR_PREFIX)/$(shell uname)/full$(SUFFIX)
+
 MAKE := make
 MAKE_OPTS := -j16
 BUILD_TYPE := Debug
-CMAKE_OPTS := -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+
+sanitize_flag=
+ifneq ($(strip $(SUFFIX)),)
+	sanitize_flag=-Dcustom_build_type=$(SANITIZE)
+endif
+CMAKE_OPTS := -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} $(sanitize_flag)
 EXE := crypto_trader
 
 RUN_CMD:=./${BUILD_DIR}/${EXE}
@@ -27,7 +46,7 @@ bo:
 
 .PHONY: prepare
 prepare: conan
-	cd ${BUILD_DIR} && cmake .. ${CMAKE_OPTS} && ln -f compile_commands.json .. && cd -
+	cd ${BUILD_DIR} && cmake ../../.. ${CMAKE_OPTS} && ln -f compile_commands.json ../../.. && cd -
 
 .PHONY: conan
 conan: build_dir_prep
@@ -39,7 +58,7 @@ build_dir_prep:
 
 .PHONY: clean
 clean:
-	rm -rf ${BUILD_DIR}
+	rm -rf ${BUILD_DIR_PREFIX}
 
 .PHONY: test
 test:
