@@ -45,7 +45,7 @@ struct CoinbaseWebSocketClientConfig {
 };
 
 // class CoinbaseWebSocketClient
-class CoinbaseWebSocketClient : private protocols::WebsocketClient {
+class CoinbaseWebSocketClient : public protocols::WebsocketClient {
 
 private:
     // PRIVATE TYPES
@@ -74,6 +74,7 @@ public:
     ~CoinbaseWebSocketClient();
 
     // MANIPULATORS
+    void listen() override;
 
 private:
     // PRIVATE MANIPULATORS

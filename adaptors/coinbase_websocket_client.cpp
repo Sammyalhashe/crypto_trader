@@ -59,7 +59,11 @@ CoinbaseWebSocketClient::CoinbaseWebSocketClient(
 }
 
 CoinbaseWebSocketClient::~CoinbaseWebSocketClient()
-{}
+{
+    if (d_ws.is_open()) {
+        close();
+    }
+}
 
 
 // MANIPULATORS
@@ -113,18 +117,18 @@ bool CoinbaseWebSocketClient::open()
     beast::flat_buffer buffer;
     d_ws.read(buffer);
 
-    // Close the WebSocket connection
-    d_ws.close(websocket::close_code::normal);
-
     // write message received to stdout
-    std::cout << beast::make_printable(buffer.data()) << std::endl;
+    std::cout << "message received: " << beast::make_printable(buffer.data())
+              << std::endl;
 
     return true;
 }
 
 void CoinbaseWebSocketClient::close()
 {
-
+    // Close the WebSocket connection
+    std::cout << "calling close!!!" << std::endl;
+    d_ws.close(websocket::close_code::normal);
 }
 
 bool CoinbaseWebSocketClient::is_open()
@@ -135,6 +139,19 @@ bool CoinbaseWebSocketClient::is_open()
 bool CoinbaseWebSocketClient::send_message()
 {
     return true;
+}
+
+void CoinbaseWebSocketClient::listen()
+{
+    while (d_ws.is_open()) {
+        // read a message into the buffer
+        beast::flat_buffer buffer;
+        d_ws.read(buffer);
+
+        // write message received to stdout
+        std::cout << "message received: " << beast::make_printable(buffer.data())
+                  << std::endl;
+    }
 }
 
 } // adaptors
