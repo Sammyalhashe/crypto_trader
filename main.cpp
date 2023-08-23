@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
-#include <iostream>
 #include <signal.h>
 #include <stdio.h>
 
@@ -21,32 +20,21 @@ namespace ssl = boost::asio::ssl;
 #define DO_ONCE(var, expr) \
 { \
     if (!var) { \
-        std::cout << "called!" << std::endl; \
         expr; \
     } \
 }
 
 static std::function<void(void)> s_cleaner;
 
-struct Context {
-    std::atomic<bool> d_isRunning = true;
-    crypto_trader::protocols::WebsocketClient *d_client;
+struct SignalContext {
+    std::shared_ptr<std::atomic<bool>> d_isRunning;
 };
 
-void cleaner(Context* context) 
-{
-    std::cout << "cleaner is called!" << std::endl;
-    if (context) {
-        context->d_isRunning = false;
-        if (context->d_client) {
-            context->d_client->close();
-        }
-    }
-}
-
-void INTHandler(int);
-
 int main() {
+    SignalContext context;
+    context.d_isRunning = std::make_shared<std::atomic_bool>(true);
+    *context.d_isRunning = true;
+
     using namespace crypto_trader;
     strategies::simpleStrategy();
 
@@ -72,25 +60,12 @@ int main() {
     adaptors::CoinbaseWebSocketClientConfig config(ioc,
                                                    ctx,
                                                    ws_feed_host,
-                                                   json);
+                                                   json,
+                                                   context.d_isRunning);
     adaptors::CoinbaseWebSocketClient client(config);
 
-    Context context;
-    context.d_client = &client;
-    DO_ONCE(s_cleaner, {
-        s_cleaner = std::bind(&cleaner, &context);
-    });
-
-    // setup ctrl-c handler
-    signal(SIGINT, INTHandler);
 
     client.listen();
 
     return 0;
-}
-
-void INTHandler(int sig) {
-    // tells the kernel to ignore the signal so we can handle ourselves
-    signal(sig, SIG_IGN);
-    s_cleaner();
 }
