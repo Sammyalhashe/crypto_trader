@@ -125,14 +125,13 @@ void CoinbaseWebSocketClient::listen()
 {
     while (d_ws.is_open() && *d_config.d_isRunning) {
         // read a message into the buffer
-        beast::flat_buffer buffer;
-        d_ws.read(buffer);
+        std::string buffer;
+        auto buf = boost::asio::dynamic_buffer(buffer);
+        d_ws.read(buf);
 
-        // write message received to stdout
-        std::stringstream ss;
-        ss << beast::make_printable(buffer.data());
-        spdlog::info("message received: {}", ss.str());
-
+        if (d_config.d_listenCb) {
+            d_config.d_listenCb(buffer);
+        }
     }
 
     if (d_ws.is_open()) {

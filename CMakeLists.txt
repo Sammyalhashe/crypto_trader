@@ -67,7 +67,7 @@ add_executable(${PROJECT_NAME} ${TARGET_H} ${TARGET_SRC})
 
 
 # handle all subdirectories
-set(subdirs strategies testlib protocols adaptors)
+set(subdirs traders strategies testlib protocols adaptors)
 foreach(dir ${subdirs})
     message("\tadding dir ${dir}...")
     add_subdirectory(${dir})
