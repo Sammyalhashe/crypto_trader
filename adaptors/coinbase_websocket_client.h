@@ -10,6 +10,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <atomic>
 #include <string>
 
 namespace crypto_trader {
@@ -31,21 +32,28 @@ struct CoinbaseWebSocketClientConfig {
     std::string d_host;
     // The initial message we send to the host
     nlohmann::json d_text;
+    // Shared atomic state regarding if the program should still be running
+    // or not.
+    std::shared_ptr<std::atomic_bool> d_isRunning;
+
     
     // CREATORS
-    CoinbaseWebSocketClientConfig(net::io_context&      ioc,
-                                  ssl::context&         ctx,
-                                  const std::string&    host,
-                                  const nlohmann::json& text)
+    CoinbaseWebSocketClientConfig(
+                            net::io_context&                         ioc,
+                            ssl::context&                            ctx,
+                            const std::string&                       host,
+                            const nlohmann::json&                    text,
+                            const std::shared_ptr<std::atomic_bool>& isRunning)
     : d_ioc(ioc)
     , d_ctx(ctx)
     , d_host(host)
     , d_text(text)
+    , d_isRunning(isRunning)
     {}
 };
 
 // class CoinbaseWebSocketClient
-class CoinbaseWebSocketClient : private protocols::WebsocketClient {
+class CoinbaseWebSocketClient : public protocols::WebsocketClient {
 
 private:
     // PRIVATE TYPES
@@ -55,10 +63,8 @@ private:
     // These perform our I/O
     tcp::resolver d_resolver;
     WebsocketStream d_ws;
-    // The host we are connecting to
-    std::string d_host;
-    // The initial message we send to the host
-    nlohmann::json d_text;
+    // The config for this object
+    CoinbaseWebSocketClientConfig d_config;
 
     // PRIVATE STATIC DATA
     static std::string s_port;
@@ -68,12 +74,11 @@ private:
 
 public:
     // CREATORS
-    explicit CoinbaseWebSocketClient(net::io_context& ioc, ssl::context& ctx);
-    explicit CoinbaseWebSocketClient(net::io_context& ioc, ssl::context& ctx, const std::string& host, const nlohmann::json& text);
     CoinbaseWebSocketClient(const CoinbaseWebSocketClientConfig& config);
     ~CoinbaseWebSocketClient();
 
     // MANIPULATORS
+    void listen() override;
 
 private:
     // PRIVATE MANIPULATORS

@@ -1,4 +1,5 @@
 #include "adaptors/coinbase_websocket_client.h"
+#include "protocols/websocket_client.h"
 #include "strategies/simple.h"
 #include "testlib/test.h"
 
@@ -6,14 +7,34 @@
 
 #include <nlohmann/json.hpp>
 
+#include <atomic>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
+#include <signal.h>
 #include <stdio.h>
 
 namespace net = boost::asio;            // from <boost/asio.hpp>
 namespace ssl = boost::asio::ssl;
 
+#define DO_ONCE(var, expr) \
+{ \
+    if (!var) { \
+        expr; \
+    } \
+}
+
+static std::function<void(void)> s_cleaner;
+
+struct SignalContext {
+    std::shared_ptr<std::atomic<bool>> d_isRunning;
+};
+
 int main() {
+    SignalContext context;
+    context.d_isRunning = std::make_shared<std::atomic_bool>(true);
+    *context.d_isRunning = true;
+
     using namespace crypto_trader;
     strategies::simpleStrategy();
 
@@ -39,8 +60,12 @@ int main() {
     adaptors::CoinbaseWebSocketClientConfig config(ioc,
                                                    ctx,
                                                    ws_feed_host,
-                                                   json);
+                                                   json,
+                                                   context.d_isRunning);
     adaptors::CoinbaseWebSocketClient client(config);
+
+
+    client.listen();
 
     return 0;
 }
