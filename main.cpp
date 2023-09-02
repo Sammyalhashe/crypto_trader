@@ -7,6 +7,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include <atomic>
 #include <cstdlib>
 #include <cstring>
@@ -31,6 +33,7 @@ struct SignalContext {
 };
 
 int main() {
+    spdlog::info("starting crypto_trader");
     SignalContext context;
     context.d_isRunning = std::make_shared<std::atomic_bool>(true);
     *context.d_isRunning = true;
