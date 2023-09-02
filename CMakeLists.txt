@@ -44,6 +44,7 @@ enable_doxygen()
 # project definitions below
 find_package(OpenSSL REQUIRED)
 find_package(Boost 1.82.0 COMPONENTS beast REQUIRED)
+find_package(spdlog 1.12.0 REQUIRED)
 
 # NOTE: This may not be needed.
 if (Boost_Found)
@@ -85,6 +86,7 @@ target_link_libraries(${PROJECT_NAME}
                       Boost::system
                       nlohmann_json::nlohmann_json
                       openssl::openssl
+                      spdlog::spdlog
                       )
 # testing
 enable_testing()

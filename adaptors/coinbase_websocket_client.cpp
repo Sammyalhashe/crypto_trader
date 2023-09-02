@@ -9,6 +9,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include <iostream>
 #include <string>
 
@@ -69,7 +71,7 @@ bool CoinbaseWebSocketClient::open()
     }
 
     // perform ssl handshake
-    std::cout << "performing ssl handshake" << std::endl;
+    spdlog::info("performing ssl handshake");
     d_ws.next_layer().handshake(ssl::stream_base::client);
 
     // Set a decorator to change the user-agent of the request.
@@ -77,17 +79,17 @@ bool CoinbaseWebSocketClient::open()
         websocket::stream_base::decorator([](websocket::request_type& req) {
           req.set(http::field::user_agent,
                   std::string(BOOST_BEAST_VERSION_STRING) + " crypto_trader");
-          std::cout << "req: " << req << std::endl;
+          std::stringstream ss;
+          ss << req;
+          spdlog::info("req: {}", ss.str());
         }));
 
     // perform the websocket handshake
     d_ws.handshake(d_config.d_host + ":" + std::to_string(ep.port()), "/");
 
     // Send the message
-    std::cout << "Writing the request:\n"
-              << d_config.d_text.dump(4) // NOTE: pretty printing
-              << "\nto coinbase"
-              << std::endl;
+    spdlog::info("Writing the request:\n{}\nto coinbase",
+                 d_config.d_text.dump(4));
     d_ws.write(net::buffer(d_config.d_text.dump()));
 
     // read a message into the buffer
@@ -95,8 +97,9 @@ bool CoinbaseWebSocketClient::open()
     d_ws.read(buffer);
 
     // write message received to stdout
-    std::cout << "message received: " << beast::make_printable(buffer.data())
-              << std::endl;
+    std::stringstream ss;
+    ss << beast::make_printable(buffer.data());
+    spdlog::info("message received: {}", ss.str());
 
     return true;
 }
@@ -104,7 +107,7 @@ bool CoinbaseWebSocketClient::open()
 void CoinbaseWebSocketClient::close()
 {
     // Close the WebSocket connection
-    std::cout << "calling close!!!" << std::endl;
+    spdlog::info("calling close!!!");
     d_ws.close(websocket::close_code::normal);
 }
 
@@ -126,8 +129,9 @@ void CoinbaseWebSocketClient::listen()
         d_ws.read(buffer);
 
         // write message received to stdout
-        std::cout << "message received: " << beast::make_printable(buffer.data())
-                  << std::endl;
+        std::stringstream ss;
+        ss << beast::make_printable(buffer.data());
+        spdlog::info("message received: {}", ss.str());
 
     }
 
