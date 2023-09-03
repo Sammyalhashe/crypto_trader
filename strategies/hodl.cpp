@@ -4,6 +4,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include <iostream>
 #include <string>
 
@@ -48,12 +50,14 @@ void HodlStrategy::handleNewData(const std::string_view &buffer)
     using namespace boost::asio;
     try {
         auto data = nlohmann::json::parse(buffer);
-        std::cout << "GOT: " << data << '\n';
+        std::stringstream ss;
+        ss << data;
+        spdlog::info("GOT: {}", ss.str());
         auto type = data["type"];
 
         if (type == "ticker") {
             float price = std::stof(std::string(data["price"]));
-            std::cout << "price: " << price << '\n';
+            spdlog::info("price: {}", price);
             goOverTradesAtPrice(price, std::string(data["time"]));
         }
 
@@ -122,7 +126,7 @@ void HodlStrategy::goOverTradesAtPrice(float                   price,
 bool HodlStrategy::buy(const BuyConfig& config)
 {
     // TODO: Implement this somehow
-    std::cout << "BUY at price " << config.d_price << '\n';
+    spdlog::info("BUY at price {}", config.d_price);
     d_trades.emplace_back();
     auto& back = d_trades.back();
     back.d_timestamp = config.d_timestamp;
@@ -134,7 +138,7 @@ bool HodlStrategy::buy(const BuyConfig& config)
 bool HodlStrategy::sell(const SellConfig& config)
 {
     // TODO: Implement this somehow
-    std::cout << "SELL at price " << config.d_trade.d_price << '\n';
+    spdlog::info("SELL at price {}", config.d_trade.d_price);
     return true;
 }
 

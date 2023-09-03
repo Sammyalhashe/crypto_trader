@@ -9,6 +9,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include <memory>
 #include <string>
 
@@ -111,7 +113,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
                                           config.url(),
                                           "subscribe",
                                           d_config);
-            std::cout << "built result: " << result.dump(4) << '\n';
+            spdlog::info("built result: {}", result.dump(4));
             net::io_context ioc;
             ssl::context ctx{ssl::context::tlsv12_client};
             adaptors::CoinbaseWebSocketClientConfig coinbaseWebSocketConfig(

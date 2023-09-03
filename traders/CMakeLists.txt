@@ -9,4 +9,6 @@ target_link_libraries(traders
                       strategies
                       Boost::system
                       openssl::openssl
-                      nlohmann_json::nlohmann_json)
+                      nlohmann_json::nlohmann_json
+                      spdlog::spdlog
+                      )
