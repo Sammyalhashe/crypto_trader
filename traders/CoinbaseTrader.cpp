@@ -146,6 +146,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
             ss << d_config.strategy();
             spdlog::error("CoinbaseTrader was configured with "
                           "unknown trading strategy: {}", ss.str());
+            assert(false);
         } break;
     }
 }
