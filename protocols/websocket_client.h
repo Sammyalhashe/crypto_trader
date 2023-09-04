@@ -17,7 +17,7 @@ public:
     virtual bool is_open() = 0;
     virtual bool send_message() = 0;
     virtual void listen() = 0;
-};
+}; // WebsocketClient
 
 } // protocols
 } // crypto_trader

@@ -1,6 +1,6 @@
 #include "simple.h"
 
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 #include "../testlib/test.h"
 
@@ -8,7 +8,7 @@ namespace crypto_trader {
 namespace strategies {
 
 int simpleStrategy() {
-    std::cout << "simple strategy run!" << '\n';
+    spdlog::info("simple strategy run!");
     test();
     return 0;
 }

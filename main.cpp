@@ -1,7 +1,4 @@
-#include "adaptors/coinbase_websocket_client.h"
-#include "protocols/websocket_client.h"
-#include "strategies/simple.h"
-#include "testlib/test.h"
+#include "traders/CoinbaseTrader.h"
 
 #include <boost/beast/ssl.hpp>
 
@@ -15,9 +12,6 @@
 #include <functional>
 #include <signal.h>
 #include <stdio.h>
-
-namespace net = boost::asio;            // from <boost/asio.hpp>
-namespace ssl = boost::asio::ssl;
 
 #define DO_ONCE(var, expr) \
 { \
@@ -39,36 +33,21 @@ int main() {
     *context.d_isRunning = true;
 
     using namespace crypto_trader;
-    strategies::simpleStrategy();
 
-    static const std::string& ws_feed_host =
-                                  "ws-feed.exchange.coinbase.com";
-    static const nlohmann::json& json =
-        "{"
-            "\"type\": \"subscribe\","
-            "\"product_ids\": ["
-                "\"ETH-EUR\""
-            "],"
-            "\"channels\": ["
-                "\"heartbeat\","
-                "{"
-                    "\"name\": \"ticker\","
-                    "\"product_ids\": [\"ETH-EUR\"]"
-                "}"
-            "]"
-          "}"_json
-        ;
-    net::io_context ioc;
-    ssl::context ctx{ssl::context::tlsv12_client};
-    adaptors::CoinbaseWebSocketClientConfig config(ioc,
-                                                   ctx,
-                                                   ws_feed_host,
-                                                   json,
-                                                   context.d_isRunning);
-    adaptors::CoinbaseWebSocketClient client(config);
+    traders::CoinbaseTraderConfig coinbaseTraderConfig(context.d_isRunning);
+    coinbaseTraderConfig.setUrl("ws-feed.exchange.coinbase.com");
+    coinbaseTraderConfig.setProducts({"ETH-USD"});
+    coinbaseTraderConfig.setChannels(
+            {
+            "heartbeat",
+            traders::CoinbaseTraderConfig::ChannelDefinition{
+                                                   .d_name     = "ticker",
+                                                   .d_products = {"ETH-USD"}}
+            });
 
+    traders::CoinbaseTrader coinbaseTrader(coinbaseTraderConfig);
 
-    client.listen();
+    coinbaseTrader.start();
 
     return 0;
 }

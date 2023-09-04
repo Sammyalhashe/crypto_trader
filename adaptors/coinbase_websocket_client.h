@@ -8,6 +8,7 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
+#include <functional>
 #include <nlohmann/json.hpp>
 
 #include <atomic>
@@ -23,6 +24,8 @@ namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 struct CoinbaseWebSocketClientConfig {
+    // PUBLIC TYPES
+    using ListenCb = std::function<void(const std::string&)>;
     // DATA
     // The io_context is required for all I/O
     net::io_context& d_ioc;
@@ -32,6 +35,8 @@ struct CoinbaseWebSocketClientConfig {
     std::string d_host;
     // The initial message we send to the host
     nlohmann::json d_text;
+    // Function that is called when a websocket message is received.
+    ListenCb d_listenCb;
     // Shared atomic state regarding if the program should still be running
     // or not.
     std::shared_ptr<std::atomic_bool> d_isRunning;
@@ -43,11 +48,13 @@ struct CoinbaseWebSocketClientConfig {
                             ssl::context&                            ctx,
                             const std::string&                       host,
                             const nlohmann::json&                    text,
+                            const ListenCb&                          listenCb,
                             const std::shared_ptr<std::atomic_bool>& isRunning)
     : d_ioc(ioc)
     , d_ctx(ctx)
     , d_host(host)
     , d_text(text)
+    , d_listenCb(listenCb)
     , d_isRunning(isRunning)
     {}
 };
