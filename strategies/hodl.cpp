@@ -34,7 +34,8 @@ float computeXPercentDown(float price, float percent)
 
 // CREATORS
 HodlStrategy::HodlStrategy(const HodlStrategyConfig& config)
-: d_trades()
+: d_tradeIdBasis(0)
+, d_trades()
 , d_basisMarketPrice()
 , d_config(config)
 {
@@ -52,18 +53,16 @@ void HodlStrategy::handleNewData(const std::string_view &buffer)
         auto data = nlohmann::json::parse(buffer);
         std::stringstream ss;
         ss << data;
-        spdlog::info("GOT: {}", ss.str());
         auto type = data["type"];
 
         if (type == "ticker") {
             float price = std::stof(std::string(data["price"]));
-            spdlog::info("price: {}", price);
             goOverTradesAtPrice(price, std::string(data["time"]));
         }
 
     }
     catch (json::parse_error& e) {
-        std::cerr << e.what() << '\n';
+        spdlog::error("{}", e.what());
     }
 }
 
@@ -97,38 +96,43 @@ void HodlStrategy::goOverTradesAtPrice(float                   price,
                 d_basisMarketPrice = price;
             } break;
             default: {
-                // FIXME: What do here?
+                std::stringstream ss;
+                ss << d_config.initStrategy();
+                spdlog::error("Recieved unknown initStrategy: {}", ss.str());
+                assert(false);
             } break;
         }
         return;
     }
 
-    for (auto& trade: d_trades) {
-        if (price >= computeXPercentUp(trade.d_price,
+    using IT = TradeMap::iterator;
+    IT it = d_trades.begin();
+    for (; d_trades.end() != it;) {
+        if (price >= computeXPercentUp(it->second.d_price,
                                        d_config.percentUp()))
         { 
-            SellConfig config{.d_trade = trade};
+            SellConfig config{.d_trade = it++, .d_price = price};
             sell(config);
+            continue;
         }
-        else if (price <= computeXPercentDown(trade.d_price,
+        else if (price <= computeXPercentDown(it->second.d_price,
                                               d_config.percentDown())
-                 && !trade.d_boughtAgain)
+                 && !it->second.d_boughtAgain)
         {
-            trade.d_boughtAgain = true;
+            it->second.d_boughtAgain = true;
             BuyConfig config {.d_timestamp = timestamp,
                               .d_price     = price,
                               .d_buyAgain  = false};
             buy(config);
         }
+        ++it;
     }
 }
 
 bool HodlStrategy::buy(const BuyConfig& config)
 {
-    // TODO: Implement this somehow
     spdlog::info("BUY at price {}", config.d_price);
-    d_trades.emplace_back();
-    auto& back = d_trades.back();
+    auto& back = d_trades[++d_tradeIdBasis];
     back.d_timestamp = config.d_timestamp;
     back.d_boughtAgain = !config.d_buyAgain;
     back.d_price = config.d_price;
@@ -137,8 +141,18 @@ bool HodlStrategy::buy(const BuyConfig& config)
 
 bool HodlStrategy::sell(const SellConfig& config)
 {
-    // TODO: Implement this somehow
-    spdlog::info("SELL at price {}", config.d_trade.d_price);
+    spdlog::info("SELL at price {} for trade bought at {}",
+                 config.d_price,
+                 config.d_trade->second.d_price);
+    d_trades.erase(config.d_trade);
+
+    if (d_config.initStrategy() ==
+        HodlStrategyConfig::e_SET_BASIS_PRICE &&
+        d_trades.empty())
+    {
+        assert(!d_basisMarketPrice);
+        d_basisMarketPrice = config.d_price;
+    }
     return true;
 }
 

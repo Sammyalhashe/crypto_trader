@@ -8,7 +8,7 @@
 #include <iostream>
 #include <optional>
 #include <string_view>
-#include <vector>
+#include <unordered_map>
 
 namespace crypto_trader {
 namespace strategies {
@@ -53,21 +53,12 @@ struct Trade {
     bool d_boughtAgain;
 }; // Trade
 
-struct HodlStrategyState {
-    // PUBLIC DATA
-    // List of trades that have been finalized.
-    std::vector<Trade> d_trades;
-    // The price that helps us to descern what's the best course of action
-    // to take when initially starting or we sold our last position.
-    boost::optional<float> d_basisMarketPrice;
-    // Config to the hodl strategy.
-    HodlStrategyConfig *d_config;
-}; // HodlStrategyState
-
 class HodlStrategy : public protocols::Strategy {
 
 private:
     // PRIVATE TYPES
+    typedef std::unordered_map<unsigned int, Trade> TradeMap;
+
     struct BuyConfig {
         // Timestamp
         std::string_view d_timestamp;
@@ -79,12 +70,16 @@ private:
 
     struct SellConfig {
         // Position we are selling.
-        Trade d_trade;
+        TradeMap::iterator d_trade;
+        // price we are selling at
+        float d_price;
     }; // SellConfig
 
     // PRIVATE DATA
+    // monotonically increasing trade id;
+    unsigned int d_tradeIdBasis;
     // List of trades that have been finalized.
-    std::vector<Trade> d_trades;
+    TradeMap d_trades;
     // The price that helps us to descern what's the best course of action
     // to take when initially starting or we sold our last position.
     boost::optional<float> d_basisMarketPrice;
@@ -98,6 +93,13 @@ public:
 
     // MANIPULATORS
     void handleNewData(const std::string_view& buffer) override;
+
+    // ACCESSORS
+    // Return a non-modifiable reference to the list of positions
+    // we currently have
+    const TradeMap& trades() const;
+    // Return a non-modifiable reference to the basisMarketPrice.
+    const boost::optional<float>& basisMarketPrice() const;
 
 
 private:
@@ -150,6 +152,22 @@ inline
 float HodlStrategyConfig::percentDown() const
 {
     return d_percentDown;
+}
+
+
+// class HodlStrategy
+
+// ACCESSORS
+inline
+const HodlStrategy::TradeMap& HodlStrategy::trades() const
+{
+    return d_trades;
+}
+
+inline
+const boost::optional<float>& HodlStrategy::basisMarketPrice() const
+{
+    return d_basisMarketPrice;
 }
 
 } // strategies

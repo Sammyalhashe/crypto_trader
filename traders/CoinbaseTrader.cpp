@@ -28,9 +28,10 @@ namespace {
                                        const CoinbaseTraderConfig&  config)
     {
         std::string result;
-        result += "{";
-        result += "\"type\": \"" + type + "\",";
-        result += "\"product_ids\": [";
+        result += "{"
+                  "\"type\": \"" + type + "\","
+                  "\"product_ids\": [";
+
         unsigned int idx = 0;
         for (const auto& product : config.products()) {
             result += "\"" + product + "\"";
@@ -39,8 +40,8 @@ namespace {
             }
             ++idx;
         }
-        result += "],";
-        result += "\"channels\": [";
+        result += "],"
+                  "\"channels\": [";
         idx = 0;
         if (config.channels().has_value()) {
             for (const auto& channel : config.channels().value()) {
@@ -52,9 +53,9 @@ namespace {
                 {
                     const auto channelDef = std::get<
                              CoinbaseTraderConfig::ChannelDefinition>(channel);
-                    result += "{";
-                    result += "\"name\": \"" + channelDef.d_name + "\",";
-                    result += "\"product_ids\": [";
+                    result += "{"
+                              "\"name\": \"" + channelDef.d_name + "\","
+                              "\"product_ids\": [";
                     unsigned int idx2 = 0;
                     for (const auto& productid : channelDef.d_products) {
                         result += "\"" + productid + "\"";
@@ -63,8 +64,8 @@ namespace {
                         }
                         ++idx2;
                     }
-                    result += "]";
-                    result += "}";
+                    result += "]"
+                              "}";
                 }
                 else {
                     ++idx;
@@ -76,8 +77,8 @@ namespace {
                 ++idx;
             }
         }
-        result += "]";
-        result += "}";
+        result += "]"
+                  "}";
 
         try {
             *message = nlohmann::json::parse(result);
@@ -107,7 +108,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 , d_config(config)
 {
     switch (d_config.strategy()) {
-        case strategies::Strategy::e_HODL: {
+        case strategies::TradingStrategy::e_HODL: {
             nlohmann::json result;
             buildCoinbaseWebsocketMessage(&result,
                                           config.url(),
@@ -132,8 +133,8 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
             // coinbaseWebSocketConfig.
             strategies::HodlStrategyConfig hodlConfig;
             hodlConfig
-                .setPercentUp(5)
-                .setPercentDown(5)
+                .setPercentUp((float)1/(float)100000)
+                .setPercentDown(0.1)
                 .setInitStrategy(
                             strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY);
 

@@ -90,9 +90,17 @@ target_link_libraries(${PROJECT_NAME}
                       )
 # testing
 enable_testing()
-add_executable(simple_test strategies/simple.t.cpp)
-
-target_link_libraries(simple_test GTest::gtest_main ${subdirs})
-
 include(GoogleTest)
-gtest_discover_tests(simple_test)
+
+function(add_test name filepath)
+    add_executable(${name} ${filepath})
+    target_link_libraries(${name}
+                          GTest::gtest_main
+                          Boost::system
+                          nlohmann_json::nlohmann_json
+                          ${subdirs})
+    gtest_discover_tests(${name})
+endfunction()
+
+add_test(simple_test strategies/simple.t.cpp)
+add_test(hodl_test strategies/hodl.t.cpp)

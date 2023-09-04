@@ -4,7 +4,7 @@
 namespace crypto_trader {
 namespace strategies {
     
-enum Strategy {
+enum TradingStrategy {
     e_HODL = 0
 }; // Strategies
 

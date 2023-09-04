@@ -36,7 +36,7 @@ private:
     // The channels to subscribe to if using a websocket strategy
     boost::optional<ChannelVec> d_channels;
     // The strategy to use to trade with.
-    strategies::Strategy d_strategy;
+    strategies::TradingStrategy d_strategy;
     // The url the trader gets the data from.
     std::string d_url;
     // Shared atomic state declaring whether the application is running.
@@ -54,13 +54,14 @@ public:
     CoinbaseTraderConfig& setChannels(
                                   const boost::optional<ChannelVec>& products);
     CoinbaseTraderConfig& setChannels(const ChannelVec& products);
-    CoinbaseTraderConfig& setStrategy(const strategies::Strategy& strategy);
+    CoinbaseTraderConfig& setStrategy(
+                                  const strategies::TradingStrategy& strategy);
     CoinbaseTraderConfig& setUrl(const std::string& url);
 
     // PUBLIC ACCESSORS
     const StringVec& products() const;
     const boost::optional<ChannelVec>& channels() const;
-    const strategies::Strategy& strategy() const;
+    const strategies::TradingStrategy& strategy() const;
     const std::string& url() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
 }; // CoinbaseTraderConfig
@@ -82,6 +83,7 @@ public:
 
     // DELETED METHODS
     CoinbaseTrader(const CoinbaseTrader& orig) = delete;
+    CoinbaseTrader& operator=(const CoinbaseTrader& orig) = delete;
 
     // PUBLIC MANIPULATORS
     
@@ -125,7 +127,7 @@ CoinbaseTraderConfig& CoinbaseTraderConfig::setChannels(
 
 inline
 CoinbaseTraderConfig& CoinbaseTraderConfig::setStrategy(
-                                          const strategies::Strategy &strategy)
+                                          const strategies::TradingStrategy &strategy)
 {
     d_strategy = strategy;
     return *this;
@@ -153,7 +155,7 @@ CoinbaseTraderConfig::channels() const
 }
 
 inline
-const strategies::Strategy& CoinbaseTraderConfig::strategy() const
+const strategies::TradingStrategy& CoinbaseTraderConfig::strategy() const
 {
     return d_strategy;
 }
