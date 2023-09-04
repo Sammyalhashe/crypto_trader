@@ -30,6 +30,7 @@ namespace {
 TEST(HodlStrategyTest, XPercentRiseTest) {
     HodlStrategyConfig config;
     config.setPercentUp(5)
+          .setPercentDown(5)
           .setInitStrategy(HodlStrategyConfig::e_BUY_IMMEDIATELY);
     HodlStrategy hodl(config);
     
@@ -56,6 +57,7 @@ TEST(HodlStrategyTest, XPercentRiseTest) {
 TEST(HodlStrategyTest, YPercentFallTest) {
     HodlStrategyConfig config;
     config.setPercentDown(5)
+          .setPercentUp(5)
           .setInitStrategy(HodlStrategyConfig::e_BUY_IMMEDIATELY);
     HodlStrategy hodl(config);
     
@@ -71,7 +73,7 @@ TEST(HodlStrategyTest, YPercentFallTest) {
 
     buildNewSocketMessage(&data,
                           "ticker",
-                          "1520",
+                          "1519",
                           "2023-09-04T18:38:49.279032Z");
 
     hodl.handleNewData(data.dump());
@@ -80,7 +82,7 @@ TEST(HodlStrategyTest, YPercentFallTest) {
 
     buildNewSocketMessage(&data,
                           "ticker",
-                          "1444",
+                          "1443",
                           "2023-09-04T18:38:50.279032Z");
 
     hodl.handleNewData(data.dump());
