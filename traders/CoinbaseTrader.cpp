@@ -142,7 +142,10 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
                                                                    hodlConfig);
         } break;
         default: {
-            // TODO: Probably default to HODL and log a warning...
+            std::stringstream ss;
+            ss << d_config.strategy();
+            spdlog::error("CoinbaseTrader was configured with "
+                          "unknown trading strategy: {}", ss.str());
         } break;
     }
 }
