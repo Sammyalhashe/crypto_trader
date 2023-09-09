@@ -1,6 +1,7 @@
 #ifndef INCLUDED_HODL_STRATEGY
 #define INCLUDED_HODL_STRATEGY
 
+#include "../common/types.h"
 #include "../protocols/strategy.h"
 
 #include <boost/beast/core.hpp>
@@ -29,17 +30,21 @@ private:
     float d_percentUp;
     // Y percent down to buy if the market dips
     float d_percentDown;
+    // Callback called on emitted action by strategy.
+    common::Types::Emit d_emit;
 
 public:
     // MANIPULATORS
     HodlStrategyConfig& setInitStrategy(const InitStrategy& initStrat);
     HodlStrategyConfig& setPercentUp(float percentUp);
     HodlStrategyConfig& setPercentDown(float percentDown);
+    HodlStrategyConfig& setEmit(const common::Types::Emit& emit);
 
     // ACCESSORS
     const InitStrategy& initStrategy() const;
     float percentUp() const;
     float percentDown() const;
+    const common::Types::Emit& emit() const;
 
 }; // HodlStrategyConfig
 
@@ -105,8 +110,8 @@ public:
 private:
     // PRIVATE MANIPULATORS
     void goOverTradesAtPrice(float price, const std::string_view& timestamp);
-    bool buy(const BuyConfig& config);
-    bool sell(const SellConfig& config);
+    void buy(const BuyConfig& config);
+    void sell(const SellConfig& config);
     
 }; // HodlStrategy
 
@@ -137,6 +142,14 @@ HodlStrategyConfig& HodlStrategyConfig::setPercentDown(float percentDown)
 }
 
 inline
+HodlStrategyConfig& HodlStrategyConfig::setEmit(
+                                               const common::Types::Emit& emit)
+{
+    d_emit = emit;
+    return *this;
+}
+
+inline
 const HodlStrategyConfig::InitStrategy& HodlStrategyConfig::initStrategy() const
 {
     return d_initStrategy;
@@ -152,6 +165,12 @@ inline
 float HodlStrategyConfig::percentDown() const
 {
     return d_percentDown;
+}
+
+inline
+const common::Types::Emit& HodlStrategyConfig::emit() const
+{
+    return d_emit;
 }
 
 
