@@ -12,11 +12,11 @@ class Strategy {
 
 protected:
     // PROTECTED DATA
-    common::Types::Emit d_emit;
+    common::Emit d_emit;
 
 public:
     // CREATORS
-    Strategy(const common::Types::Emit&);
+    Strategy(const common::Emit&);
     virtual ~Strategy() = 0;
 
     // MANIPULATORS

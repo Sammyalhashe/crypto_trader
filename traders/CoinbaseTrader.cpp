@@ -172,7 +172,7 @@ void CoinbaseTrader::stop()
 }
 
 
-void CoinbaseTrader::handleAction(const common::Types::Action& action)
+void CoinbaseTrader::handleAction(const common::Action& action)
 {
     std::stringstream ss;
     ss << action.d_type;

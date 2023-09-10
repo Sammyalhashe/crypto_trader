@@ -25,7 +25,7 @@ namespace {
         (*json)["time"] = time;
     }
 
-    void dummyHandleAction(const common::Types::Action& action) {
+    void dummyHandleAction(const common::Action& action) {
 
     }
 

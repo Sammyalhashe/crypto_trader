@@ -31,20 +31,20 @@ private:
     // Y percent down to buy if the market dips
     float d_percentDown;
     // Callback called on emitted action by strategy.
-    common::Types::Emit d_emit;
+    common::Emit d_emit;
 
 public:
     // MANIPULATORS
     HodlStrategyConfig& setInitStrategy(const InitStrategy& initStrat);
     HodlStrategyConfig& setPercentUp(float percentUp);
     HodlStrategyConfig& setPercentDown(float percentDown);
-    HodlStrategyConfig& setEmit(const common::Types::Emit& emit);
+    HodlStrategyConfig& setEmit(const common::Emit& emit);
 
     // ACCESSORS
     const InitStrategy& initStrategy() const;
     float percentUp() const;
     float percentDown() const;
-    const common::Types::Emit& emit() const;
+    const common::Emit& emit() const;
 
 }; // HodlStrategyConfig
 
@@ -142,8 +142,7 @@ HodlStrategyConfig& HodlStrategyConfig::setPercentDown(float percentDown)
 }
 
 inline
-HodlStrategyConfig& HodlStrategyConfig::setEmit(
-                                               const common::Types::Emit& emit)
+HodlStrategyConfig& HodlStrategyConfig::setEmit(const common::Emit& emit)
 {
     d_emit = emit;
     return *this;
@@ -168,7 +167,7 @@ float HodlStrategyConfig::percentDown() const
 }
 
 inline
-const common::Types::Emit& HodlStrategyConfig::emit() const
+const common::Emit& HodlStrategyConfig::emit() const
 {
     return d_emit;
 }

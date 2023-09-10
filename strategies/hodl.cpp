@@ -139,7 +139,7 @@ void HodlStrategy::buy(const BuyConfig& config)
     back.d_price = config.d_price;
 
     if (d_emit) {
-        common::Types::Action action{.d_type = common::Types::Action::e_BUY};
+        common::Action action{.d_type = common::Action::e_BUY};
         d_emit(action);
     }
 }
@@ -160,7 +160,7 @@ void HodlStrategy::sell(const SellConfig& config)
     }
 
     if (d_emit) {
-        common::Types::Action action{.d_type = common::Types::Action::e_SELL};
+        common::Action action{.d_type = common::Action::e_SELL};
         d_emit(action);
     }
 }

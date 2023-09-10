@@ -93,7 +93,7 @@ public:
     // Stop the trader.
     void stop();
     // Handle the emitted action
-    void handleAction(const common::Types::Action& action);
+    void handleAction(const common::Action& action);
 
     // protocols::Trader
     void listen(const std::string_view& buffer) override;
