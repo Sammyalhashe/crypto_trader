@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include <functional>
 #include <string_view>
 
 using namespace crypto_trader;
@@ -24,6 +25,10 @@ namespace {
         (*json)["time"] = time;
     }
 
+    void dummyHandleAction(const common::Action& action) {
+
+    }
+
 } // closing unnamed namespace
 
 // TODO: Docs...
@@ -31,7 +36,8 @@ TEST(HodlStrategyTest, XPercentRiseTest) {
     HodlStrategyConfig config;
     config.setPercentUp(5)
           .setPercentDown(5)
-          .setInitStrategy(HodlStrategyConfig::e_BUY_IMMEDIATELY);
+          .setInitStrategy(HodlStrategyConfig::e_BUY_IMMEDIATELY)
+          .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
     HodlStrategy hodl(config);
     
     Json data;
@@ -58,7 +64,8 @@ TEST(HodlStrategyTest, YPercentFallTest) {
     HodlStrategyConfig config;
     config.setPercentDown(5)
           .setPercentUp(5)
-          .setInitStrategy(HodlStrategyConfig::e_BUY_IMMEDIATELY);
+          .setInitStrategy(HodlStrategyConfig::e_BUY_IMMEDIATELY)
+          .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
     HodlStrategy hodl(config);
     
     Json data;
@@ -94,7 +101,8 @@ TEST(HodlStrategyTest, BASIS_PRICE_INIT) {
     HodlStrategyConfig config;
     config.setPercentDown(5)
           .setPercentUp(5)
-          .setInitStrategy(HodlStrategyConfig::e_SET_BASIS_PRICE);
+          .setInitStrategy(HodlStrategyConfig::e_SET_BASIS_PRICE)
+          .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
     HodlStrategy hodl(config);
     
     Json data;

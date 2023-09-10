@@ -34,7 +34,8 @@ float computeXPercentDown(float price, float percent)
 
 // CREATORS
 HodlStrategy::HodlStrategy(const HodlStrategyConfig& config)
-: d_tradeIdBasis(0)
+: protocols::Strategy(config.emit())
+, d_tradeIdBasis(0)
 , d_trades()
 , d_basisMarketPrice()
 , d_config(config)
@@ -129,17 +130,21 @@ void HodlStrategy::goOverTradesAtPrice(float                   price,
     }
 }
 
-bool HodlStrategy::buy(const BuyConfig& config)
+void HodlStrategy::buy(const BuyConfig& config)
 {
     spdlog::info("BUY at price {}", config.d_price);
     auto& back = d_trades[++d_tradeIdBasis];
     back.d_timestamp = config.d_timestamp;
     back.d_boughtAgain = !config.d_buyAgain;
     back.d_price = config.d_price;
-    return true;
+
+    if (d_emit) {
+        common::Action action{.d_type = common::Action::e_BUY};
+        d_emit(action);
+    }
 }
 
-bool HodlStrategy::sell(const SellConfig& config)
+void HodlStrategy::sell(const SellConfig& config)
 {
     spdlog::info("SELL at price {} for trade bought at {}",
                  config.d_price,
@@ -153,7 +158,11 @@ bool HodlStrategy::sell(const SellConfig& config)
         assert(!d_basisMarketPrice);
         d_basisMarketPrice = config.d_price;
     }
-    return true;
+
+    if (d_emit) {
+        common::Action action{.d_type = common::Action::e_SELL};
+        d_emit(action);
+    }
 }
 
 } // strategies 

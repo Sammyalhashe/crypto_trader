@@ -136,7 +136,10 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
                 .setPercentUp((float)1/(float)100000)
                 .setPercentDown(0.1)
                 .setInitStrategy(
-                            strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY);
+                            strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY)
+                .setEmit(std::bind(&CoinbaseTrader::handleAction,
+                                   this,
+                                   std::placeholders::_1));
 
             d_strategy = std::make_unique<strategies::HodlStrategy>(
                                                                    hodlConfig);
@@ -166,6 +169,14 @@ void CoinbaseTrader::start()
 
 void CoinbaseTrader::stop()
 {
+}
+
+
+void CoinbaseTrader::handleAction(const common::Action& action)
+{
+    std::stringstream ss;
+    ss << action.d_type;
+    spdlog::info("Handling action: {}", ss.str());
 }
 
 // protocols::Trader

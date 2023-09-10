@@ -1,6 +1,7 @@
 #ifndef INCLUDED_COINBASE_TRADER
 #define INCLUDED_COINBASE_TRADER
 
+#include "../common/types.h"
 #include "../protocols/websocket_client.h"
 #include "../protocols/strategy.h"
 #include "../protocols/trader.h"
@@ -91,6 +92,8 @@ public:
     void start();
     // Stop the trader.
     void stop();
+    // Handle the emitted action
+    void handleAction(const common::Action& action);
 
     // protocols::Trader
     void listen(const std::string_view& buffer) override;
