@@ -7,6 +7,7 @@
 #include "../strategies/hodl.h"
 
 #include <boost/beast/ssl.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -98,6 +99,8 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 , d_products()
 , d_strategy(strategies::e_NONE)
 , d_strategyConfig()
+, d_url()
+, d_numThreads(1)
 , d_isRunning(isRunning)
 {
 }
@@ -107,6 +110,10 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 // CREATORS
 CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 : d_webSocketClient()
+, d_strategy()
+, d_threadPool(config.numThreads())
+, d_isStopped(true)
+, d_mutex()
 , d_config(config)
 {
     switch (d_config.strategy()) {
@@ -153,7 +160,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
                                                  "percentDown",
                                                  5))
                 .setInitStrategy(initStrat)
-                .setEmit(std::bind(&CoinbaseTrader::handleAction,
+                .setEmit(std::bind(&CoinbaseTrader::processAction,
                                    this,
                                    std::placeholders::_1));
 
@@ -171,12 +178,21 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 }
 
 CoinbaseTrader::~CoinbaseTrader()
-{}
+{
+    stop();
+}
 
 // PUBLIC MANIPULATORS
 
 void CoinbaseTrader::start()
 {
+    if (!d_isStopped) {
+        return;
+    }
+
+    // mark this trader as started.
+    d_isStopped = false;
+
     // TODO: Warn if not set?
     if (d_webSocketClient) {
         d_webSocketClient->listen();
@@ -185,6 +201,33 @@ void CoinbaseTrader::start()
 
 void CoinbaseTrader::stop()
 {
+    if (d_isStopped) {
+        return;
+    }
+
+    // mark this trader as stopped.
+    d_isStopped = true;
+
+    // Wait till all events are handled.
+    // NOTE: If trader was never started, no events should be enqueued on so
+    // it should just end.
+    d_threadPool.join();
+}
+
+
+void CoinbaseTrader::processAction(const common::Action& action)
+{
+    if (d_isStopped) {
+        return;
+    }
+    std::stringstream ss;
+    ss << action.d_type;
+    spdlog::info("Processing action: {}", ss.str());
+
+    
+    boost::asio::post(d_threadPool, std::bind(&CoinbaseTrader::handleAction,
+                                                this,
+                                                action));
 }
 
 
@@ -195,12 +238,38 @@ void CoinbaseTrader::handleAction(const common::Action& action)
     spdlog::info("Handling action: {}", ss.str());
 }
 
+
+void CoinbaseTrader::handleNewData(const std::string_view& buffer)
+{
+    std::lock_guard<std::mutex> guard(d_mutex);                         // LOCK
+    if (!d_config.isRunning()) {
+        d_threadPool.stop();
+        return;
+    }
+    if (d_strategy) {
+        d_strategy->handleNewData(buffer);
+    }
+}
+
 // protocols::Trader
 void CoinbaseTrader::listen(const std::string_view& buffer)
 {
-     if (d_strategy) {
-         d_strategy->handleNewData(buffer);
-     }
+    {
+        std::lock_guard<std::mutex> guard(d_mutex);                     // LOCK
+        if (!d_config.isRunning()) {
+            d_threadPool.stop();
+            return;
+        }
+    }
+
+    if (d_isStopped) {
+        return;
+    }
+
+    std::string v(buffer);
+    boost::asio::post(d_threadPool, std::bind(&CoinbaseTrader::handleNewData,
+                                                this,
+                                                v));
 }
 
 } // traders
