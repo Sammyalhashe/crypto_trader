@@ -1,4 +1,5 @@
 #include "traders/CoinbaseTrader.h"
+#include "common/fileutils.h"
 
 #include <boost/beast/ssl.hpp>
 
@@ -26,7 +27,15 @@ struct SignalContext {
     std::shared_ptr<std::atomic<bool>> d_isRunning;
 };
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc > 1) {
+        std::stringstream ss;
+        ss << argv[0];
+        spdlog::info("passed in: {}", ss.str());
+
+        nlohmann::json jsonFileContents;
+        crypto_trader::common::readJsonFile(&jsonFileContents, argv[0]);
+    }
     spdlog::info("starting crypto_trader");
     SignalContext context;
     context.d_isRunning = std::make_shared<std::atomic_bool>(true);
