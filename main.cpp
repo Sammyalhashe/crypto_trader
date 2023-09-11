@@ -1,6 +1,9 @@
+#include "protocols/trader.h"
 #include "traders/CoinbaseTrader.h"
 #include "common/fileutils.h"
+#include "common/jsonutils.h"
 
+#include <boost/asio/thread_pool.hpp>
 #include <boost/beast/ssl.hpp>
 
 #include <nlohmann/json.hpp>
@@ -11,8 +14,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <memory>
 #include <signal.h>
 #include <stdio.h>
+#include <variant>
 
 #define DO_ONCE(var, expr) \
 { \
@@ -28,35 +33,123 @@ struct SignalContext {
 };
 
 int main(int argc, char *argv[]) {
-    if (argc > 1) {
-        std::stringstream ss;
-        ss << argv[0];
-        spdlog::info("passed in: {}", ss.str());
+    using namespace crypto_trader;
 
-        nlohmann::json jsonFileContents;
-        crypto_trader::common::readJsonFile(&jsonFileContents, argv[0]);
-    }
-    spdlog::info("starting crypto_trader");
     SignalContext context;
     context.d_isRunning = std::make_shared<std::atomic_bool>(true);
     *context.d_isRunning = true;
 
-    using namespace crypto_trader;
+    nlohmann::json jsonFileContents;
+    spdlog::info("argc {}", argc);
+    if (argc > 1) {
+        std::stringstream ss;
+        ss << argv[1];
+        spdlog::info("passed in: {}", ss.str());
 
-    traders::CoinbaseTraderConfig coinbaseTraderConfig(context.d_isRunning);
-    coinbaseTraderConfig.setUrl("ws-feed.exchange.coinbase.com");
-    coinbaseTraderConfig.setProducts({"ETH-USD"});
-    coinbaseTraderConfig.setChannels(
-            {
-            "heartbeat",
-            traders::CoinbaseTraderConfig::ChannelDefinition{
-                                                   .d_name     = "ticker",
-                                                   .d_products = {"ETH-USD"}}
-            });
+        common::readJsonFile(&jsonFileContents, argv[1]);
+    }
 
-    traders::CoinbaseTrader coinbaseTrader(coinbaseTraderConfig);
+    spdlog::info("starting crypto_trader");
 
-    coinbaseTrader.start();
+    std::vector<std::unique_ptr<protocols::Trader>> traders;
+    unsigned int numTraders = 0;
+    if (jsonFileContents.contains("traders")) {
+        for (const auto& trader : jsonFileContents["traders"].items()) {
+            std::stringstream ss;
+            ss << trader.key() << " " << trader.value().dump(4);
+            spdlog::info("configuring trader {}", ss.str());
+            for (const auto& traderConfig : trader.value().items()) {
+                if (traderConfig.key() == "coinbaseTrader") {
+                    auto coinbaseTraderJson = traderConfig.value();
+                    traders::CoinbaseTraderConfig coinbaseTraderConfig(
+                                                          context.d_isRunning);
+                    coinbaseTraderConfig.setUrl(common::value_or(
+                        coinbaseTraderJson,
+                        "url",
+                        "wss://ws-feed-public.sandbox.exchange.coinbase.com"));
+                    auto products = common::value_or(coinbaseTraderJson,
+                                             "products",
+                                             "[\"ETH-USD\"]"_json);
+                    
+                    std::vector<std::string> traderProducts;
+                    for (const auto& product : products) {
+                        traderProducts.push_back(product);
+                    }
+
+                    coinbaseTraderConfig.setProducts(traderProducts);
+        
+                    auto channelsJson = common::value_or(coinbaseTraderJson,
+                                                 "channels",
+                                                 "[]"_json);
+        
+                    std::vector<std::variant<
+                       std::string,
+                       traders::CoinbaseTraderConfig::ChannelDefinition>>
+                                                                      channels;
+                    for (const auto& channel : channelsJson) {
+                        if (channel.is_string()) {
+                            channels.push_back(channel.get<std::string>());
+                        }
+                        else {
+                            std::vector<std::string> channelProducts;
+                            for (const auto& channelProduct :
+                                 channel["products"].items())
+                            {
+                                channelProducts.push_back(
+                                                       channelProduct.value());
+                            }
+                            channels.push_back(
+                               traders::CoinbaseTraderConfig::ChannelDefinition
+                               {
+                                    .d_name = channel["name"],
+                                    .d_products = channelProducts
+                               }
+                            );
+                        }
+                    }
+                            
+                    coinbaseTraderConfig.setChannels(channels);
+                    if (coinbaseTraderJson.contains("strategy")) {
+                        const auto strategyJson =
+                                                coinbaseTraderJson["strategy"];
+                        const auto& type = common::value_or(strategyJson,
+                                                     "type",
+                                                     "hodl");
+                        std::stringstream ss;
+                        ss << type;
+                        spdlog::info("strat: {}", ss.str());
+                        if (type.get<std::string>() == "hodl") {
+                            coinbaseTraderConfig.setStrategy(
+                                                           strategies::e_HODL);
+                        }
+                        else {
+                            coinbaseTraderConfig.setStrategy(
+                                                           strategies::e_NONE);
+                        }
+                        coinbaseTraderConfig.setStrategyConfig(
+                         common::value_or( strategyJson, "config", "{}"_json));
+                    }
+
+                    traders.push_back(std::make_unique<
+                               traders::CoinbaseTrader>(coinbaseTraderConfig));
+
+
+                }
+
+                ++numTraders;
+            }
+        }
+    }
+
+    boost::asio::thread_pool running_traders(numTraders);
+
+    for (const auto& trader : traders) {
+        boost::asio::post(running_traders, [&trader]() {
+            trader->start();
+        });
+    }
+
+    running_traders.join();
 
     return 0;
 }

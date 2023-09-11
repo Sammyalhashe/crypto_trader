@@ -9,6 +9,8 @@
 
 #include <boost/optional.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <atomic>
 #include <memory>
 #include <optional>
@@ -40,6 +42,8 @@ private:
     strategies::TradingStrategy d_strategy;
     // The url the trader gets the data from.
     std::string d_url;
+    // abstract json config for the strategy.
+    nlohmann::json d_strategyConfig;
     // Shared atomic state declaring whether the application is running.
     std::shared_ptr<std::atomic_bool> d_isRunning;
 
@@ -58,12 +62,15 @@ public:
     CoinbaseTraderConfig& setStrategy(
                                   const strategies::TradingStrategy& strategy);
     CoinbaseTraderConfig& setUrl(const std::string& url);
+    CoinbaseTraderConfig& setStrategyConfig(
+                                         const nlohmann::json& strategyConfig);
 
     // PUBLIC ACCESSORS
     const StringVec& products() const;
     const boost::optional<ChannelVec>& channels() const;
     const strategies::TradingStrategy& strategy() const;
     const std::string& url() const;
+    const nlohmann::json& strategyConfig() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
 }; // CoinbaseTraderConfig
 
@@ -87,16 +94,15 @@ public:
     CoinbaseTrader& operator=(const CoinbaseTrader& orig) = delete;
 
     // PUBLIC MANIPULATORS
-    
-    // Start the trader.
-    void start();
-    // Stop the trader.
-    void stop();
     // Handle the emitted action
     void handleAction(const common::Action& action);
 
     // protocols::Trader
     void listen(const std::string_view& buffer) override;
+    // Start the trader.
+    void start() override;
+    // Stop the trader.
+    void stop() override;
 
 }; // CoinbaseTrader
 
@@ -143,6 +149,14 @@ CoinbaseTraderConfig& CoinbaseTraderConfig::setUrl(const std::string& url)
     return *this;
 }
 
+inline
+CoinbaseTraderConfig& CoinbaseTraderConfig::setStrategyConfig(
+                                          const nlohmann::json& strategyConfig)
+{
+    d_strategyConfig = strategyConfig;
+    return *this;
+}
+
 // PUBLIC ACCESSORS
 inline
 const CoinbaseTraderConfig::StringVec& CoinbaseTraderConfig::products() const
@@ -167,6 +181,12 @@ inline
 const std::string& CoinbaseTraderConfig::url() const
 {
     return d_url;
+}
+
+inline
+const nlohmann::json& CoinbaseTraderConfig::strategyConfig() const
+{
+    return d_strategyConfig;
 }
 
 inline

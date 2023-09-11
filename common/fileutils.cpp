@@ -9,14 +9,16 @@
 namespace crypto_trader {
 namespace common {
 
-void readFile(std::string *fileContents, const std::string_view &filepath)
+void readFile(std::string *fileContents, const std::string &filepath)
 {
     std::ifstream file;
     file.open(filepath);
 
     if (file.is_open()) {
+        std::string line;
         while (file) {
-            std::getline(file, *fileContents);
+            std::getline(file, line);
+            *fileContents += line;
         }
     }
     else {
@@ -24,7 +26,7 @@ void readFile(std::string *fileContents, const std::string_view &filepath)
     }
 }
 
-void readJsonFile(json *parsedJson, const std::string_view &filepath)
+void readJsonFile(json *parsedJson, const std::string &filepath)
 {
     std::string contents;
     readFile(&contents, filepath);

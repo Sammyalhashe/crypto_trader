@@ -4,16 +4,15 @@
 #include <nlohmann/json.hpp>
 
 #include <string>
-#include <string_view>
 
 namespace crypto_trader {
 namespace common {
 
 using json = nlohmann::json;
 
-static void readFile(std::string             *fileContents,
-                     const std::string_view&  filepath);
-static void readJsonFile(json *parsedJson, const std::string_view& filepath);
+void readFile(std::string             *fileContents,
+                     const std::string&  filepath);
+void readJsonFile(json *parsedJson, const std::string& filepath);
 
 } // closing namespace common
 } // closing namespace crypto_trader

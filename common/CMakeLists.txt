@@ -1,5 +1,5 @@
-set(COMMON_H types.h fileutils.h)
-set(COMMON_SRC types.cpp fileutils.cpp)
+set(COMMON_H types.h fileutils.h jsonutils.h)
+set(COMMON_SRC types.cpp fileutils.cpp jsonutils.cpp)
 
 add_library(common
             STATIC

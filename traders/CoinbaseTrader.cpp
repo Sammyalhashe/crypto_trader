@@ -1,6 +1,7 @@
 #include "CoinbaseTrader.h"
 
 #include "../adaptors/coinbase_websocket_client.h"
+#include "../common/jsonutils.h"
 #include "../protocols/websocket_client.h"
 #include "../strategies/index.h"
 #include "../strategies/hodl.h"
@@ -95,7 +96,8 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
                            const std::shared_ptr<std::atomic_bool>& isRunning)
 : d_channels()
 , d_products()
-, d_strategy(strategies::e_HODL)
+, d_strategy(strategies::e_NONE)
+, d_strategyConfig()
 , d_isRunning(isRunning)
 {
 }
@@ -129,14 +131,25 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
             d_webSocketClient = std::make_unique<
                    adaptors::CoinbaseWebSocketClient>(coinbaseWebSocketConfig);
 
-            // TODO: Figure out if I should send this in
-            // coinbaseWebSocketConfig.
+            const auto& hodlConfigJson = d_config.strategyConfig();
+            strategies::HodlStrategyConfig::InitStrategy initStrat;
+            const auto& initStratString = common::value_or(hodlConfigJson,
+                                                           "initStrategy",
+                                                           "buy_immediately");
+            if (initStratString.get<std::string>() == "buy_immediately") {
+                initStrat = strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY;
+            }
+            else {
+                initStrat = strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY;
+            }
+
             strategies::HodlStrategyConfig hodlConfig;
             hodlConfig
-                .setPercentUp((float)1/(float)100000)
-                .setPercentDown(0.1)
-                .setInitStrategy(
-                            strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY)
+                .setPercentUp(common::value_or(hodlConfigJson, "percentUp", 5))
+                .setPercentDown(common::value_or(hodlConfigJson,
+                                                 "percentDown",
+                                                 5))
+                .setInitStrategy(initStrat)
                 .setEmit(std::bind(&CoinbaseTrader::handleAction,
                                    this,
                                    std::placeholders::_1));
