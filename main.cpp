@@ -46,7 +46,8 @@ int main(int argc, char *argv[]) {
         ss << argv[1];
         spdlog::info("passed in: {}", ss.str());
 
-        common::readJsonFile(&jsonFileContents, argv[1]);
+        int rc = common::readJsonFile(&jsonFileContents, argv[1]);
+        assert(0 == rc);
     }
 
     spdlog::info("starting crypto_trader");

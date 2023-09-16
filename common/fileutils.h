@@ -10,9 +10,9 @@ namespace common {
 
 using json = nlohmann::json;
 
-void readFile(std::string             *fileContents,
+int readFile(std::string             *fileContents,
                      const std::string&  filepath);
-void readJsonFile(json *parsedJson, const std::string& filepath);
+int readJsonFile(json *parsedJson, const std::string& filepath);
 
 } // closing namespace common
 } // closing namespace crypto_trader

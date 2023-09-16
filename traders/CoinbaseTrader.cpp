@@ -139,6 +139,9 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
             if (initStratString.get<std::string>() == "buy_immediately") {
                 initStrat = strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY;
             }
+            else if (initStratString.get<std::string>() == "set_basis_price") {
+                initStrat = strategies::HodlStrategyConfig::e_SET_BASIS_PRICE;
+            }
             else {
                 initStrat = strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY;
             }

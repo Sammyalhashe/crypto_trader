@@ -9,7 +9,7 @@
 namespace crypto_trader {
 namespace common {
 
-void readFile(std::string *fileContents, const std::string &filepath)
+int readFile(std::string *fileContents, const std::string &filepath)
 {
     std::ifstream file;
     file.open(filepath);
@@ -23,10 +23,12 @@ void readFile(std::string *fileContents, const std::string &filepath)
     }
     else {
         spdlog::error("Couldn't open file {}", filepath);
+        return -1;
     }
+    return 0;
 }
 
-void readJsonFile(json *parsedJson, const std::string &filepath)
+int readJsonFile(json *parsedJson, const std::string &filepath)
 {
     std::string contents;
     readFile(&contents, filepath);
@@ -39,7 +41,9 @@ void readJsonFile(json *parsedJson, const std::string &filepath)
         spdlog::error("Unable to parse json {} with error: {}",
                       contents,
                       ss.str());
+        return -1;
     }
+    return 0;
 }
 
 } // closing namespace common
