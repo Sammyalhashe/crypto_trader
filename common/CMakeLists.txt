@@ -7,5 +7,6 @@ add_library(common
             ${COMMON_SRC})
 
 target_link_libraries(common
-                      PRIVATE
+                      PUBLIC
+                      Boost::serialization
                       )

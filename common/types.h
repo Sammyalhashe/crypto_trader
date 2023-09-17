@@ -1,10 +1,10 @@
 #ifndef INCLUDED_TYPES
 #define INCLUDED_TYPES
 
+#include "serialization.h"
+
 #include <functional>
 #include <string>
-
-#include "serialization.h"
 
 namespace crypto_trader {
 
@@ -23,7 +23,6 @@ struct Action {
 
 typedef std::function<void(const Action&)> Emit;
 
-// If the interface of this type ever changes, update this version number:
 struct MarketDataCoinbase {
     using Timestamp = unsigned long long;
     std::string symbol;

@@ -43,7 +43,7 @@ enable_doxygen()
 
 # project definitions below
 find_package(OpenSSL REQUIRED)
-find_package(Boost 1.82.0 COMPONENTS beast REQUIRED)
+find_package(Boost 1.82.0 COMPONENTS beast system serialization REQUIRED)
 find_package(spdlog 1.12.0 REQUIRED)
 
 # NOTE: This may not be needed.
@@ -84,7 +84,7 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_flags}
                       ${subdirs}
                       Boost::system
-                      #                       Boost::archive
+                      Boost::serialization
                       nlohmann_json::nlohmann_json
                       openssl::openssl
                       spdlog::spdlog
@@ -98,6 +98,7 @@ function(add_test name filepath)
     target_link_libraries(${name}
                           GTest::gtest_main
                           Boost::system
+                          Boost::serialization
                           nlohmann_json::nlohmann_json
                           spdlog::spdlog
                           ${subdirs})

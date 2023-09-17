@@ -91,10 +91,6 @@ private:
     }
 };
 
-// Serialization versioning
-// need to update this if common types are ever updated
-// BOOST_CLASS_VERSION(MarketDataDB<common::MarketDataCoinbase>, 1)
-
 } // closing namespace databases
 } // closing namespace crypto_trader
 
