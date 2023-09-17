@@ -71,18 +71,18 @@ int main(int argc, char *argv[]) {
                     auto products = common::value_or(coinbaseTraderJson,
                                              "products",
                                              "[\"ETH-USD\"]"_json);
-                    
+
                     std::vector<std::string> traderProducts;
                     for (const auto& product : products) {
                         traderProducts.push_back(product);
                     }
 
                     coinbaseTraderConfig.setProducts(traderProducts);
-        
+
                     auto channelsJson = common::value_or(coinbaseTraderJson,
                                                  "channels",
                                                  "[]"_json);
-        
+
                     std::vector<std::variant<
                        std::string,
                        traders::CoinbaseTraderConfig::ChannelDefinition>>
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
                             );
                         }
                     }
-                            
+
                     coinbaseTraderConfig.setChannels(channels);
                     coinbaseTraderConfig.setNumThreads(common::value_or(
                                                             coinbaseTraderJson,
