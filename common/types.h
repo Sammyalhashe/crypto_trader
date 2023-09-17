@@ -20,7 +20,6 @@ struct Action {
 
 typedef std::function<void(const Action&)> Emit;
 
-
 } // common
 } // crypto_trader
 
