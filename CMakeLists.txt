@@ -102,5 +102,8 @@ function(add_test name filepath)
     gtest_discover_tests(${name})
 endfunction()
 
+# common util tests
+add_test(fileutil_test common/fileutils.t.cpp)
+# strategy tests
 add_test(simple_test strategies/simple.t.cpp)
 add_test(hodl_test strategies/hodl.t.cpp)

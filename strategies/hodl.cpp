@@ -65,6 +65,9 @@ void HodlStrategy::handleNewData(const std::string_view &buffer)
     catch (json::parse_error& e) {
         spdlog::error("{}", e.what());
     }
+    catch (json::type_error& e) {
+        spdlog::error("{}", e.what());
+    }
 }
 
 // PRIVATE MANIPULATORS
