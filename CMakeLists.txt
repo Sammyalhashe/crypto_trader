@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.0)
 
 project(crypto_trader C CXX)
 
@@ -84,6 +84,7 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_flags}
                       ${subdirs}
                       Boost::system
+                      #                       Boost::archive
                       nlohmann_json::nlohmann_json
                       openssl::openssl
                       spdlog::spdlog
@@ -98,9 +99,11 @@ function(add_test name filepath)
                           GTest::gtest_main
                           Boost::system
                           nlohmann_json::nlohmann_json
+                          spdlog::spdlog
                           ${subdirs})
     gtest_discover_tests(${name})
 endfunction()
 
 add_test(simple_test strategies/simple.t.cpp)
 add_test(hodl_test strategies/hodl.t.cpp)
+add_test(database_test databases/market_data_db.t.cpp)

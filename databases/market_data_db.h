@@ -2,6 +2,7 @@
 #define INCLUDED_MARKET_DATA_DB
 
 #include <unordered_map>
+#include <vector>
 #include <fstream>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -9,7 +10,12 @@
 namespace crypto_trader {
 namespace databases {
 
-template<MarketDataType>
+// TODO: add multithread support (mutexes)
+// Read / Write lock per symbol? 
+// Read / Write lock for the entire map
+// Potentially set up each symbol beforehand to not lock the map.
+// If locking map may as well have 1 lock
+template<class MarketDataType>
 class MarketDataDB {
 public:
     MarketDataDB() { }
@@ -17,20 +23,42 @@ public:
     ~MarketDataDB() { }
 
     void add_data(const std::string& symbol, const MarketDataType& market_data) noexcept {
-        if (!data_vec.contains(symbol)) {
-            data_vec[symbol] = std::vector<MarketDataType>();
-        }
         // TODO: ADD a happy path:
         // check if the last element is at a earlier time than the new dat with the ordering predicate.
+        if (!d_symbol_to_data.contains(symbol)) {
+            d_symbol_to_data[symbol] = std::vector<MarketDataType>();
+        }
+
         auto& data_vec = d_symbol_to_data[symbol];
-        data_vec[symbol].insert(
+        data_vec.insert(
             std::upper_bound(
                 data_vec.begin(),
                 data_vec.end(),
                 market_data,
-                MarketDataType::order_predicate
+                MarketDataType::order
             ),
             market_data
+        );
+    }
+
+
+    std::vector<MarketDataType> get_data(const std::string& symbol,
+            const MarketDataType::Timestamp& min_ts,
+            const MarketDataType::Timestamp& max_ts) {
+        auto& data_vec = d_symbol_to_data[symbol];
+        return std::vector<MarketDataType>(
+            std::lower_bound(
+                data_vec.begin(),
+                data_vec.end(),
+                min_ts,
+                MarketDataType::order
+            ),
+            std::upper_bound(
+                data_vec.begin(),
+                data_vec.end(),
+                max_ts,
+                MarketDataType::order
+            )
         );
     }
 
@@ -54,7 +82,8 @@ private:
     std::unordered_map<std::string, std::vector<MarketDataType>> d_symbol_to_data;
 };
 
-}
-}
+} // closing namespace databases
+} // closing namespace crypto_trader
+
 
 #endif

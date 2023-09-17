@@ -2,6 +2,7 @@
 #define INCLUDED_TYPES
 
 #include <functional>
+#include <string>
 
 namespace crypto_trader {
 
@@ -20,6 +21,26 @@ struct Action {
 
 typedef std::function<void(const Action&)> Emit;
 
+struct MarketDataCoinbase {
+    using Timestamp = unsigned long long;
+    std::string symbol;
+    double price;
+    Timestamp sequence;
+
+    static struct {
+        bool operator() (const MarketDataCoinbase& lhs, const MarketDataCoinbase& rhs) {
+            return lhs.sequence < rhs.sequence;
+        }
+
+        bool operator() (const Timestamp& lhs, const MarketDataCoinbase& rhs) {
+            return lhs < rhs.sequence;
+        }
+
+        bool operator() (const MarketDataCoinbase& lhs, const Timestamp& rhs) {
+            return lhs.sequence < rhs;
+        }
+    } order;
+};
 
 } // common
 } // crypto_trader
