@@ -4,6 +4,8 @@
 #include <functional>
 #include <string>
 
+#include "serialization.h"
+
 namespace crypto_trader {
 
 namespace common {
@@ -21,6 +23,7 @@ struct Action {
 
 typedef std::function<void(const Action&)> Emit;
 
+// If the interface of this type ever changes, update this version number:
 struct MarketDataCoinbase {
     using Timestamp = unsigned long long;
     std::string symbol;
@@ -40,6 +43,14 @@ struct MarketDataCoinbase {
             return lhs.sequence < rhs;
         }
     } order;
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive& archive, const unsigned int version) {
+        archive & symbol;
+        archive & price;
+        archive & sequence;
+    }
 };
 
 } // common

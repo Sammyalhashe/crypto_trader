@@ -1,14 +1,19 @@
 #ifndef INCLUDED_MARKET_DATA_DB
 #define INCLUDED_MARKET_DATA_DB
 
+#include "../common/types.h"
+#include "../common/serialization.h"
+
 #include <unordered_map>
 #include <vector>
 #include <fstream>
+
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
 namespace crypto_trader {
 namespace databases {
+
 
 // TODO: add multithread support (mutexes)
 // Read / Write lock per symbol? 
@@ -77,13 +82,21 @@ public:
         return true;
     }
 private:
-    friend class boost::serialization::access;
-
     std::unordered_map<std::string, std::vector<MarketDataType>> d_symbol_to_data;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive& archive, const unsigned int version) {
+        archive & d_symbol_to_data;
+    }
 };
+
+// Serialization versioning
+// need to update this if common types are ever updated
+// BOOST_CLASS_VERSION(MarketDataDB<common::MarketDataCoinbase>, 1)
 
 } // closing namespace databases
 } // closing namespace crypto_trader
 
 
-#endif
+#endif // INCLUDED_MARKET_DATA_DB
