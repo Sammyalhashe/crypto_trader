@@ -84,7 +84,6 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_flags}
                       ${subdirs}
                       Boost::system
-                      Boost::serialization
                       nlohmann_json::nlohmann_json
                       openssl::openssl
                       spdlog::spdlog
@@ -98,7 +97,6 @@ function(add_test name filepath)
     target_link_libraries(${name}
                           GTest::gtest_main
                           Boost::system
-                          Boost::serialization
                           nlohmann_json::nlohmann_json
                           spdlog::spdlog
                           ${subdirs})
