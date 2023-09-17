@@ -20,7 +20,8 @@
                         "percentDown": 0.001,
                         "initStrategy": "buy_immediately"
                     }
-                }
+                },
+                "numThreads": 4
             }
         }
     ]

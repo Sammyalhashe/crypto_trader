@@ -110,6 +110,10 @@ int main(int argc, char *argv[]) {
                     }
                             
                     coinbaseTraderConfig.setChannels(channels);
+                    coinbaseTraderConfig.setNumThreads(common::value_or(
+                                                            coinbaseTraderJson,
+                                                            "numThreads",
+                                                            1));
                     if (coinbaseTraderJson.contains("strategy")) {
                         const auto strategyJson =
                                                 coinbaseTraderJson["strategy"];
