@@ -7,7 +7,6 @@
 #include "../strategies/hodl.h"
 
 #include <boost/beast/ssl.hpp>
-#include <boost/bind/bind.hpp>
 
 #include <nlohmann/json.hpp>
 
