@@ -1,4 +1,4 @@
-set(COMMON_H types.h)
+set(COMMON_H types.h serialization.h)
 set(COMMON_SRC types.cpp)
 
 add_library(common

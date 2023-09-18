@@ -23,34 +23,48 @@ struct Action {
 
 typedef std::function<void(const Action&)> Emit;
 
-struct MarketDataCoinbase {
+class MarketDataCoinbase {
+public:
+    // PUBLIC TYPES
     using Timestamp = unsigned long long;
-    std::string symbol;
-    double price;
-    Timestamp sequence;
-
+    // STATIC MEMBERS
     static struct {
         bool operator() (const MarketDataCoinbase& lhs, const MarketDataCoinbase& rhs) {
-            return lhs.sequence < rhs.sequence;
+            return lhs.d_sequence < rhs.d_sequence;
         }
 
         bool operator() (const Timestamp& lhs, const MarketDataCoinbase& rhs) {
-            return lhs < rhs.sequence;
+            return lhs < rhs.d_sequence;
         }
 
         bool operator() (const MarketDataCoinbase& lhs, const Timestamp& rhs) {
-            return lhs.sequence < rhs;
+            return lhs.d_sequence < rhs;
         }
     } order;
+    // PUBLIC DATA
+    std::string d_symbol;
+    double d_price;
+    Timestamp d_sequence;
+
 private:
-    friend class boost::serialization::access;
+    // PRIVATE MANIPULATORS
     template<class Archive>
-    void serialize(Archive& archive, const unsigned int version) {
-        archive & symbol;
-        archive & price;
-        archive & sequence;
-    }
-};
+    void serialize(Archive& archive, const unsigned int version);
+
+    // FRIENDS
+    friend class boost::serialization::access;
+}; // MarketDataCoinbase
+
+// class MarketDataCoinbase
+
+// PRIVATE MANIPULATORS
+template<class Archive>
+void MarketDataCoinbase::serialize(Archive& archive, const unsigned int version) {
+    archive & d_symbol;
+    archive & d_price;
+    archive & d_sequence;
+}
+
 
 } // common
 } // crypto_trader
