@@ -7,10 +7,14 @@
 #include "../protocols/trader.h"
 #include "../strategies/index.h"
 
+#include <boost/asio/thread_pool.hpp>
 #include <boost/optional.hpp>
+
+#include <nlohmann/json.hpp>
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string_view>
 #include <variant>
@@ -40,6 +44,10 @@ private:
     strategies::TradingStrategy d_strategy;
     // The url the trader gets the data from.
     std::string d_url;
+    // abstract json config for the strategy.
+    nlohmann::json d_strategyConfig;
+    // The number of threads the trader's threadpool will run.
+    unsigned int d_numThreads;
     // Shared atomic state declaring whether the application is running.
     std::shared_ptr<std::atomic_bool> d_isRunning;
 
@@ -58,12 +66,17 @@ public:
     CoinbaseTraderConfig& setStrategy(
                                   const strategies::TradingStrategy& strategy);
     CoinbaseTraderConfig& setUrl(const std::string& url);
+    CoinbaseTraderConfig& setStrategyConfig(
+                                         const nlohmann::json& strategyConfig);
+    CoinbaseTraderConfig& setNumThreads(unsigned int numThreads);
 
     // PUBLIC ACCESSORS
     const StringVec& products() const;
     const boost::optional<ChannelVec>& channels() const;
     const strategies::TradingStrategy& strategy() const;
     const std::string& url() const;
+    const nlohmann::json& strategyConfig() const;
+    unsigned int numThreads() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
 }; // CoinbaseTraderConfig
 
@@ -74,6 +87,12 @@ private:
     std::unique_ptr<protocols::WebsocketClient> d_webSocketClient;
     // The strategy this trader has decided to use.
     std::unique_ptr<protocols::Strategy> d_strategy;
+    // The threadpool to execute received events on.
+    boost::asio::thread_pool d_threadPool;
+    // If this trader is running or not.
+    std::atomic_bool d_isStopped;
+    // The mutex holding access to this class' members.
+    std::mutex d_mutex;
     // The config for this trader.
     CoinbaseTraderConfig d_config;
 
@@ -87,16 +106,19 @@ public:
     CoinbaseTrader& operator=(const CoinbaseTrader& orig) = delete;
 
     // PUBLIC MANIPULATORS
-    
-    // Start the trader.
-    void start();
-    // Stop the trader.
-    void stop();
-    // Handle the emitted action
+    // Process an incoming action.
+    void processAction(const common::Action& action);
+    // Handle a new action.
     void handleAction(const common::Action& action);
+    // Handle new data available to the trader.
+    void handleNewData(const std::string_view& buffer);
 
     // protocols::Trader
     void listen(const std::string_view& buffer) override;
+    // Start the trader.
+    void start() override;
+    // Stop the trader.
+    void stop() override;
 
 }; // CoinbaseTrader
 
@@ -143,6 +165,22 @@ CoinbaseTraderConfig& CoinbaseTraderConfig::setUrl(const std::string& url)
     return *this;
 }
 
+inline
+CoinbaseTraderConfig& CoinbaseTraderConfig::setStrategyConfig(
+                                          const nlohmann::json& strategyConfig)
+{
+    d_strategyConfig = strategyConfig;
+    return *this;
+}
+
+inline
+CoinbaseTraderConfig& CoinbaseTraderConfig::setNumThreads(
+                                                       unsigned int numThreads)
+{
+    d_numThreads = numThreads;
+    return *this;
+}
+
 // PUBLIC ACCESSORS
 inline
 const CoinbaseTraderConfig::StringVec& CoinbaseTraderConfig::products() const
@@ -167,6 +205,18 @@ inline
 const std::string& CoinbaseTraderConfig::url() const
 {
     return d_url;
+}
+
+inline
+const nlohmann::json& CoinbaseTraderConfig::strategyConfig() const
+{
+    return d_strategyConfig;
+}
+
+inline
+unsigned int CoinbaseTraderConfig::numThreads() const
+{
+    return d_numThreads;
 }
 
 inline

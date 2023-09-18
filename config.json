@@ -1,0 +1,28 @@
+{
+    "traders": [
+        {
+            "coinbaseTrader": {
+                "url": "ws-feed.exchange.coinbase.com",
+                "products": [
+                    "ETH-USD"
+                ],
+                "channels": [
+                    "heartbeat",
+                    {
+                        "name": "ticker",
+                        "products": ["ETH-USD"]
+                    }
+                ],
+                "strategy": {
+                    "type": "hodl",
+                    "config": {
+                        "percentUp": 0.001,
+                        "percentDown": 0.001,
+                        "initStrategy": "buy_immediately"
+                    }
+                },
+                "numThreads": 4
+            }
+        }
+    ]
+}

@@ -46,7 +46,7 @@ bo:
 
 .PHONY: prepare
 prepare: conan
-	cd ${BUILD_DIR} && cmake ../../.. ${CMAKE_OPTS} && ln -f compile_commands.json ../../.. && cd -
+	cd ${BUILD_DIR} && cmake ../../.. ${CMAKE_OPTS} && ln -f compile_commands.json ../../.. && cd - && cp config.json ${BUILD_DIR}
 
 .PHONY: conan
 conan: build_dir_prep

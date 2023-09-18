@@ -1,6 +1,7 @@
 #include "CoinbaseTrader.h"
 
 #include "../adaptors/coinbase_websocket_client.h"
+#include "../common/jsonutils.h"
 #include "../protocols/websocket_client.h"
 #include "../strategies/index.h"
 #include "../strategies/hodl.h"
@@ -23,7 +24,6 @@ namespace ssl = boost::asio::ssl;
 namespace {
 
     void buildCoinbaseWebsocketMessage(nlohmann::json              *message,
-                                       const std::string&           host,
                                        const std::string&           type,
                                        const CoinbaseTraderConfig&  config)
     {
@@ -95,7 +95,10 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
                            const std::shared_ptr<std::atomic_bool>& isRunning)
 : d_channels()
 , d_products()
-, d_strategy(strategies::e_HODL)
+, d_strategy(strategies::e_NONE)
+, d_strategyConfig()
+, d_url()
+, d_numThreads(1)
 , d_isRunning(isRunning)
 {
 }
@@ -105,13 +108,16 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 // CREATORS
 CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 : d_webSocketClient()
+, d_strategy()
+, d_threadPool(config.numThreads())
+, d_isStopped(true)
+, d_mutex()
 , d_config(config)
 {
     switch (d_config.strategy()) {
         case strategies::TradingStrategy::e_HODL: {
             nlohmann::json result;
             buildCoinbaseWebsocketMessage(&result,
-                                          config.url(),
                                           "subscribe",
                                           d_config);
             spdlog::info("built result: {}", result.dump(4));
@@ -129,15 +135,29 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
             d_webSocketClient = std::make_unique<
                    adaptors::CoinbaseWebSocketClient>(coinbaseWebSocketConfig);
 
-            // TODO: Figure out if I should send this in
-            // coinbaseWebSocketConfig.
+            const auto& hodlConfigJson = d_config.strategyConfig();
+            strategies::HodlStrategyConfig::InitStrategy initStrat;
+            const auto& initStratString = common::value_or(hodlConfigJson,
+                                                           "initStrategy",
+                                                           "buy_immediately");
+            if (initStratString.get<std::string>() == "buy_immediately") {
+                initStrat = strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY;
+            }
+            else if (initStratString.get<std::string>() == "set_basis_price") {
+                initStrat = strategies::HodlStrategyConfig::e_SET_BASIS_PRICE;
+            }
+            else {
+                initStrat = strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY;
+            }
+
             strategies::HodlStrategyConfig hodlConfig;
             hodlConfig
-                .setPercentUp((float)1/(float)100000)
-                .setPercentDown(0.1)
-                .setInitStrategy(
-                            strategies::HodlStrategyConfig::e_BUY_IMMEDIATELY)
-                .setEmit(std::bind(&CoinbaseTrader::handleAction,
+                .setPercentUp(common::value_or(hodlConfigJson, "percentUp", 5))
+                .setPercentDown(common::value_or(hodlConfigJson,
+                                                 "percentDown",
+                                                 5))
+                .setInitStrategy(initStrat)
+                .setEmit(std::bind(&CoinbaseTrader::processAction,
                                    this,
                                    std::placeholders::_1));
 
@@ -155,12 +175,21 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 }
 
 CoinbaseTrader::~CoinbaseTrader()
-{}
+{
+    stop();
+}
 
 // PUBLIC MANIPULATORS
 
 void CoinbaseTrader::start()
 {
+    if (!d_isStopped) {
+        return;
+    }
+
+    // mark this trader as started.
+    d_isStopped = false;
+
     // TODO: Warn if not set?
     if (d_webSocketClient) {
         d_webSocketClient->listen();
@@ -169,6 +198,33 @@ void CoinbaseTrader::start()
 
 void CoinbaseTrader::stop()
 {
+    if (d_isStopped) {
+        return;
+    }
+
+    // mark this trader as stopped.
+    d_isStopped = true;
+
+    // Wait till all events are handled.
+    // NOTE: If trader was never started, no events should be enqueued on so
+    // it should just end.
+    d_threadPool.join();
+}
+
+
+void CoinbaseTrader::processAction(const common::Action& action)
+{
+    if (d_isStopped) {
+        return;
+    }
+    std::stringstream ss;
+    ss << action.d_type;
+    spdlog::info("Processing action: {}", ss.str());
+
+    
+    boost::asio::post(d_threadPool, std::bind(&CoinbaseTrader::handleAction,
+                                                this,
+                                                action));
 }
 
 
@@ -179,12 +235,38 @@ void CoinbaseTrader::handleAction(const common::Action& action)
     spdlog::info("Handling action: {}", ss.str());
 }
 
+
+void CoinbaseTrader::handleNewData(const std::string_view& buffer)
+{
+    std::lock_guard<std::mutex> guard(d_mutex);                         // LOCK
+    if (!d_config.isRunning()) {
+        d_threadPool.stop();
+        return;
+    }
+    if (d_strategy) {
+        d_strategy->handleNewData(buffer);
+    }
+}
+
 // protocols::Trader
 void CoinbaseTrader::listen(const std::string_view& buffer)
 {
-     if (d_strategy) {
-         d_strategy->handleNewData(buffer);
-     }
+    {
+        std::lock_guard<std::mutex> guard(d_mutex);                     // LOCK
+        if (!d_config.isRunning()) {
+            d_threadPool.stop();
+            return;
+        }
+    }
+
+    if (d_isStopped) {
+        return;
+    }
+
+    std::string v(buffer);
+    boost::asio::post(d_threadPool, std::bind(&CoinbaseTrader::handleNewData,
+                                                this,
+                                                v));
 }
 
 } // traders

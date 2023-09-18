@@ -66,6 +66,7 @@ void MarketDataCoinbase::serialize(Archive& archive, const unsigned int version)
 }
 
 
+
 } // common
 } // crypto_trader
 
