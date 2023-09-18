@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.0)
 
 project(crypto_trader C CXX)
 
@@ -43,7 +43,7 @@ enable_doxygen()
 
 # project definitions below
 find_package(OpenSSL REQUIRED)
-find_package(Boost 1.82.0 COMPONENTS beast REQUIRED)
+find_package(Boost 1.82.0 COMPONENTS beast system serialization REQUIRED)
 find_package(spdlog 1.12.0 REQUIRED)
 
 # NOTE: This may not be needed.
@@ -98,6 +98,7 @@ function(add_test name filepath)
                           GTest::gtest_main
                           Boost::system
                           nlohmann_json::nlohmann_json
+                          spdlog::spdlog
                           ${subdirs})
     gtest_discover_tests(${name})
 endfunction()
@@ -107,3 +108,4 @@ add_test(fileutil_test common/fileutils.t.cpp)
 # strategy tests
 add_test(simple_test strategies/simple.t.cpp)
 add_test(hodl_test strategies/hodl.t.cpp)
+add_test(database_test databases/market_data_db.t.cpp)

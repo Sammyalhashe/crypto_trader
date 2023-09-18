@@ -1,7 +1,10 @@
 #ifndef INCLUDED_TYPES
 #define INCLUDED_TYPES
 
+#include "serialization.h"
+
 #include <functional>
+#include <string>
 
 namespace crypto_trader {
 
@@ -19,6 +22,50 @@ struct Action {
 }; // struct Action
 
 typedef std::function<void(const Action&)> Emit;
+
+class MarketDataCoinbase {
+public:
+    // PUBLIC TYPES
+    using Timestamp = unsigned long long;
+    // STATIC MEMBERS
+    static struct {
+        bool operator() (const MarketDataCoinbase& lhs, const MarketDataCoinbase& rhs) {
+            return lhs.d_sequence < rhs.d_sequence;
+        }
+
+        bool operator() (const Timestamp& lhs, const MarketDataCoinbase& rhs) {
+            return lhs < rhs.d_sequence;
+        }
+
+        bool operator() (const MarketDataCoinbase& lhs, const Timestamp& rhs) {
+            return lhs.d_sequence < rhs;
+        }
+    } order;
+    // PUBLIC DATA
+    std::string d_symbol;
+    double d_price;
+    Timestamp d_sequence;
+
+private:
+    // PRIVATE MANIPULATORS
+    template<class Archive>
+    void serialize(Archive& archive, const unsigned int version);
+
+    // FRIENDS
+    friend class boost::serialization::access;
+}; // MarketDataCoinbase
+
+// class MarketDataCoinbase
+
+// PRIVATE MANIPULATORS
+template<class Archive>
+void MarketDataCoinbase::serialize(Archive& archive, const unsigned int version) {
+    archive & d_symbol;
+    archive & d_price;
+    archive & d_sequence;
+}
+
+
 
 } // common
 } // crypto_trader
