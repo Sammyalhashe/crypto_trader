@@ -88,8 +88,8 @@ bool MarketDataDB<MarketDataType>::load(std::string& file_name) {
 template<class MarketDataType>
 std::vector<MarketDataType> MarketDataDB<MarketDataType>::get_data(
         const std::string& symbol,
-        const MarketDataType::Timestamp& min_ts,
-        const MarketDataType::Timestamp& max_ts) const {
+        const typename MarketDataType::Timestamp& min_ts,
+        const typename MarketDataType::Timestamp& max_ts) const {
 
     if (!d_symbol_to_data.contains(symbol)) return {};
 
