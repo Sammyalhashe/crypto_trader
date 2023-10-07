@@ -5,6 +5,7 @@
 
 #include <boost/asio/thread_pool.hpp>
 #include <boost/beast/ssl.hpp>
+#include <boost/thread.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -38,6 +39,16 @@ int main(int argc, char *argv[]) {
     SignalContext context;
     context.d_isRunning = std::make_shared<std::atomic_bool>(true);
     *context.d_isRunning = true;
+
+    const char* trapFileName = "/tmp/crypto_trader";
+    int inotify_fd = common::createTrapFile(trapFileName);
+
+    common::MonitorConfig monitorConfig {
+                                        .d_inotify_fd   = inotify_fd,
+                                        .d_trapFilePath = trapFileName,
+                                        .d_isRunning    = context.d_isRunning};
+    boost::thread trapFileWatchThread{boost::bind(&common::monitorTrapFile,
+                                                  monitorConfig)};
 
     nlohmann::json jsonFileContents;
     spdlog::info("argc {}", argc);
@@ -155,6 +166,10 @@ int main(int argc, char *argv[]) {
     }
 
     running_traders.join();
+
+    trapFileWatchThread.join();
+
+    common::removeTrapFile(monitorConfig);
 
     return 0;
 }

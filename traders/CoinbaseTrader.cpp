@@ -239,7 +239,7 @@ void CoinbaseTrader::handleAction(const common::Action& action)
 void CoinbaseTrader::handleNewData(const std::string_view& buffer)
 {
     std::lock_guard<std::mutex> guard(d_mutex);                         // LOCK
-    if (!d_config.isRunning()) {
+    if (!*d_config.isRunning()) {
         d_threadPool.stop();
         return;
     }
@@ -253,7 +253,7 @@ void CoinbaseTrader::listen(const std::string_view& buffer)
 {
     {
         std::lock_guard<std::mutex> guard(d_mutex);                     // LOCK
-        if (!d_config.isRunning()) {
+        if (!*d_config.isRunning()) {
             d_threadPool.stop();
             return;
         }

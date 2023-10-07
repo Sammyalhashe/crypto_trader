@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(crypto_trader C CXX)
 
 # specify the cmake standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # use ccache to improve build times
@@ -41,7 +41,7 @@ include(cmake/StaticAnalyzers.cmake)
 include(cmake/Doxygen.cmake)
 enable_doxygen()
 
-# project definitions below
+# project dependencies below
 find_package(OpenSSL REQUIRED)
 find_package(Boost 1.82.0 COMPONENTS beast system serialization REQUIRED)
 find_package(spdlog 1.12.0 REQUIRED)
@@ -55,8 +55,7 @@ find_package(nlohmann_json 3.11.2 REQUIRED)
 find_package(GTest REQUIRED)
 
 # all headers
-set(TARGET_H
-    )
+set(TARGET_H)
 
 # all cpps
 set(TARGET_SRC
@@ -84,6 +83,7 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_flags}
                       ${subdirs}
                       Boost::system
+                      Boost::thread
                       nlohmann_json::nlohmann_json
                       openssl::openssl
                       spdlog::spdlog
