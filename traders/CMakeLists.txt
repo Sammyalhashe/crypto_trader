@@ -7,6 +7,7 @@ target_link_libraries(traders
                       PRIVATE
                       protocols
                       common
+                      databases
                       strategies
                       Boost::system
                       openssl::openssl

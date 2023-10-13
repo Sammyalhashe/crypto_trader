@@ -9,6 +9,7 @@ add_library(adaptors STATIC ${ADAPTORS_H} ${ADAPTORS_SRC})
 target_link_libraries(adaptors
                       PRIVATE
                       protocols
+                      databases
                       Boost::system
                       openssl::openssl
                       nlohmann_json::nlohmann_json
