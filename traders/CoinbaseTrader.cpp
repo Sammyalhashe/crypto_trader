@@ -24,7 +24,7 @@ namespace ssl = boost::asio::ssl;
 namespace {
 
 void buildCoinbaseWebsocketMessage(nlohmann::json             *message,
-                                   const std::string& const    type,
+                                   const std::string         & type,
                                    const CoinbaseTraderConfig& config)
 {
     std::string result;
