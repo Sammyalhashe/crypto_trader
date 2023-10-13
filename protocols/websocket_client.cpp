@@ -4,11 +4,9 @@ namespace crypto_trader {
 namespace protocols {
 
 // class websocket_client
-WebsocketClient::WebsocketClient()
-{}
+WebsocketClient::WebsocketClient() {}
 
-WebsocketClient::~WebsocketClient()
-{}
+WebsocketClient::~WebsocketClient() {}
 
-} // protocols
-} // crypto_trader
+} // namespace protocols
+} // namespace crypto_trader

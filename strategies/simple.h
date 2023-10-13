@@ -7,8 +7,7 @@ namespace strategies {
 
 int simpleStrategy();
 
-} // strategies
-} // crypto_trader
-
+} // namespace strategies
+} // namespace crypto_trader
 
 #endif // INCLUDED_SIMPLE
