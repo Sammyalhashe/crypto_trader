@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(SimpleTest, SimpleTest) {
+TEST(SimpleTest, SimpleTest)
+{
     EXPECT_EQ(0, crypto_trader::strategies::simpleStrategy());
 }

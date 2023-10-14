@@ -15,14 +15,14 @@ namespace crypto_trader {
 namespace strategies {
 
 class HodlStrategyConfig {
-public:
+  public:
     // PUBLIC TYPES
     enum InitStrategy {
         e_BUY_IMMEDIATELY = 0,
         e_SET_BASIS_PRICE = 1
     }; // InitStrategy
 
-private:
+  private:
     // PRIVATE DATA
     // Action to take when the strategy first starts.
     InitStrategy d_initStrategy;
@@ -33,7 +33,7 @@ private:
     // Callback called on emitted action by strategy.
     common::Emit d_emit;
 
-public:
+  public:
     // MANIPULATORS
     HodlStrategyConfig& setInitStrategy(const InitStrategy& initStrat);
     HodlStrategyConfig& setPercentUp(float percentUp);
@@ -42,8 +42,8 @@ public:
 
     // ACCESSORS
     const InitStrategy& initStrategy() const;
-    float percentUp() const;
-    float percentDown() const;
+    float               percentUp() const;
+    float               percentDown() const;
     const common::Emit& emit() const;
 
 }; // HodlStrategyConfig
@@ -53,14 +53,14 @@ struct Trade {
     // time when the trade was finalized
     std::string d_timestamp;
     // price at which the trade was executed
-    float d_price; 
+    float d_price;
     // did we already buy the dip? If yes don't do it again lol.
     bool d_boughtAgain;
 }; // Trade
 
 class HodlStrategy : public protocols::Strategy {
 
-private:
+  private:
     // PRIVATE TYPES
     typedef std::unordered_map<unsigned int, Trade> TradeMap;
 
@@ -91,7 +91,7 @@ private:
     // Config to the hodl strategy.
     HodlStrategyConfig d_config;
 
-public:
+  public:
     // CREATORS
     HodlStrategy(const HodlStrategyConfig& config);
     ~HodlStrategy();
@@ -106,89 +106,70 @@ public:
     // Return a non-modifiable reference to the basisMarketPrice.
     const boost::optional<float>& basisMarketPrice() const;
 
-
-private:
+  private:
     // PRIVATE MANIPULATORS
     void goOverTradesAtPrice(float price, const std::string_view& timestamp);
     void buy(const BuyConfig& config);
     void sell(const SellConfig& config);
-    
-}; // HodlStrategy
 
+}; // HodlStrategy
 
 // INLINE DEFINITIONS
 // class HodlStrategyConfig
 
-inline
-HodlStrategyConfig& HodlStrategyConfig::setInitStrategy(
-                                                 const InitStrategy &initStrat)
+inline HodlStrategyConfig&
+HodlStrategyConfig::setInitStrategy(const InitStrategy& initStrat)
 {
     d_initStrategy = initStrat;
     return *this;
 }
 
-inline
-HodlStrategyConfig& HodlStrategyConfig::setPercentUp(float percentUp)
+inline HodlStrategyConfig& HodlStrategyConfig::setPercentUp(float percentUp)
 {
     d_percentUp = percentUp;
     return *this;
 }
 
-inline
-HodlStrategyConfig& HodlStrategyConfig::setPercentDown(float percentDown)
+inline HodlStrategyConfig&
+HodlStrategyConfig::setPercentDown(float percentDown)
 {
     d_percentDown = percentDown;
     return *this;
 }
 
-inline
-HodlStrategyConfig& HodlStrategyConfig::setEmit(const common::Emit& emit)
+inline HodlStrategyConfig&
+HodlStrategyConfig::setEmit(const common::Emit& emit)
 {
     d_emit = emit;
     return *this;
 }
 
-inline
-const HodlStrategyConfig::InitStrategy& HodlStrategyConfig::initStrategy() const
+inline const HodlStrategyConfig::InitStrategy&
+HodlStrategyConfig::initStrategy() const
 {
     return d_initStrategy;
 }
 
-inline
-float HodlStrategyConfig::percentUp() const
-{
-    return d_percentUp;
-}
+inline float HodlStrategyConfig::percentUp() const { return d_percentUp; }
 
-inline
-float HodlStrategyConfig::percentDown() const
-{
-    return d_percentDown;
-}
+inline float HodlStrategyConfig::percentDown() const { return d_percentDown; }
 
-inline
-const common::Emit& HodlStrategyConfig::emit() const
-{
-    return d_emit;
-}
-
+inline const common::Emit& HodlStrategyConfig::emit() const { return d_emit; }
 
 // class HodlStrategy
 
 // ACCESSORS
-inline
-const HodlStrategy::TradeMap& HodlStrategy::trades() const
+inline const HodlStrategy::TradeMap& HodlStrategy::trades() const
 {
     return d_trades;
 }
 
-inline
-const boost::optional<float>& HodlStrategy::basisMarketPrice() const
+inline const boost::optional<float>& HodlStrategy::basisMarketPrice() const
 {
     return d_basisMarketPrice;
 }
 
-} // strategies
-} // crypto_trader
+} // namespace strategies
+} // namespace crypto_trader
 
 #endif // INCLUDED_HODL_STRATEGY

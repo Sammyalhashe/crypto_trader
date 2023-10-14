@@ -3,10 +3,9 @@
 
 #include "../protocols/websocket_client.h"
 
-
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/websocket.hpp>
-#include <boost/asio/ip/tcp.hpp>
 
 #include <functional>
 #include <nlohmann/json.hpp>
@@ -17,11 +16,11 @@
 namespace crypto_trader {
 namespace adaptors {
 
-namespace beast = boost::beast;         // from <boost/beast.hpp>
+namespace beast     = boost::beast;     // from <boost/beast.hpp>
 namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
-namespace ssl = boost::asio::ssl;
-namespace net = boost::asio;            // from <boost/asio.hpp>
-using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
+namespace ssl       = boost::asio::ssl;
+namespace net       = boost::asio;          // from <boost/asio.hpp>
+using tcp           = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 
 struct CoinbaseWebSocketClientConfig {
     // PUBLIC TYPES
@@ -41,34 +40,34 @@ struct CoinbaseWebSocketClientConfig {
     // or not.
     std::shared_ptr<std::atomic_bool> d_isRunning;
 
-    
     // CREATORS
     CoinbaseWebSocketClientConfig(
-                            net::io_context&                         ioc,
-                            ssl::context&                            ctx,
-                            const std::string&                       host,
-                            const nlohmann::json&                    text,
-                            const ListenCb&                          listenCb,
-                            const std::shared_ptr<std::atomic_bool>& isRunning)
+        net::io_context                        & ioc,
+        ssl::context                           & ctx,
+        const std::string                      & host,
+        const nlohmann::json                   & text,
+        const ListenCb                         & listenCb,
+        const std::shared_ptr<std::atomic_bool>& isRunning)
     : d_ioc(ioc)
     , d_ctx(ctx)
     , d_host(host)
     , d_text(text)
     , d_listenCb(listenCb)
     , d_isRunning(isRunning)
-    {}
+    {
+    }
 };
 
 // class CoinbaseWebSocketClient
 class CoinbaseWebSocketClient : public protocols::WebsocketClient {
 
-private:
+  private:
     // PRIVATE TYPES
     using WebsocketStream = websocket::stream<beast::ssl_stream<tcp::socket>>;
 
     // PRIVATE DATA
     // These perform our I/O
-    tcp::resolver d_resolver;
+    tcp::resolver   d_resolver;
     WebsocketStream d_ws;
     // The config for this object
     CoinbaseWebSocketClientConfig d_config;
@@ -79,7 +78,7 @@ private:
     // DELETED METHODS
     CoinbaseWebSocketClient(const CoinbaseWebSocketClient& other) = delete;
 
-public:
+  public:
     // CREATORS
     CoinbaseWebSocketClient(const CoinbaseWebSocketClientConfig& config);
     ~CoinbaseWebSocketClient();
@@ -87,7 +86,7 @@ public:
     // MANIPULATORS
     void listen() override;
 
-private:
+  private:
     // PRIVATE MANIPULATORS
 
     // WebsocketClient
@@ -97,7 +96,7 @@ private:
     bool send_message() override;
 };
 
-} // adaptors
-} // crypto_trader
+} // namespace adaptors
+} // namespace crypto_trader
 
 #endif // INCLUDED_COINBASE_WEBSOCKET_CLIENT

@@ -10,20 +10,20 @@ namespace protocols {
 
 class Strategy {
 
-protected:
+  protected:
     // PROTECTED DATA
     common::Emit d_emit;
 
-public:
+  public:
     // CREATORS
-    Strategy(const common::Emit&);
+    Strategy(const common::Emit& emit);
     virtual ~Strategy() = 0;
 
     // MANIPULATORS
     virtual void handleNewData(const std::string_view& buffer) = 0;
 
-};// Strategy
-} // protocols
-} // crypto_trader
+}; // Strategy
+} // namespace protocols
+} // namespace crypto_trader
 
 #endif // INCLUDED_PROTOCOLS_STRATEGY

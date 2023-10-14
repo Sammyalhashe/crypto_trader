@@ -8,15 +8,16 @@
 
 using Json = nlohmann::json;
 
-TEST(FileUtils, JsonFileTest) {
-    static const char* fileName = "testFile.json";
-    Json  testFileContents = "{\
+TEST(FileUtils, JsonFileTest)
+{
+    static const char *fileName         = "testFile.json";
+    Json               testFileContents = "{\
             \"someKey\": 42,\
             \"someNestedObject\": {\
                 \"someNestedKey\": 420\
             }\
         }"_json;
-    
+
     std::ofstream outFileStream;
     outFileStream.open(fileName);
 
@@ -30,9 +31,8 @@ TEST(FileUtils, JsonFileTest) {
 
     using namespace crypto_trader::common;
 
-
     Json result;
-    int rc = readJsonFile(&result, fileName);
+    int  rc = readJsonFile(&result, fileName);
 
     EXPECT_EQ(0, rc);
     EXPECT_EQ(testFileContents, result);

@@ -11,10 +11,7 @@ namespace crypto_trader {
 namespace common {
 
 struct Action {
-    enum ActionType {
-        e_BUY = 0,
-        e_SELL = 1
-    };
+    enum ActionType { e_BUY = 0, e_SELL = 1 };
 
     // DATA
     // Type of the emitted action.
@@ -24,31 +21,35 @@ struct Action {
 typedef std::function<void(const Action&)> Emit;
 
 class MarketDataCoinbase {
-public:
+  public:
     // PUBLIC TYPES
     using Timestamp = unsigned long long;
     // STATIC MEMBERS
     static struct {
-        bool operator() (const MarketDataCoinbase& lhs, const MarketDataCoinbase& rhs) {
+        bool operator()(const MarketDataCoinbase& lhs,
+                        const MarketDataCoinbase& rhs)
+        {
             return lhs.d_sequence < rhs.d_sequence;
         }
 
-        bool operator() (const Timestamp& lhs, const MarketDataCoinbase& rhs) {
+        bool operator()(const Timestamp& lhs, const MarketDataCoinbase& rhs)
+        {
             return lhs < rhs.d_sequence;
         }
 
-        bool operator() (const MarketDataCoinbase& lhs, const Timestamp& rhs) {
+        bool operator()(const MarketDataCoinbase& lhs, const Timestamp& rhs)
+        {
             return lhs.d_sequence < rhs;
         }
     } order;
     // PUBLIC DATA
     std::string d_symbol;
-    double d_price;
-    Timestamp d_sequence;
+    double      d_price;
+    Timestamp   d_sequence;
 
-private:
+  private:
     // PRIVATE MANIPULATORS
-    template<class Archive>
+    template <class Archive>
     void serialize(Archive& archive, const unsigned int version);
 
     // FRIENDS
@@ -58,17 +59,16 @@ private:
 // class MarketDataCoinbase
 
 // PRIVATE MANIPULATORS
-template<class Archive>
-void MarketDataCoinbase::serialize(Archive& archive, const unsigned int version) {
-    archive & d_symbol;
-    archive & d_price;
-    archive & d_sequence;
+template <class Archive>
+void MarketDataCoinbase::serialize(Archive          & archive,
+                                   const unsigned int version)
+{
+    archive& d_symbol;
+    archive& d_price;
+    archive& d_sequence;
 }
 
-
-
-} // common
-} // crypto_trader
-
+} // namespace common
+} // namespace crypto_trader
 
 #endif // INCLUDED_TYPES

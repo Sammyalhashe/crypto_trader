@@ -5,11 +5,11 @@
 namespace crypto_trader {
 namespace strategies {
 
-int simpleStrategy() {
+int simpleStrategy()
+{
     spdlog::info("simple strategy run!");
     return 0;
 }
 
-} // strategies
-} // crypto_trader
-
+} // namespace strategies
+} // namespace crypto_trader

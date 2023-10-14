@@ -10,6 +10,10 @@ ifneq ($(strip $(SANITIZE)),)
 	
 endif
 
+ifeq ($(strip $(CLANG_FORMAT)),)
+	CLANG_FORMAT=clang-format
+endif
+
 BUILD_DIR_PREFIX=cmake.bld
 BUILD_DIR := $(BUILD_DIR_PREFIX)/$(shell uname)/full$(SUFFIX)
 
@@ -63,3 +67,7 @@ clean:
 .PHONY: test
 test:
 	cd ${BUILD_DIR} && ctest && cd -
+
+.PHONY: format
+format:
+	find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec ${CLANG_FORMAT} -style=file -i {} \;

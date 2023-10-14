@@ -1,7 +1,7 @@
-#include "protocols/trader.h"
-#include "traders/CoinbaseTrader.h"
 #include "common/fileutils.h"
 #include "common/jsonutils.h"
+#include "protocols/trader.h"
+#include "traders/CoinbaseTrader.h"
 
 #include <boost/asio/thread_pool.hpp>
 #include <boost/beast/ssl.hpp>
@@ -20,12 +20,12 @@
 #include <stdio.h>
 #include <variant>
 
-#define DO_ONCE(var, expr) \
-{ \
-    if (!var) { \
-        expr; \
-    } \
-}
+#define DO_ONCE(var, expr)                                                    \
+    {                                                                         \
+        if (!var) {                                                           \
+            expr;                                                             \
+        }                                                                     \
+    }
 
 static std::function<void(void)> s_cleaner;
 
@@ -33,22 +33,22 @@ struct SignalContext {
     std::shared_ptr<std::atomic<bool>> d_isRunning;
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     using namespace crypto_trader;
 
     SignalContext context;
-    context.d_isRunning = std::make_shared<std::atomic_bool>(true);
+    context.d_isRunning  = std::make_shared<std::atomic_bool>(true);
     *context.d_isRunning = true;
 
-    const char* trapFileName = "/tmp/crypto_trader";
-    int inotify_fd = common::createTrapFile(trapFileName);
+    const char *trapFileName = "/tmp/crypto_trader";
+    int         inotify_fd   = common::createTrapFile(trapFileName);
 
-    common::MonitorConfig monitorConfig {
-                                        .d_inotify_fd   = inotify_fd,
+    common::MonitorConfig monitorConfig{.d_inotify_fd   = inotify_fd,
                                         .d_trapFilePath = trapFileName,
                                         .d_isRunning    = context.d_isRunning};
-    boost::thread trapFileWatchThread{boost::bind(&common::monitorTrapFile,
-                                                  monitorConfig)};
+    boost::thread         trapFileWatchThread{
+        boost::bind(&common::monitorTrapFile, monitorConfig)};
 
     nlohmann::json jsonFileContents;
     spdlog::info("argc {}", argc);
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
     spdlog::info("starting crypto_trader");
 
     std::vector<std::unique_ptr<protocols::Trader>> traders;
-    unsigned int numTraders = 0;
+    unsigned int                                    numTraders = 0;
     if (jsonFileContents.contains("traders")) {
         for (const auto& trader : jsonFileContents["traders"].items()) {
             std::stringstream ss;
@@ -74,14 +74,13 @@ int main(int argc, char *argv[]) {
                 if (traderConfig.key() == "coinbaseTrader") {
                     auto coinbaseTraderJson = traderConfig.value();
                     traders::CoinbaseTraderConfig coinbaseTraderConfig(
-                                                          context.d_isRunning);
+                        context.d_isRunning);
                     coinbaseTraderConfig.setUrl(common::value_or(
                         coinbaseTraderJson,
                         "url",
                         "wss://ws-feed-public.sandbox.exchange.coinbase.com"));
-                    auto products = common::value_or(coinbaseTraderJson,
-                                             "products",
-                                             "[\"ETH-USD\"]"_json);
+                    auto products = common::value_or(
+                        coinbaseTraderJson, "products", "[\"ETH-USD\"]"_json);
 
                     std::vector<std::string> traderProducts;
                     for (const auto& product : products) {
@@ -90,14 +89,13 @@ int main(int argc, char *argv[]) {
 
                     coinbaseTraderConfig.setProducts(traderProducts);
 
-                    auto channelsJson = common::value_or(coinbaseTraderJson,
-                                                 "channels",
-                                                 "[]"_json);
+                    auto channelsJson = common::value_or(
+                        coinbaseTraderJson, "channels", "[]"_json);
 
                     std::vector<std::variant<
-                       std::string,
-                       traders::CoinbaseTraderConfig::ChannelDefinition>>
-                                                                      channels;
+                        std::string,
+                        traders::CoinbaseTraderConfig::ChannelDefinition>>
+                        channels;
                     for (const auto& channel : channelsJson) {
                         if (channel.is_string()) {
                             channels.push_back(channel.get<std::string>());
@@ -108,48 +106,43 @@ int main(int argc, char *argv[]) {
                                  channel["products"].items())
                             {
                                 channelProducts.push_back(
-                                                       channelProduct.value());
+                                    channelProduct.value());
                             }
                             channels.push_back(
-                               traders::CoinbaseTraderConfig::ChannelDefinition
-                               {
-                                    .d_name = channel["name"],
-                                    .d_products = channelProducts
-                               }
-                            );
+                                traders::CoinbaseTraderConfig::
+                                    ChannelDefinition{
+                                        .d_name     = channel["name"],
+                                        .d_products = channelProducts});
                         }
                     }
 
                     coinbaseTraderConfig.setChannels(channels);
-                    coinbaseTraderConfig.setNumThreads(common::value_or(
-                                                            coinbaseTraderJson,
-                                                            "numThreads",
-                                                            1));
+                    coinbaseTraderConfig.setNumThreads(
+                        common::value_or(coinbaseTraderJson, "numThreads", 1));
                     if (coinbaseTraderJson.contains("strategy")) {
                         const auto strategyJson =
-                                                coinbaseTraderJson["strategy"];
-                        const auto& type = common::value_or(strategyJson,
-                                                     "type",
-                                                     "hodl");
+                            coinbaseTraderJson["strategy"];
+                        const auto& type =
+                            common::value_or(strategyJson, "type", "hodl");
                         std::stringstream ss;
                         ss << type;
                         spdlog::info("strat: {}", ss.str());
                         if (type.get<std::string>() == "hodl") {
                             coinbaseTraderConfig.setStrategy(
-                                                           strategies::e_HODL);
+                                strategies::e_HODL);
                         }
                         else {
                             coinbaseTraderConfig.setStrategy(
-                                                           strategies::e_NONE);
+                                strategies::e_NONE);
                         }
                         coinbaseTraderConfig.setStrategyConfig(
-                         common::value_or( strategyJson, "config", "{}"_json));
+                            common::value_or(
+                                strategyJson, "config", "{}"_json));
                     }
 
-                    traders.push_back(std::make_unique<
-                               traders::CoinbaseTrader>(coinbaseTraderConfig));
-
-
+                    traders.push_back(
+                        std::make_unique<traders::CoinbaseTrader>(
+                            coinbaseTraderConfig));
                 }
 
                 ++numTraders;
@@ -160,9 +153,7 @@ int main(int argc, char *argv[]) {
     boost::asio::thread_pool running_traders(numTraders);
 
     for (const auto& trader : traders) {
-        boost::asio::post(running_traders, [&trader]() {
-            trader->start();
-        });
+        boost::asio::post(running_traders, [&trader]() { trader->start(); });
     }
 
     running_traders.join();

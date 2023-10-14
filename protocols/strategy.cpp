@@ -9,9 +9,7 @@ Strategy::Strategy(const common::Emit& emit)
 {
 }
 
-Strategy::~Strategy()
-{
-}
+Strategy::~Strategy() {}
 
-} // protocols
-} // crypto_trader
+} // namespace protocols
+} // namespace crypto_trader
