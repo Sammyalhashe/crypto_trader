@@ -26,10 +26,6 @@ struct CoinbaseWebSocketClientConfig {
     // PUBLIC TYPES
     using ListenCb = std::function<void(const std::string&)>;
     // DATA
-    // The io_context is required for all I/O
-    net::io_context& d_ioc;
-    // The ssl context is required, and holds all certs
-    ssl::context& d_ctx;
     // The host we are connecting to
     std::string d_host;
     // The initial message we send to the host
@@ -42,15 +38,11 @@ struct CoinbaseWebSocketClientConfig {
 
     // CREATORS
     CoinbaseWebSocketClientConfig(
-        net::io_context                        & ioc,
-        ssl::context                           & ctx,
         const std::string                      & host,
         const nlohmann::json                   & text,
         const ListenCb                         & listenCb,
         const std::shared_ptr<std::atomic_bool>& isRunning)
-    : d_ioc(ioc)
-    , d_ctx(ctx)
-    , d_host(host)
+    : d_host(host)
     , d_text(text)
     , d_listenCb(listenCb)
     , d_isRunning(isRunning)
@@ -67,10 +59,11 @@ class CoinbaseWebSocketClient : public protocols::WebsocketClient {
 
     // PRIVATE DATA
     // These perform our I/O
+    net::io_context d_ioc; // The io_context is required for all I/O
+    ssl::context    d_ctx; // The ssl context is required, and holds all certs
     tcp::resolver   d_resolver;
-    WebsocketStream d_ws;
-    // The config for this object
-    CoinbaseWebSocketClientConfig d_config;
+    WebsocketStream           d_ws;     // The websocket
+    CoinbaseWebSocketClientConfig d_config; // The config for this object
 
     // PRIVATE STATIC DATA
     static std::string s_port;

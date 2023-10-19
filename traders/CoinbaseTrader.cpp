@@ -123,11 +123,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
         nlohmann::json result;
         buildCoinbaseWebsocketMessage(&result, "subscribe", d_config);
         spdlog::info("built result: {}", result.dump(4));
-        net::io_context ioc;
-        ssl::context    ctx{ssl::context::tlsv12_client};
         adaptors::CoinbaseWebSocketClientConfig coinbaseWebSocketConfig(
-            ioc,
-            ctx,
             config.url(),
             result,
             std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
