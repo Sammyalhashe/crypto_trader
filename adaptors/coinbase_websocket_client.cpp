@@ -51,7 +51,7 @@ CoinbaseWebSocketClient::~CoinbaseWebSocketClient()
 // PRIVATE MANIPULATORS
 
 // WebsocketClient
-bool CoinbaseWebSocketClient::open()
+void CoinbaseWebSocketClient::open()
 {
 
     // Look up the domain name
@@ -101,8 +101,6 @@ bool CoinbaseWebSocketClient::open()
     std::stringstream ss;
     ss << beast::make_printable(buffer.data());
     spdlog::info("message received: {}", ss.str());
-
-    return true;
 }
 
 void CoinbaseWebSocketClient::close()
