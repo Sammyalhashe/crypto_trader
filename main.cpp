@@ -140,6 +140,26 @@ int main(int argc, char *argv[])
                                 strategyJson, "config", "{}"_json));
                     }
 
+                    auto clientType = common::value_or(coinbaseTraderJson,
+                                                       "clientType",
+                                                       "SYNC");
+
+                    if (clientType == "SYNC") {
+                        coinbaseTraderConfig.setClientType(
+                              traders::CoinbaseTraderConfig::ClientType::SYNC);
+                    }
+                    else if (clientType == "ASYNC") {
+                        coinbaseTraderConfig.setClientType(
+                             traders::CoinbaseTraderConfig::ClientType::ASYNC);
+                    }
+                    else {
+                        spdlog::error(
+                           "Recieved invalid client type for coinbase trader, "
+                           "defaulting to SYNC");
+                        coinbaseTraderConfig.setClientType(
+                              traders::CoinbaseTraderConfig::ClientType::SYNC);
+                    }
+
                     traders.push_back(
                         std::make_unique<traders::CoinbaseTrader>(
                             coinbaseTraderConfig));

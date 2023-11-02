@@ -57,6 +57,7 @@ CoinbaseWebSocketClientAsync::~CoinbaseWebSocketClientAsync() {}
 void CoinbaseWebSocketClientAsync::on_resolve(
     beast::error_code ec, tcp::resolver::results_type results)
 {
+    spdlog::debug("CoinbaseWebSocketClientAsync::on_resolve");
     if (ec) {
         return fail(ec, "resolve");
     }
@@ -74,6 +75,7 @@ void CoinbaseWebSocketClientAsync::on_resolve(
 void CoinbaseWebSocketClientAsync::on_connect(
     beast::error_code ec, tcp::resolver::results_type::endpoint_type ep)
 {
+    spdlog::debug("CoinbaseWebSocketClientAsync::on_connect");
     if (ec) {
         return fail(ec, "connect");
     }
@@ -104,6 +106,7 @@ void CoinbaseWebSocketClientAsync::on_connect(
 
 void CoinbaseWebSocketClientAsync::on_ssl_handshake(beast::error_code ec)
 {
+    spdlog::debug("CoinbaseWebSocketClientAsync::on_ssl_handshake");
     if (ec) {
         return fail(ec, "ssl_handshake");
     }
@@ -136,29 +139,37 @@ void CoinbaseWebSocketClientAsync::on_ssl_handshake(beast::error_code ec)
 
 void CoinbaseWebSocketClientAsync::on_handshake(beast::error_code ec)
 {
+    spdlog::debug("CoinbaseWebSocketClientAsync::on_handshake");
     if (ec) {
         return fail(ec, "handshake");
     }
 
+
+    spdlog::info("Writing the request:\n{}\nto coinbase",
+                 d_config.d_text.dump(4));
     d_ws.async_write(
         net::buffer(d_config.d_text.dump()),
-        beast::bind_handler(&CoinbaseWebSocketClientAsync::on_write,
+        beast::bind_front_handler(&CoinbaseWebSocketClientAsync::on_write,
                             shared_from_this()));
 }
 
 void CoinbaseWebSocketClientAsync::on_write(beast::error_code ec,
                                             std::size_t bytes_transferred)
 {
+    spdlog::debug("CoinbaseWebSocketClientAsync::on_write");
     boost::ignore_unused(bytes_transferred);
 
     if (ec) {
         return fail(ec, "write");
     }
+
+    do_read();
 }
 
 void CoinbaseWebSocketClientAsync::on_read(beast::error_code ec,
                                            std::size_t       bytes_transferred)
 {
+    spdlog::debug("CoinbaseWebSocketClientAsync::on_read");
     boost::ignore_unused(bytes_transferred);
 
     if (ec) {
@@ -170,8 +181,17 @@ void CoinbaseWebSocketClientAsync::on_read(beast::error_code ec,
         std::string res_string(boost::asio::buffers_begin(res),
                                boost::asio::buffers_end(res));
 
+        std::stringstream ss;
+        ss << beast::make_printable(d_buffer.data());
+        spdlog::info("message received: {}", ss.str());
+
         d_config.d_listenCb(res_string);
+
+        // Clear the buffer
+        d_buffer.consume(d_buffer.size());
     }
+
+    do_read();
 }
 
 void CoinbaseWebSocketClientAsync::do_read()
@@ -187,6 +207,7 @@ void CoinbaseWebSocketClientAsync::do_read()
 // WebsocketClient
 void CoinbaseWebSocketClientAsync::open()
 {
+    spdlog::info("CoinbaseWebSocketClientAsync::open");
     d_resolver.async_resolve(
         d_config.d_host,
         s_port,
@@ -199,7 +220,15 @@ void CoinbaseWebSocketClientAsync::close()
     spdlog::info("calling close!!!");
 }
 
-void CoinbaseWebSocketClientAsync::listen() { d_ioc.run(); }
+void CoinbaseWebSocketClientAsync::listen() {
+    spdlog::debug("CoinbaseWebSocketClientAsync::listen");
+    open();
+
+    // blocks until websocket connection is closed.
+    d_ioc.run();
+}
+
+bool CoinbaseWebSocketClientAsync::is_open() { return true; }
 
 bool CoinbaseWebSocketClientAsync::send_message() { return true; }
 

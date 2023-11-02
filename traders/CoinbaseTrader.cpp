@@ -1,6 +1,7 @@
 #include "CoinbaseTrader.h"
 
 #include "../adaptors/coinbase_websocket_client.h"
+#include "../adaptors/coinbase_websocket_client_async.h"
 #include "../common/jsonutils.h"
 #include "../protocols/websocket_client.h"
 #include "../strategies/hodl.h"
@@ -17,9 +18,6 @@
 
 namespace crypto_trader {
 namespace traders {
-
-namespace net = boost::asio; // from <boost/asio.hpp>
-namespace ssl = boost::asio::ssl;
 
 namespace {
 
@@ -103,11 +101,48 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 , d_strategyConfig()
 , d_url()
 , d_numThreads(1)
+, d_clientType(CoinbaseTraderConfig::ClientType::SYNC)
 , d_isRunning(isRunning)
 {
 }
 
 // class CoinbaseTrader
+
+void CoinbaseTrader::initWebsocketClient()
+{
+    nlohmann::json result;
+    buildCoinbaseWebsocketMessage(&result, "subscribe", d_config);
+    switch (d_config.clientType()) {
+        case CoinbaseTraderConfig::ClientType::SYNC: {
+            adaptors::CoinbaseWebSocketClientConfig coinbaseWebSocketConfig(
+                d_config.url(),
+                result,
+                std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
+                d_config.isRunning());
+            d_webSocketClient =
+                std::make_unique<adaptors::CoinbaseWebSocketClient>(
+                    coinbaseWebSocketConfig);
+        } break;
+        case CoinbaseTraderConfig::ClientType::ASYNC: {
+            adaptors::CoinbaseWebSocketClientAsyncConfig coinbaseWebSocketConfig(
+               d_config.url(),
+               result,
+               std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
+               d_config.isRunning());
+
+            d_webSocketClient = std::make_shared<adaptors::CoinbaseWebSocketClientAsync>(
+                                                      coinbaseWebSocketConfig);
+        } break;
+        case CoinbaseTraderConfig::ClientType::COUNT: {
+            /* noop */
+        } /* fall through */ ;
+        default: {
+            std::stringstream ss;
+            ss << d_config.clientType();
+            spdlog::error("unknown client type: {}", ss.str());
+        } break;
+    }
+}
 
 // CREATORS
 CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
@@ -120,17 +155,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 {
     switch (d_config.strategy()) {
     case strategies::TradingStrategy::e_HODL: {
-        nlohmann::json result;
-        buildCoinbaseWebsocketMessage(&result, "subscribe", d_config);
-        spdlog::info("built result: {}", result.dump(4));
-        adaptors::CoinbaseWebSocketClientConfig coinbaseWebSocketConfig(
-            config.url(),
-            result,
-            std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
-            d_config.isRunning());
-        d_webSocketClient =
-            std::make_unique<adaptors::CoinbaseWebSocketClient>(
-                coinbaseWebSocketConfig);
+        initWebsocketClient();
 
         const auto& hodlConfigJson = d_config.strategyConfig();
         strategies::HodlStrategyConfig::InitStrategy initStrat;
@@ -183,6 +208,7 @@ void CoinbaseTrader::start()
     // TODO: Warn if not set?
     if (d_webSocketClient) {
         d_webSocketClient->listen();
+        spdlog::info("after listen");
     }
 }
 

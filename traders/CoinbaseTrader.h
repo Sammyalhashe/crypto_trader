@@ -30,6 +30,13 @@ class CoinbaseTraderConfig {
         std::string              d_name;
         std::vector<std::string> d_products;
     }; // ChannelDefinition
+
+    enum class ClientType {
+        SYNC,
+        ASYNC,
+        COUNT
+    }; // ClientType
+
   private:
     // PRIVATE TYPES
     using StringVec  = std::vector<std::string>;
@@ -48,6 +55,8 @@ class CoinbaseTraderConfig {
     nlohmann::json d_strategyConfig;
     // The number of threads the trader's threadpool will run.
     unsigned int d_numThreads;
+    // use the async client?
+    ClientType d_clientType;
     // Shared atomic state declaring whether the application is running.
     std::shared_ptr<std::atomic_bool> d_isRunning;
 
@@ -68,6 +77,7 @@ class CoinbaseTraderConfig {
     CoinbaseTraderConfig&
     setStrategyConfig(const nlohmann::json& strategyConfig);
     CoinbaseTraderConfig& setNumThreads(unsigned int numThreads);
+    CoinbaseTraderConfig& setClientType(const ClientType clientType);
 
     // PUBLIC ACCESSORS
     const StringVec                        & products() const;
@@ -76,6 +86,7 @@ class CoinbaseTraderConfig {
     const std::string                      & url() const;
     const nlohmann::json                   & strategyConfig() const;
     unsigned int                             numThreads() const;
+    const ClientType clientType() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
 }; // CoinbaseTraderConfig
 
@@ -83,7 +94,7 @@ class CoinbaseTrader : public protocols::Trader {
   private:
     // PRIVATE DATA
     // Websocket client that may or may not be used.
-    std::unique_ptr<protocols::WebsocketClient> d_webSocketClient;
+    std::shared_ptr<protocols::WebsocketClient> d_webSocketClient;
     // The strategy this trader has decided to use.
     std::unique_ptr<protocols::Strategy> d_strategy;
     // The threadpool to execute received events on.
@@ -119,10 +130,38 @@ class CoinbaseTrader : public protocols::Trader {
     // Stop the trader.
     void stop() override;
 
+  private:
+    // PRIVATE MANIPULATORS
+    void initWebsocketClient();
+
 }; // CoinbaseTrader
 
 // INLINE DEFINITIONS
 // class CoinbaseTraderConfig
+
+// TYPES
+// ClientType
+
+inline
+std::ostream& operator<<(std::ostream&                           out,
+                         const CoinbaseTraderConfig::ClientType& clientType)
+{
+    switch (clientType) {
+        case CoinbaseTraderConfig::ClientType::SYNC: {
+            out << "SYNC";
+        } break;
+        case CoinbaseTraderConfig::ClientType::ASYNC: {
+            out << "ASYNC";
+        } break;
+        case CoinbaseTraderConfig::ClientType::COUNT: {
+            out << "COUNT";
+        } break;
+        default: {
+            out << "UNKNOWN";
+        }
+    }
+    return out;
+}
 
 // PUBLIC MANIPULATORS
 inline CoinbaseTraderConfig&
@@ -174,6 +213,13 @@ CoinbaseTraderConfig::setNumThreads(unsigned int numThreads)
     return *this;
 }
 
+inline CoinbaseTraderConfig&
+CoinbaseTraderConfig::setClientType(const ClientType clientType)
+{
+    d_clientType = clientType;
+    return *this;
+}
+
 // PUBLIC ACCESSORS
 inline const CoinbaseTraderConfig::StringVec&
 CoinbaseTraderConfig::products() const
@@ -203,6 +249,11 @@ inline const nlohmann::json& CoinbaseTraderConfig::strategyConfig() const
 inline unsigned int CoinbaseTraderConfig::numThreads() const
 {
     return d_numThreads;
+}
+
+inline const CoinbaseTraderConfig::ClientType CoinbaseTraderConfig::clientType() const 
+{
+    return d_clientType;
 }
 
 inline const std::shared_ptr<std::atomic_bool>&
