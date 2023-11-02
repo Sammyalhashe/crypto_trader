@@ -14,6 +14,11 @@ ifeq ($(strip $(CLANG_FORMAT)),)
 	CLANG_FORMAT=clang-format
 endif
 
+G=
+ifneq ($(strip $(GENERATOR)),)
+	G=-G $(GENERATOR)
+endif
+
 BUILD_DIR_PREFIX=cmake.bld
 BUILD_DIR := $(BUILD_DIR_PREFIX)/$(shell uname)/full$(SUFFIX)
 
@@ -25,7 +30,7 @@ sanitize_flag=
 ifneq ($(strip $(SUFFIX)),)
 	sanitize_flag=-Dcustom_build_type=$(SANITIZE)
 endif
-CMAKE_OPTS := -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} $(sanitize_flag)
+CMAKE_OPTS := -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} $(sanitize_flag) $(G)
 EXE := crypto_trader
 
 RUN_CMD:=./${BUILD_DIR}/${EXE}

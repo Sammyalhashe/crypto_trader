@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
     context.d_isRunning  = std::make_shared<std::atomic_bool>(true);
     *context.d_isRunning = true;
 
+#ifdef __linux__
     const char *trapFileName = "/tmp/crypto_trader";
     int         inotify_fd   = common::createTrapFile(trapFileName);
 
@@ -49,6 +50,7 @@ int main(int argc, char *argv[])
                                         .d_isRunning    = context.d_isRunning};
     boost::thread         trapFileWatchThread{
         boost::bind(&common::monitorTrapFile, monitorConfig)};
+#endif // __linux__
 
     nlohmann::json jsonFileContents;
     spdlog::info("argc {}", argc);
@@ -178,9 +180,11 @@ int main(int argc, char *argv[])
 
     running_traders.join();
 
+#ifdef __linux__
     trapFileWatchThread.join();
 
     common::removeTrapFile(monitorConfig);
+#endif // __linux__
 
     return 0;
 }

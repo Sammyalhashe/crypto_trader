@@ -6,8 +6,12 @@
 #include <fcntl.h>
 #include <fstream>
 #include <sstream>
+
+#ifdef __linux__
 #include <sys/inotify.h>
 #include <sys/poll.h>
+#endif // __linux__
+
 #include <unistd.h>
 
 namespace crypto_trader {
@@ -67,6 +71,7 @@ int readJsonFile(json *parsedJson, const std::string& filepath)
     return 0;
 }
 
+#ifdef __linux__
 int createTrapFile(const char *trapFilePath)
 {
     int fd = open(trapFilePath,
@@ -224,6 +229,8 @@ void monitorTrapFile(const MonitorConfig& config)
         }
     }
 }
+
+#endif // __linux__
 
 } // namespace common
 } // namespace crypto_trader
