@@ -12,7 +12,7 @@ class WebsocketClient {
     virtual ~WebsocketClient() = 0;
 
     // PUBLIC MANIPULATORS
-    virtual bool open()         = 0;
+    virtual void open()         = 0;
     virtual void close()        = 0;
     virtual bool is_open()      = 0;
     virtual bool send_message() = 0;

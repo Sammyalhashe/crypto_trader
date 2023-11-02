@@ -21,7 +21,8 @@
                         "initStrategy": "buy_immediately"
                     }
                 },
-                "numThreads": 4
+                "numThreads": 4,
+                "clientType": "ASYNC"
             }
         }
     ]

@@ -30,8 +30,10 @@ std::string CoinbaseWebSocketClient::s_port = "443";
 // CREATORS
 CoinbaseWebSocketClient::CoinbaseWebSocketClient(
     const CoinbaseWebSocketClientConfig& config)
-: d_resolver(net::make_strand(config.d_ioc))
-, d_ws(net::make_strand(config.d_ioc), config.d_ctx)
+: d_ioc()
+, d_ctx(ssl::context::tlsv12_client)
+, d_resolver(net::make_strand(d_ioc))
+, d_ws(net::make_strand(d_ioc), d_ctx)
 , d_config(config)
 {
     open();
@@ -49,7 +51,7 @@ CoinbaseWebSocketClient::~CoinbaseWebSocketClient()
 // PRIVATE MANIPULATORS
 
 // WebsocketClient
-bool CoinbaseWebSocketClient::open()
+void CoinbaseWebSocketClient::open()
 {
 
     // Look up the domain name
@@ -99,8 +101,6 @@ bool CoinbaseWebSocketClient::open()
     std::stringstream ss;
     ss << beast::make_printable(buffer.data());
     spdlog::info("message received: {}", ss.str());
-
-    return true;
 }
 
 void CoinbaseWebSocketClient::close()
