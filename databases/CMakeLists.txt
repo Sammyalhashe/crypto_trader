@@ -1,5 +1,5 @@
 set(DATABASES_H market_data_db.h)
-set(DATABASES_SRC)
+set(DATABASES_SRC market_data_db.cpp)
 
 add_library(databases STATIC ${DATABASES_H} ${DATABASES_SRC})
 
