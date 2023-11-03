@@ -19,7 +19,7 @@ namespace databases {
 // Read / Write lock for the entire map
 // Potentially set up each symbol beforehand to not lock the map.
 // If locking map may as well have 1 lock
-template <class MarketDataType>
+template <common::MarketData MarketDataType>
 class MarketDataDB {
   private:
     // PRIVATE DATA
@@ -58,7 +58,7 @@ class MarketDataDB {
 // class MarketDataDB
 
 // PUBLIC MANIPULATORS
-template <class MarketDataType>
+template <common::MarketData MarketDataType>
 inline void MarketDataDB<MarketDataType>::add_data(
     const std::string& symbol, const MarketDataType& market_data) noexcept
 {
@@ -77,7 +77,7 @@ inline void MarketDataDB<MarketDataType>::add_data(
                     market_data);
 }
 
-template <class MarketDataType>
+template <common::MarketData MarketDataType>
 bool MarketDataDB<MarketDataType>::load(std::string& file_name)
 {
     std::ifstream in_stream(file_name, std::ofstream::binary);
@@ -87,7 +87,7 @@ bool MarketDataDB<MarketDataType>::load(std::string& file_name)
 }
 
 // PUBLIC ACCESSORS
-template <class MarketDataType>
+template <common::MarketData MarketDataType>
 std::vector<MarketDataType> MarketDataDB<MarketDataType>::get_data(
     const std::string                       & symbol,
     const typename MarketDataType::Timestamp& min_ts,
@@ -105,7 +105,7 @@ std::vector<MarketDataType> MarketDataDB<MarketDataType>::get_data(
             data_vec.begin(), data_vec.end(), max_ts, MarketDataType::order));
 }
 
-template <class MarketDataType>
+template <common::MarketData MarketDataType>
 bool MarketDataDB<MarketDataType>::save(const std::string& file_name) const
 {
     std::ofstream out_stream(file_name, std::ofstream::binary);
@@ -114,9 +114,9 @@ bool MarketDataDB<MarketDataType>::save(const std::string& file_name) const
     return true;
 }
 // PRIVATE MANIPULATORS
-template <class MarketData>
+template <common::MarketData MarketDataType>
 template <class Archive>
-void MarketDataDB<MarketData>::serialize(Archive          & archive,
+void MarketDataDB<MarketDataType>::serialize(Archive          & archive,
                                          const unsigned int version)
 {
     archive& d_symbol_to_data;

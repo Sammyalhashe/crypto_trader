@@ -5,6 +5,8 @@
 
 #include <string_view>
 
+#include <nlohmann/json.hpp>
+
 namespace crypto_trader {
 namespace protocols {
 
@@ -20,7 +22,7 @@ class Strategy {
     virtual ~Strategy() = 0;
 
     // MANIPULATORS
-    virtual void handleNewData(const std::string_view& buffer) = 0;
+    virtual void handleNewData(const nlohmann::json& data) = 0;
 
 }; // Strategy
 } // namespace protocols

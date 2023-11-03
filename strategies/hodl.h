@@ -97,7 +97,7 @@ class HodlStrategy : public protocols::Strategy {
     ~HodlStrategy();
 
     // MANIPULATORS
-    void handleNewData(const std::string_view& buffer) override;
+    void handleNewData(const nlohmann::json& data) override;
 
     // ACCESSORS
     // Return a non-modifiable reference to the list of positions

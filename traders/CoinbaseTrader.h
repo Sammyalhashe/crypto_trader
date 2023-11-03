@@ -2,6 +2,7 @@
 #define INCLUDED_COINBASE_TRADER
 
 #include "../common/types.h"
+#include "../databases/market_data_db.h"
 #include "../protocols/strategy.h"
 #include "../protocols/trader.h"
 #include "../protocols/websocket_client.h"
@@ -99,6 +100,9 @@ class CoinbaseTrader : public protocols::Trader {
     std::unique_ptr<protocols::Strategy> d_strategy;
     // The threadpool to execute received events on.
     boost::asio::thread_pool d_threadPool;
+    // The database that stores the data received from clients and other
+    // trade data.
+    databases::MarketDataDB<common::MarketDataCoinbase> d_database;
     // If this trader is running or not.
     std::atomic_bool d_isStopped;
     // The mutex holding access to this class' members.

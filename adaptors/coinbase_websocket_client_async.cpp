@@ -183,7 +183,7 @@ void CoinbaseWebSocketClientAsync::on_read(beast::error_code ec,
 
         std::stringstream ss;
         ss << beast::make_printable(d_buffer.data());
-        spdlog::info("message received: {}", ss.str());
+        spdlog::debug("message received: {}", ss.str());
 
         d_config.d_listenCb(res_string);
 

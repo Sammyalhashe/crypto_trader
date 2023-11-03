@@ -1,6 +1,10 @@
 #ifndef INCLUDED_COINBASE_WEBSOCKET_CLIENT_ASYNC
 #define INCLUDED_COINBASE_WEBSOCKET_CLIENT_ASYNC
 
+// See
+// https://www.boost.org/doc/libs/develop/libs/beast/example/websocket/client/async-ssl/websocket_client_async_ssl.cpp
+// for implementation details
+
 #include "../protocols/websocket_client.h"
 
 #include <boost/asio/ip/tcp.hpp>

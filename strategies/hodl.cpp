@@ -45,25 +45,13 @@ HodlStrategy::HodlStrategy(const HodlStrategyConfig& config)
 HodlStrategy::~HodlStrategy() {}
 
 // MANIPULATORS
-void HodlStrategy::handleNewData(const std::string_view& buffer)
+void HodlStrategy::handleNewData(const nlohmann::json& data)
 {
-    using namespace boost::asio;
-    try {
-        auto              data = nlohmann::json::parse(buffer);
-        std::stringstream ss;
-        ss << data;
-        auto type = data["type"];
+    auto type = data["type"];
 
-        if (type == "ticker") {
-            float price = std::stof(std::string(data["price"]));
-            goOverTradesAtPrice(price, std::string(data["time"]));
-        }
-    }
-    catch (json::parse_error& e) {
-        spdlog::error("{}", e.what());
-    }
-    catch (json::type_error& e) {
-        spdlog::error("{}", e.what());
+    if (type == "ticker") {
+        float price = std::stof(std::string(data["price"]));
+        goOverTradesAtPrice(price, std::string(data["time"]));
     }
 }
 
