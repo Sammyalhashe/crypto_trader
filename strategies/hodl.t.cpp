@@ -43,14 +43,14 @@ TEST(HodlStrategyTest, XPercentRiseTest)
     buildNewSocketMessage(
         &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
 
     EXPECT_EQ(1, hodl.trades().size());
 
     buildNewSocketMessage(
         &data, "ticker", "1680", "2023-09-04T18:38:49.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
 
     EXPECT_EQ(0, hodl.trades().size());
 }
@@ -68,21 +68,21 @@ TEST(HodlStrategyTest, YPercentFallTest)
     buildNewSocketMessage(
         &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
 
     EXPECT_EQ(1, hodl.trades().size());
 
     buildNewSocketMessage(
         &data, "ticker", "1519", "2023-09-04T18:38:49.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
 
     EXPECT_EQ(2, hodl.trades().size());
 
     buildNewSocketMessage(
         &data, "ticker", "1443", "2023-09-04T18:38:50.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
 
     EXPECT_EQ(2, hodl.trades().size());
 }
@@ -100,7 +100,7 @@ TEST(HodlStrategyTest, BASIS_PRICE_INIT)
     buildNewSocketMessage(
         &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
 
     EXPECT_EQ(1600, hodl.basisMarketPrice().value());
     EXPECT_EQ(0, hodl.trades().size());
@@ -108,35 +108,35 @@ TEST(HodlStrategyTest, BASIS_PRICE_INIT)
     buildNewSocketMessage(
         &data, "ticker", "1520", "2023-09-04T18:38:49.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
     EXPECT_EQ(1, hodl.trades().size());
     EXPECT_EQ(false, hodl.basisMarketPrice().has_value());
 
     buildNewSocketMessage(
         &data, "ticker", "1444", "2023-09-04T18:38:50.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
     EXPECT_EQ(2, hodl.trades().size());
     EXPECT_EQ(false, hodl.basisMarketPrice().has_value());
 
     buildNewSocketMessage(
         &data, "ticker", "1378", "2023-09-04T18:38:51.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
     EXPECT_EQ(2, hodl.trades().size());
     EXPECT_EQ(false, hodl.basisMarketPrice().has_value());
 
     buildNewSocketMessage(
         &data, "ticker", "1520", "2023-09-04T18:38:52.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
     EXPECT_EQ(1, hodl.trades().size());
     EXPECT_EQ(false, hodl.basisMarketPrice().has_value());
 
     buildNewSocketMessage(
         &data, "ticker", "1600", "2023-09-04T18:38:52.279032Z");
 
-    hodl.handleNewData(data.dump());
+    hodl.handleNewData(data);
     EXPECT_EQ(0, hodl.trades().size());
     EXPECT_EQ(true, hodl.basisMarketPrice().has_value());
     EXPECT_EQ(1600, hodl.basisMarketPrice().value());
