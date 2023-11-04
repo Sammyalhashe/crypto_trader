@@ -111,6 +111,9 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 
 // class CoinbaseTrader
 
+// STATIC DATA
+const char* CoinbaseTrader::s_databaseFile = "/var/tmp/crypto_trader/coinbase_trader_data";
+
 void CoinbaseTrader::initWebsocketClient()
 {
     nlohmann::json result;
@@ -221,6 +224,8 @@ void CoinbaseTrader::stop()
     if (d_isStopped) {
         return;
     }
+
+    d_database.save(s_databaseFile);
 
     // mark this trader as stopped.
     d_isStopped = true;

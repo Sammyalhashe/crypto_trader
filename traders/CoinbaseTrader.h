@@ -93,6 +93,9 @@ class CoinbaseTraderConfig {
 
 class CoinbaseTrader : public protocols::Trader {
   private:
+    // STATIC DATA
+    // The file that the database loads/saves data to.
+    static const char* s_databaseFile;
     // PRIVATE DATA
     // Websocket client that may or may not be used.
     std::shared_ptr<protocols::WebsocketClient> d_webSocketClient;
