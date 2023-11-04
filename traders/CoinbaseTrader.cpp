@@ -20,6 +20,9 @@ namespace crypto_trader {
 namespace traders {
 
 namespace {
+using json = nlohmann::json; // from <nlohmann/json.hpp>
+                             // NOTE: `json` is a type not
+                             // namespace
 
 void buildCoinbaseWebsocketMessage(nlohmann::json             *message,
                                    const std::string         & type,
@@ -108,6 +111,9 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 
 // class CoinbaseTrader
 
+// STATIC DATA
+const char* CoinbaseTrader::s_databaseFile = "/var/tmp/crypto_trader/coinbase_trader_data";
+
 void CoinbaseTrader::initWebsocketClient()
 {
     nlohmann::json result;
@@ -150,6 +156,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 , d_strategy()
 , d_threadPool(config.numThreads())
 , d_isStopped(true)
+, d_database()
 , d_mutex()
 , d_config(config)
 {
@@ -218,6 +225,8 @@ void CoinbaseTrader::stop()
         return;
     }
 
+    d_database.save(s_databaseFile);
+
     // mark this trader as stopped.
     d_isStopped = true;
 
@@ -255,7 +264,37 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
         return;
     }
     if (d_strategy) {
-        d_strategy->handleNewData(buffer);
+        try {
+            auto data = nlohmann::json::parse(buffer);
+
+            auto type = data["type"];
+
+            if (type == "ticker") {
+
+                std::stringstream ss;
+                ss << data;
+
+                spdlog::info("{}", ss.str());
+
+
+                d_strategy->handleNewData(data);
+
+                common::MarketDataCoinbase marketData;
+
+                std::string price = data["price"];
+                marketData.d_symbol = data["product_id"];
+                marketData.d_price = std::stod(price);
+                marketData.d_sequence = data["sequence"];
+
+                d_database.add_data(marketData.d_symbol, marketData);
+            }
+        }
+        catch (json::parse_error& e) {
+            spdlog::error("{}", e.what());
+        }
+        catch (json::type_error& e) {
+            spdlog::error("{}", e.what());
+        }
     }
 }
 

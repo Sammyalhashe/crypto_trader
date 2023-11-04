@@ -20,6 +20,31 @@ struct Action {
 
 typedef std::function<void(const Action&)> Emit;
 
+template <typename T>
+concept Serializeable = requires(T a)
+{
+    // requires an `order` static member.
+    T::order;
+    // requires a `serialize` method.
+    { a.serialize() };
+}; // concept Serializeable
+
+// Requires the type to have a `Timestamp` type internal
+template <typename T>
+concept MarketData = requires(T a)
+{
+    // requires type `Timestamp`.
+    typename T::Timestamp;
+}; // concept MarketData
+
+template <typename T>
+concept SerializeableData = requires(T a)
+{
+    MarketData<T>;
+    Serializeable<T>;
+};
+
+
 class MarketDataCoinbase {
   public:
     // PUBLIC TYPES
