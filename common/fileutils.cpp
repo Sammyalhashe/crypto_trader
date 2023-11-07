@@ -7,11 +7,6 @@
 #include <fstream>
 #include <sstream>
 
-#ifdef __linux__
-#include <sys/inotify.h>
-#include <sys/poll.h>
-#endif // __linux__
-
 #include <unistd.h>
 
 namespace crypto_trader {
@@ -231,6 +226,51 @@ void monitorTrapFile(const MonitorConfig& config)
 }
 
 #endif // __linux__
+
+#if TARGET_OS_MAC
+void fsEventStreamCallback(
+    ConstFSEventStreamRef streamRef,
+    void *clientCallBackInfo,
+    size_t numEvents,
+    void *eventPaths,
+    const FSEventStreamEventFlags eventFlags[],
+    const FSEventStreamEventId eventIds[])
+{
+    int i;
+    char **paths = (char**)eventPaths;
+    
+    for (i=0; i<numEvents; i++) {
+        int count;
+        printf("Change %llu in %s, flags %lu\n", eventIds[i], paths[i], eventFlags[i]);
+   }
+}
+
+bool createEventStream() {
+    CFStringRef mypath = CFSTR("/var/tmp/crypto_trader/coinbase_trader_data");
+    CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **)&mypath, 1, nullptr);
+    FSEventStreamContext * callbackInfo = nullptr;
+    FSEventStreamRef stream;
+    CFTimeInterval latency = 3.0;
+
+    stream = FSEventStreamCreate(nullptr,
+                                 &fsEventStreamCallback,
+                                 callbackInfo,
+                                 pathsToWatch,
+                                 kFSEventStreamEventIdSinceNow,
+                                 latency,
+                                 kFSEventStreamCreateFlagNone);
+
+    FSEventStreamScheduleWithRunLoop(stream,
+                                     CFRunLoopGetCurrent(),
+                                     kCFRunLoopDefaultMode);
+
+    FSEventStreamStart(stream);
+
+    CFRunLoopRun();
+    return true;
+}
+
+#endif // TARGET_OS_MAC
 
 } // namespace common
 } // namespace crypto_trader

@@ -20,6 +20,10 @@
 #include <stdio.h>
 #include <variant>
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 #define DO_ONCE(var, expr)                                                    \
     {                                                                         \
         if (!var) {                                                           \
@@ -51,6 +55,10 @@ int main(int argc, char *argv[])
     boost::thread         trapFileWatchThread{
         boost::bind(&common::monitorTrapFile, monitorConfig)};
 #endif // __linux__
+
+#if TARGET_OS_MAC
+    boost::thread fsRunLoopThread(boost::bind(&common::createEventStream));
+#endif // TARGET_OS_MAC
 
     nlohmann::json jsonFileContents;
     spdlog::info("argc {}", argc);
@@ -185,6 +193,10 @@ int main(int argc, char *argv[])
 
     common::removeTrapFile(monitorConfig);
 #endif // __linux__
+
+#if TARGET_OS_MAC
+    /* fsRunLoopThread.join(); */
+#endif // TARGET_OS_MAC
 
     return 0;
 }
