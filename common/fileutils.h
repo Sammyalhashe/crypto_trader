@@ -59,7 +59,7 @@ void fsEventStreamCallback(
     const FSEventStreamEventFlags eventFlags[],
     const FSEventStreamEventId eventIds[]);
 
-bool createEventStream();
+bool createEventStream(const MonitorConfig& config);
 #endif // TARGET_OS_MAC
 
 } // namespace common

@@ -236,31 +236,63 @@ void fsEventStreamCallback(
     const FSEventStreamEventFlags eventFlags[],
     const FSEventStreamEventId eventIds[])
 {
+    assert(clientCallBackInfo);
+    const MonitorConfig& config = *(MonitorConfig*)clientCallBackInfo;
     int i;
     char **paths = (char**)eventPaths;
     
     for (i=0; i<numEvents; i++) {
-        int count;
-        printf("Change %llu in %s, flags %lu\n", eventIds[i], paths[i], eventFlags[i]);
+        if (eventFlags[i] & kFSEventStreamEventFlagItemModified) {
+            std::string fileContents;
+            readFile(&fileContents,
+                     config.d_trapFilePath,
+                     ReadFileOptions::LAST_LINE);
+            std::stringstream ss;
+            ss << fileContents;
+
+            spdlog::info("file contents: {}", ss.str());
+
+            if (fileContents == "exit") {
+                spdlog::info("stopping!");
+                *config.d_isRunning = false;
+
+                // stops the stream.
+                // ensures the client callback will not be called again for the
+                // stream.
+                FSEventStreamRef ref = const_cast<FSEventStreamRef>(streamRef);
+                FSEventStreamStop(ref);
+
+                // Invalidates the stream.
+                FSEventStreamInvalidate(ref);
+
+                // Decrements the refcount on the stream.
+                FSEventStreamRelease(ref);
+            }
+        }
    }
 }
 
-bool createEventStream() {
-    CFStringRef mypath = CFSTR("/var/tmp/crypto_trader/coinbase_trader_data");
+bool createEventStream(const MonitorConfig& config) {
+    CFStringRef mypath = __CFStringMakeConstantString(config.d_trapFilePath);
     CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **)&mypath, 1, nullptr);
-    FSEventStreamContext * callbackInfo = nullptr;
+    FSEventStreamContext callbackInfo = {0, (void*)&config, nullptr, nullptr, nullptr};
     FSEventStreamRef stream;
-    CFTimeInterval latency = 3.0;
+    CFTimeInterval latency = 0.5;
 
+    spdlog::info("creating fseventstream...");
     stream = FSEventStreamCreate(nullptr,
                                  &fsEventStreamCallback,
-                                 callbackInfo,
-                                 pathsToWatch,
+                                 &callbackInfo,
+                                 (CFArrayRef)pathsToWatch,
                                  kFSEventStreamEventIdSinceNow,
-                                 latency,
-                                 kFSEventStreamCreateFlagNone);
+                                 (CFAbsoluteTime) latency,
+                                 kFSEventStreamCreateFlagFileEvents);
 
     FSEventStreamScheduleWithRunLoop(stream,
+    /* see here
+     * https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html
+     * for more details on the below arguments.
+     */
                                      CFRunLoopGetCurrent(),
                                      kCFRunLoopDefaultMode);
 
