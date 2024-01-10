@@ -7,11 +7,6 @@
 #include <fstream>
 #include <sstream>
 
-#ifdef __linux__
-#include <sys/inotify.h>
-#include <sys/poll.h>
-#endif // __linux__
-
 #include <unistd.h>
 
 namespace crypto_trader {
@@ -231,6 +226,83 @@ void monitorTrapFile(const MonitorConfig& config)
 }
 
 #endif // __linux__
+
+#if TARGET_OS_MAC
+void fsEventStreamCallback(
+    ConstFSEventStreamRef streamRef,
+    void *clientCallBackInfo,
+    size_t numEvents,
+    void *eventPaths,
+    const FSEventStreamEventFlags eventFlags[],
+    const FSEventStreamEventId eventIds[])
+{
+    assert(clientCallBackInfo);
+    const MonitorConfig& config = *(MonitorConfig*)clientCallBackInfo;
+    int i;
+    char **paths = (char**)eventPaths;
+    
+    for (i=0; i<numEvents; i++) {
+        if (eventFlags[i] & kFSEventStreamEventFlagItemModified) {
+            std::string fileContents;
+            readFile(&fileContents,
+                     config.d_trapFilePath,
+                     ReadFileOptions::LAST_LINE);
+            std::stringstream ss;
+            ss << fileContents;
+
+            spdlog::info("file contents: {}", ss.str());
+
+            if (fileContents == "exit") {
+                spdlog::info("stopping!");
+                *config.d_isRunning = false;
+
+                // stops the stream.
+                // ensures the client callback will not be called again for the
+                // stream.
+                FSEventStreamRef ref = const_cast<FSEventStreamRef>(streamRef);
+                FSEventStreamStop(ref);
+
+                // Invalidates the stream.
+                FSEventStreamInvalidate(ref);
+
+                // Decrements the refcount on the stream.
+                FSEventStreamRelease(ref);
+            }
+        }
+   }
+}
+
+bool createEventStream(const MonitorConfig& config) {
+    CFStringRef mypath = __CFStringMakeConstantString(config.d_trapFilePath);
+    CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **)&mypath, 1, nullptr);
+    FSEventStreamContext callbackInfo = {0, (void*)&config, nullptr, nullptr, nullptr};
+    FSEventStreamRef stream;
+    CFTimeInterval latency = 0.5;
+
+    spdlog::info("creating fseventstream...");
+    stream = FSEventStreamCreate(nullptr,
+                                 &fsEventStreamCallback,
+                                 &callbackInfo,
+                                 (CFArrayRef)pathsToWatch,
+                                 kFSEventStreamEventIdSinceNow,
+                                 (CFAbsoluteTime) latency,
+                                 kFSEventStreamCreateFlagFileEvents);
+
+    FSEventStreamScheduleWithRunLoop(stream,
+    /* see here
+     * https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html
+     * for more details on the below arguments.
+     */
+                                     CFRunLoopGetCurrent(),
+                                     kCFRunLoopDefaultMode);
+
+    FSEventStreamStart(stream);
+
+    CFRunLoopRun();
+    return true;
+}
+
+#endif // TARGET_OS_MAC
 
 } // namespace common
 } // namespace crypto_trader

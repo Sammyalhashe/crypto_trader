@@ -20,6 +20,10 @@
 #include <stdio.h>
 #include <variant>
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 #define DO_ONCE(var, expr)                                                    \
     {                                                                         \
         if (!var) {                                                           \
@@ -44,13 +48,19 @@ int main(int argc, char *argv[])
 #ifdef __linux__
     const char *trapFileName = "/tmp/crypto_trader";
     int         inotify_fd   = common::createTrapFile(trapFileName);
-
     common::MonitorConfig monitorConfig{.d_inotify_fd   = inotify_fd,
                                         .d_trapFilePath = trapFileName,
                                         .d_isRunning    = context.d_isRunning};
+
     boost::thread         trapFileWatchThread{
         boost::bind(&common::monitorTrapFile, monitorConfig)};
 #endif // __linux__
+
+#if TARGET_OS_MAC
+    common::MonitorConfig monitorConfig{.d_trapFilePath = "/var/tmp/crypto_trader/coinbase_trader_data",
+                                        .d_isRunning    = context.d_isRunning};
+    boost::thread fsRunLoopThread{boost::bind(&common::createEventStream, monitorConfig)};
+#endif // TARGET_OS_MAC
 
     nlohmann::json jsonFileContents;
     spdlog::info("argc {}", argc);
@@ -185,6 +195,10 @@ int main(int argc, char *argv[])
 
     common::removeTrapFile(monitorConfig);
 #endif // __linux__
+
+#if TARGET_OS_MAC
+    fsRunLoopThread.join();
+#endif // TARGET_OS_MAC
 
     return 0;
 }

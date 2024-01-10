@@ -32,6 +32,12 @@ if (custom_build_type)
     set(SANITIZE "${CMAKE_CXX_FLAGS} -fsanitize=${custom_build_type}")
 endif()
 
+# See https://developer.apple.com/library/archive/documentation/DeveloperTools/Conceptual/CppRuntimeEnv/Articles/SymbolVisibility.html
+# and https://stackoverflow.com/questions/8685045/xcode-with-boost-linkerid-warning-about-visibility-settings/11879361#11879361
+if (APPLE)
+    set(CMAKE_CXX_FLAGS "-fvisibility=hidden")
+endif()
+
 target_compile_options(project_flags INTERFACE ${SANITIZE})
 
 # setup static analysis
@@ -61,9 +67,16 @@ set(TARGET_H)
 set(TARGET_SRC
     main.cpp)
 
+# library dependencies
+set(lib_deps
+    Boost::system
+    Boost::thread
+    nlohmann_json::nlohmann_json
+    openssl::openssl
+    spdlog::spdlog)
+
 # add the actual executable
 add_executable(${PROJECT_NAME} ${TARGET_H} ${TARGET_SRC})
-
 
 # handle all subdirectories
 set(subdirs traders strategies common protocols adaptors databases)
@@ -82,30 +95,28 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_warnings}
                       ${project_flags}
                       ${subdirs}
-                      Boost::system
-                      Boost::thread
-                      nlohmann_json::nlohmann_json
-                      openssl::openssl
-                      spdlog::spdlog
-                      )
+                      ${lib_deps})
+
 # testing
 enable_testing()
 include(GoogleTest)
 
-function(add_test name filepath)
+function(add_test name filepath flags)
     add_executable(${name} ${filepath})
     target_link_libraries(${name}
+                          ${FOUNDATION}
                           GTest::gtest_main
                           Boost::system
                           nlohmann_json::nlohmann_json
                           spdlog::spdlog
-                          ${subdirs})
+                          ${subdirs}
+                          ${flags})
     gtest_discover_tests(${name})
 endfunction()
 
 # common util tests
-add_test(fileutil_test common/fileutils.t.cpp)
+add_test(fileutil_test common/fileutils.t.cpp project_flags)
 # strategy tests
-add_test(simple_test strategies/simple.t.cpp)
-add_test(hodl_test strategies/hodl.t.cpp)
-add_test(database_test databases/market_data_db.t.cpp)
+add_test(simple_test strategies/simple.t.cpp project_flags)
+add_test(hodl_test strategies/hodl.t.cpp project_flags)
+add_test(database_test databases/market_data_db.t.cpp project_flags)

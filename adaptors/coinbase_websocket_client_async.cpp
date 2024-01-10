@@ -50,7 +50,9 @@ CoinbaseWebSocketClientAsync::CoinbaseWebSocketClientAsync(
 {
 }
 
-CoinbaseWebSocketClientAsync::~CoinbaseWebSocketClientAsync() {}
+CoinbaseWebSocketClientAsync::~CoinbaseWebSocketClientAsync() {
+    close();
+}
 
 // PRIVATE MANIPULATORS
 
@@ -196,7 +198,7 @@ void CoinbaseWebSocketClientAsync::on_read(beast::error_code ec,
 
 void CoinbaseWebSocketClientAsync::do_read()
 {
-    if (d_ws.is_open()) {
+    if (d_ws.is_open() && *d_config.d_isRunning) {
         d_ws.async_read(
             d_buffer,
             beast::bind_front_handler(&CoinbaseWebSocketClientAsync::on_read,
@@ -218,6 +220,8 @@ void CoinbaseWebSocketClientAsync::open()
 void CoinbaseWebSocketClientAsync::close()
 {
     spdlog::info("calling close!!!");
+    d_ws.close(websocket::close_code::normal);
+    d_ioc.stop();
 }
 
 void CoinbaseWebSocketClientAsync::listen() {
