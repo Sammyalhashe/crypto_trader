@@ -6,7 +6,6 @@ namespace protocols {
 
 class Reactor {
 
-public:
     // CREATORS
     Reactor();
     virtual ~Reactor() = 0;
@@ -36,5 +35,3 @@ class Changer {
 
 } // namespace protocols
 } // namespace crypto_trader
-
-#endif // INCLUDED_PROTOCOLS_REACTOR
