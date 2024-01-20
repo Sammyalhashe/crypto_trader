@@ -1,5 +1,5 @@
-set(ADAPTORS_H coinbase_websocket_client.h coinbase_websocket_client_async.h)
-set(ADAPTORS_SRC coinbase_websocket_client.cpp coinbase_websocket_client_async.cpp)
+set(ADAPTORS_H coinbase_websocket_client.h coinbase_websocket_client_async.h database_websocket_client.h)
+set(ADAPTORS_SRC coinbase_websocket_client.cpp coinbase_websocket_client_async.cpp database_websocket_client.cpp)
 
 add_library(adaptors STATIC ${ADAPTORS_H} ${ADAPTORS_SRC})
 

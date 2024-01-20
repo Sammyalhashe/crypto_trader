@@ -3,6 +3,7 @@
 
 #include "../common/serialization.h"
 #include "../common/types.h"
+#include "../protocols/reactor.h"
 
 #include <fstream>
 #include <unordered_map>
@@ -24,11 +25,17 @@ class MarketDataDB {
   private:
     // PRIVATE DATA
     std::unordered_map<std::string, std::vector<MarketDataType>>
-        d_symbol_to_data;
+                                      d_symbol_to_data;
+    std::vector<protocols::Reactor *> d_reactors;
 
   public:
     // CREATORS
-    MarketDataDB() {}
+    MarketDataDB()
+    : d_symbol_to_data()
+    , d_reactors()
+    {
+    }
+
     ~MarketDataDB() {}
 
     // MANIPULATORS
@@ -117,7 +124,7 @@ bool MarketDataDB<MarketDataType>::save(const std::string& file_name) const
 template <common::MarketData MarketDataType>
 template <class Archive>
 void MarketDataDB<MarketDataType>::serialize(Archive          & archive,
-                                         const unsigned int version)
+                                             const unsigned int version)
 {
     archive& d_symbol_to_data;
 }

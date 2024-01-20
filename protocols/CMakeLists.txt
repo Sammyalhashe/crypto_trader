@@ -1,5 +1,5 @@
-set(PROTOCOLS_H websocket_client.h trader.h strategy.h)
-set(PROTOCOLS_SRC websocket_client.cpp trader.cpp strategy.cpp)
+set(PROTOCOLS_H websocket_client.h trader.h strategy.h reactor.h)
+set(PROTOCOLS_SRC websocket_client.cpp trader.cpp strategy.cpp reactor.cpp)
 
 add_library(protocols STATIC ${PROTOCOLS_H} ${PROTOCOLS_SRC})
 
