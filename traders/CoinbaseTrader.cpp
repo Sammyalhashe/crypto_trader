@@ -2,6 +2,7 @@
 
 #include "../adaptors/coinbase_websocket_client.h"
 #include "../adaptors/coinbase_websocket_client_async.h"
+#include "../adaptors/database_websocket_client.h"
 #include "../common/jsonutils.h"
 #include "../protocols/websocket_client.h"
 #include "../strategies/hodl.h"
@@ -138,6 +139,9 @@ void CoinbaseTrader::initWebsocketClient()
 
             d_webSocketClient = std::make_shared<adaptors::CoinbaseWebSocketClientAsync>(
                                                       coinbaseWebSocketConfig);
+        } break;
+        case CoinbaseTraderConfig::ClientType::DB: {
+            d_webSocketClient = std::make_shared<adaptors::DatabaseWebsocketClient<common::MarketDataCoinbase>>(std::shared_ptr<databases::MarketDataDB<common::MarketDataCoinbase>>(&d_database));
         } break;
         case CoinbaseTraderConfig::ClientType::COUNT: {
             /* noop */

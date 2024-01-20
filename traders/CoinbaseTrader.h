@@ -35,6 +35,7 @@ class CoinbaseTraderConfig {
     enum class ClientType {
         SYNC,
         ASYNC,
+        DB,
         COUNT
     }; // ClientType
 
