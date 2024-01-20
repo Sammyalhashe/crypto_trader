@@ -34,8 +34,10 @@ endif()
 
 # See https://developer.apple.com/library/archive/documentation/DeveloperTools/Conceptual/CppRuntimeEnv/Articles/SymbolVisibility.html
 # and https://stackoverflow.com/questions/8685045/xcode-with-boost-linkerid-warning-about-visibility-settings/11879361#11879361
+# Also, there is a bug in clang and it specifically affects boost hence the
+# disabling of concepts in boost.
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "-fvisibility=hidden")
+    set(CMAKE_CXX_FLAGS "-fvisibility=hidden -DBOOST_ASIO_DISABLE_CONCEPTS")
 endif()
 
 target_compile_options(project_flags INTERFACE ${SANITIZE})
