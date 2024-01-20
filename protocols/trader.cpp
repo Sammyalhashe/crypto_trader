@@ -4,7 +4,9 @@ namespace crypto_trader {
 namespace protocols {
 
 // class Trader
-Trader::Trader() {}
+Trader::Trader()
+: d_trade(true)
+{}
 
 Trader::~Trader() {}
 

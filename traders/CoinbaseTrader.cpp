@@ -137,11 +137,19 @@ void CoinbaseTrader::initWebsocketClient()
                std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
                d_config.isRunning());
 
-            d_webSocketClient = std::make_shared<adaptors::CoinbaseWebSocketClientAsync>(
+            d_webSocketClient = std::make_shared<
+                                       adaptors::CoinbaseWebSocketClientAsync>(
                                                       coinbaseWebSocketConfig);
         } break;
         case CoinbaseTraderConfig::ClientType::DB: {
-            d_webSocketClient = std::make_shared<adaptors::DatabaseWebsocketClient<common::MarketDataCoinbase>>(std::shared_ptr<databases::MarketDataDB<common::MarketDataCoinbase>>(&d_database));
+            // NOTE: When initializing with historical data, we don't want to
+            // actually perform the trade.
+            setTrade(false);
+
+            d_webSocketClient = std::make_shared<
+                adaptors::DatabaseWebsocketClient<common::MarketDataCoinbase>>(
+                        std::shared_ptr<
+           databases::MarketDataDB<common::MarketDataCoinbase> >(&d_database));
         } break;
         case CoinbaseTraderConfig::ClientType::COUNT: {
             /* noop */
@@ -156,7 +164,8 @@ void CoinbaseTrader::initWebsocketClient()
 
 // CREATORS
 CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
-: d_webSocketClient()
+: protocols::Trader()
+, d_webSocketClient()
 , d_strategy()
 , d_threadPool(config.numThreads())
 , d_isStopped(true)

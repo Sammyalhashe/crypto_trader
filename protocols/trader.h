@@ -8,6 +8,13 @@ namespace protocols {
 
 class Trader {
 
+  protected:
+      // PROTECTED DATA
+      bool d_trade;  // Should the trader actually perform a trade?
+
+      // PROTECTED MANIPULATORS
+      void setTrade(bool value);
+
   public:
     // CREATORS
     Trader();
@@ -19,6 +26,11 @@ class Trader {
     virtual void stop()                                 = 0;
 
 }; // Trader
+
+inline
+void Trader::setTrade(bool value) {
+    d_trade = value;
+}
 
 } // namespace protocols
 } // namespace crypto_trader
