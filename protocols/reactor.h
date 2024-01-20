@@ -29,7 +29,7 @@ class Changer {
     virtual bool registerReactor(Reactor *reactor) = 0;
 
     // Unregister reactor to be notified of data changes
-    virtual bool unregisterReactor(Reactor* reactor) = 0;
+    virtual bool unregisterReactor(Reactor *reactor) = 0;
 
 }; // class Changer
 
