@@ -32,12 +32,7 @@ class CoinbaseTraderConfig {
         std::vector<std::string> d_products;
     }; // ChannelDefinition
 
-    enum class ClientType {
-        SYNC,
-        ASYNC,
-        DB,
-        COUNT
-    }; // ClientType
+    enum class ClientType { SYNC, ASYNC, DB, COUNT }; // ClientType
 
   private:
     // PRIVATE TYPES
@@ -88,7 +83,7 @@ class CoinbaseTraderConfig {
     const std::string                      & url() const;
     const nlohmann::json                   & strategyConfig() const;
     unsigned int                             numThreads() const;
-    const ClientType clientType() const;
+    const ClientType                         clientType() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
 }; // CoinbaseTraderConfig
 
@@ -96,7 +91,9 @@ class CoinbaseTrader : public protocols::Trader {
   private:
     // STATIC DATA
     // The file that the database loads/saves data to.
-    static const char* s_databaseFile;
+    static const char *s_databaseFile;
+    // Instance of this trader created.
+    static unsigned int s_traderNum;
     // PRIVATE DATA
     // Websocket client that may or may not be used.
     std::shared_ptr<protocols::WebsocketClient> d_webSocketClient;
@@ -130,8 +127,14 @@ class CoinbaseTrader : public protocols::Trader {
     void handleAction(const common::Action& action);
     // Handle new data available to the trader.
     void handleNewData(const std::string_view& buffer);
+    // Swap to new websocket client
+    void
+    swapWebsocketClient(const std::string& clientType);
 
     // protocols::Trader
+    // return the name of this trader
+    std::string name() override;
+    // listen for new data to act on
     void listen(const std::string_view& buffer) override;
     // Start the trader.
     void start() override;
@@ -141,6 +144,7 @@ class CoinbaseTrader : public protocols::Trader {
   private:
     // PRIVATE MANIPULATORS
     void initWebsocketClient();
+    void deinitWebsocketClient();
 
 }; // CoinbaseTrader
 
@@ -150,23 +154,23 @@ class CoinbaseTrader : public protocols::Trader {
 // TYPES
 // ClientType
 
-inline
-std::ostream& operator<<(std::ostream&                           out,
-                         const CoinbaseTraderConfig::ClientType& clientType)
+inline std::ostream&
+operator<<(std::ostream                          & out,
+           const CoinbaseTraderConfig::ClientType& clientType)
 {
     switch (clientType) {
-        case CoinbaseTraderConfig::ClientType::SYNC: {
-            out << "SYNC";
-        } break;
-        case CoinbaseTraderConfig::ClientType::ASYNC: {
-            out << "ASYNC";
-        } break;
-        case CoinbaseTraderConfig::ClientType::COUNT: {
-            out << "COUNT";
-        } break;
-        default: {
-            out << "UNKNOWN";
-        }
+    case CoinbaseTraderConfig::ClientType::SYNC: {
+        out << "SYNC";
+    } break;
+    case CoinbaseTraderConfig::ClientType::ASYNC: {
+        out << "ASYNC";
+    } break;
+    case CoinbaseTraderConfig::ClientType::COUNT: {
+        out << "COUNT";
+    } break;
+    default: {
+        out << "UNKNOWN";
+    }
     }
     return out;
 }
@@ -259,7 +263,8 @@ inline unsigned int CoinbaseTraderConfig::numThreads() const
     return d_numThreads;
 }
 
-inline const CoinbaseTraderConfig::ClientType CoinbaseTraderConfig::clientType() const 
+inline const CoinbaseTraderConfig::ClientType
+CoinbaseTraderConfig::clientType() const
 {
     return d_clientType;
 }

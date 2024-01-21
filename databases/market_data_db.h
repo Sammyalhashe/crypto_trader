@@ -21,17 +21,20 @@ namespace databases {
 // Potentially set up each symbol beforehand to not lock the map.
 // If locking map may as well have 1 lock
 template <common::MarketData MarketDataType>
-class MarketDataDB {
+class MarketDataDB : protected protocols::Changer<MarketDataType> {
   private:
+    // PRIVATE TYPES
+    using Reactors = std::vector<protocols::Reactor<MarketDataType> *>;
     // PRIVATE DATA
     std::unordered_map<std::string, std::vector<MarketDataType>>
-                                      d_symbol_to_data;
-    std::vector<protocols::Reactor *> d_reactors;
+             d_symbol_to_data;
+    Reactors d_reactors;
 
   public:
     // CREATORS
     MarketDataDB()
-    : d_symbol_to_data()
+    : protocols::Changer<MarketDataType>()
+    , d_symbol_to_data()
     , d_reactors()
     {
     }
@@ -60,6 +63,15 @@ class MarketDataDB {
 
     // FRIENDS
     friend class boost::serialization::access;
+
+    // Changer
+
+    virtual void notifyAllReactors(MarketDataType data) override;
+    virtual bool
+    registerReactor(protocols::Reactor<MarketDataType> *reactor) override;
+    virtual bool
+    unregisterReactor(protocols::Reactor<MarketDataType> *reactor) override;
+
 }; // MarketDataDB
 
 // class MarketDataDB
@@ -82,6 +94,11 @@ inline void MarketDataDB<MarketDataType>::add_data(
                                      market_data,
                                      MarketDataType::order),
                     market_data);
+    
+    for (const auto d : data_vec) {
+        notifyAllReactors(d);
+    }
+
 }
 
 template <common::MarketData MarketDataType>
@@ -120,6 +137,7 @@ bool MarketDataDB<MarketDataType>::save(const std::string& file_name) const
     out_arch&*(this);
     return true;
 }
+
 // PRIVATE MANIPULATORS
 template <common::MarketData MarketDataType>
 template <class Archive>
@@ -127,6 +145,44 @@ void MarketDataDB<MarketDataType>::serialize(Archive          & archive,
                                              const unsigned int version)
 {
     archive& d_symbol_to_data;
+}
+
+template <common::MarketData MarketDataType>
+void MarketDataDB<MarketDataType>::notifyAllReactors(MarketDataType data)
+{
+    for (const auto reactor : d_reactors) {
+        reactor->react(data);
+    }
+}
+
+template <common::MarketData MarketDataType>
+bool MarketDataDB<MarketDataType>::registerReactor(
+    protocols::Reactor<MarketDataType> *reactor)
+{
+    for (const auto reactor_iter : d_reactors) {
+        if (reactor_iter == reactor) {
+            return false;
+        }
+    }
+
+    d_reactors.push_back(reactor);
+    return true;
+}
+
+template <common::MarketData MarketDataType>
+bool MarketDataDB<MarketDataType>::unregisterReactor(
+    protocols::Reactor<MarketDataType> *reactor)
+{
+    using IT = Reactors::iterator;
+    IT iter  = d_reactors.begin();
+    while (iter != d_reactors.end()) {
+        if (*iter == reactor) {
+            d_reactors.erase(iter);
+            return true;
+        }
+        ++iter;
+    }
+    return false;
 }
 
 } // namespace databases

@@ -12,7 +12,7 @@ namespace adaptors {
 
 template <typename MarketDataType>
 class DatabaseWebsocketClient : public protocols::WebsocketClient,
-                                public protocols::Reactor {
+                                public protocols::Reactor<MarketDataType> {
   public:
     // PUBLIC TYPES
     using MarketDataDb    = databases::MarketDataDB<MarketDataType>;
@@ -40,7 +40,7 @@ class DatabaseWebsocketClient : public protocols::WebsocketClient,
     void listen() override;
 
     // protocols::Reactor
-    void react() const override;
+    void react(MarketDataType data) const override;
 
 }; // class DatabaseWebsocketClient
 
@@ -101,7 +101,8 @@ void DatabaseWebsocketClient<MarketDataType>::listen()
 
 // protocols::Reactor
 template <typename MarketDataType>
-inline void DatabaseWebsocketClient<MarketDataType>::react() const
+inline void
+DatabaseWebsocketClient<MarketDataType>::react(MarketDataType data) const
 {
 }
 

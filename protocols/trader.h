@@ -20,6 +20,9 @@ class Trader {
     Trader();
     virtual ~Trader() = 0;
 
+    // PUBLIC ACCESSORS
+    virtual std::string name() = 0;
+
     // PUBLIC MANIPULATORS
     virtual void listen(const std::string_view& buffer) = 0;
     virtual void start()                                = 0;

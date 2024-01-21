@@ -29,7 +29,7 @@ set(SANITIZE "")
 message("sanitize_flag: ${custom_build_type}")
 if (custom_build_type)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=${custom_build_type}")
-    set(SANITIZE "${CMAKE_CXX_FLAGS} -fsanitize=${custom_build_type}")
+    # set(SANITIZE "${CMAKE_CXX_FLAGS} -fsanitize=${custom_build_type}")
 endif()
 
 # See https://developer.apple.com/library/archive/documentation/DeveloperTools/Conceptual/CppRuntimeEnv/Articles/SymbolVisibility.html
@@ -40,7 +40,7 @@ if (APPLE)
     set(CMAKE_CXX_FLAGS "-fvisibility=hidden -DBOOST_ASIO_DISABLE_CONCEPTS")
 endif()
 
-target_compile_options(project_flags INTERFACE ${SANITIZE})
+# target_compile_options(project_flags INTERFACE ${SANITIZE})
 
 # setup static analysis
 include(cmake/StaticAnalyzers.cmake)

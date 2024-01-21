@@ -1,6 +1,7 @@
 #ifndef INCLUDED_FILE_UTLILS
 #define INCLUDED_FILE_UTLILS
 
+#include <algorithm>
 #include <nlohmann/json.hpp>
 
 #include <atomic>
@@ -28,12 +29,23 @@ enum class ReadFileOptions {
 }; // enum class ReadFileOptions
 
 struct MonitorConfig {
+    using MtrapCb = std::function<void(std::istream& istream)>;
+    using MtrapMap = std::unordered_map<std::string, MtrapCb>;
 #ifdef __linux__
+    // File descriptor for inotify events
     int                                d_inotify_fd;
 #endif // __linux__
+    // The path of the file watched for events
     const char                        *d_trapFilePath;
+    MtrapMap                           d_mtrapMap;
+    // The state of the app
     std::shared_ptr<std::atomic<bool>> d_isRunning;
 }; // struct MonitorConfig
+
+
+int createDirIfNotExists(const char* dirPath);
+
+int createFile(const char* filepath);
 
 int readFile(std::string           *fileContents,
              const std::string    & filepath,
@@ -45,7 +57,7 @@ int createTrapFile(const char *trapFilePath);
 
 int removeTrapFile(const MonitorConfig& config);
 
-void monitorTrapFile(const MonitorConfig& config);
+void monitorTrapFile(MonitorConfig* config);
 
 int handleInotifyEvents(const MonitorConfig& config);
 #endif // __linux__

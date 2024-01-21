@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <fcntl.h>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -19,7 +20,45 @@ bool isEmptyLine(const std::string& line)
     return line == "" || line == "\n" || line == "\r" || line == "\n\r";
 }
 
+void handleCommand(const MonitorConfig& config,
+                   const char          *name,
+                   const std::string  & fileContents)
+{
+    spdlog::info("handling {}...", name);
+    std::stringstream ss(fileContents);
+    auto              it = config.d_mtrapMap.find(name);
+    if (it != config.d_mtrapMap.end()) {
+        it->second(ss);
+    }
+    else {
+        spdlog::warn("no `{}` handler found...", name);
+    }
+}
+
 } // namespace
+
+int createDirIfNotExists(const char *dirPath)
+{
+    using namespace std::filesystem;
+    if (!is_directory(dirPath) || !exists(dirPath)) {
+        if (!create_directory(dirPath)) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int createFile(const char *filepath)
+{
+    int fd = open(filepath,
+                  O_CREAT,
+                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    if (fd < 0) {
+        spdlog::error("unable to create file: {}", filepath);
+        return -1;
+    }
+    return fd;
+}
 
 int readFile(std::string           *fileContents,
              const std::string    & filepath,
@@ -69,9 +108,8 @@ int readJsonFile(json *parsedJson, const std::string& filepath)
 #ifdef __linux__
 int createTrapFile(const char *trapFilePath)
 {
-    int fd = open(trapFilePath,
-                  O_CREAT,
-                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    int fd = createFile(trapFilePath);
+
     if (fd < 0) {
         spdlog::error("unable to create trap file: {}", trapFilePath);
         return -1;
@@ -177,6 +215,12 @@ int handleInotifyEvents(const MonitorConfig& config)
                 if (fileContents == "exit") {
                     *config.d_isRunning = false;
                 }
+                else if (fileContents.starts_with("swap")) {
+                    handleCommand(config, "swap", fileContents);
+                }
+                else if (fileContents == "list") {
+                    handleCommand(config, "list", fileContents);
+                }
             }
         }
     }
@@ -184,22 +228,22 @@ int handleInotifyEvents(const MonitorConfig& config)
     return 0;
 }
 
-void monitorTrapFile(const MonitorConfig& config)
+void monitorTrapFile(MonitorConfig *config)
 {
-    spdlog::info("watching inotify_fd: {}", config.d_inotify_fd);
+    spdlog::info("watching inotify_fd: {}", config->d_inotify_fd);
 
-    if (config.d_inotify_fd < 0) {
+    if (config->d_inotify_fd < 0) {
         return;
     }
 
     constexpr int nfds = 1;
     pollfd        pfds[nfds];
-    pfds[0].fd     = config.d_inotify_fd;
+    pfds[0].fd     = config->d_inotify_fd;
     pfds[0].events = POLLIN;
 
     int pollNum;
 
-    while (*config.d_isRunning) {
+    while (*config->d_isRunning) {
         // last value is timeout
         pollNum = poll(pfds, nfds, -1);
 
@@ -211,7 +255,7 @@ void monitorTrapFile(const MonitorConfig& config)
                 continue;
             }
             spdlog::error("error while polling inotify_fd: {}: {}",
-                          config.d_inotify_fd,
+                          config->d_inotify_fd,
                           errno);
             return;
         }
@@ -219,7 +263,7 @@ void monitorTrapFile(const MonitorConfig& config)
         if (pollNum > 0) {
             if (pfds[0].revents & POLLIN) {
                 /* Inotify events are available */
-                handleInotifyEvents(config);
+                handleInotifyEvents(*config);
             }
         }
     }
@@ -228,20 +272,19 @@ void monitorTrapFile(const MonitorConfig& config)
 #endif // __linux__
 
 #if TARGET_OS_MAC
-void fsEventStreamCallback(
-    ConstFSEventStreamRef streamRef,
-    void *clientCallBackInfo,
-    size_t numEvents,
-    void *eventPaths,
-    const FSEventStreamEventFlags eventFlags[],
-    const FSEventStreamEventId eventIds[])
+void fsEventStreamCallback(ConstFSEventStreamRef         streamRef,
+                           void                         *clientCallBackInfo,
+                           size_t                        numEvents,
+                           void                         *eventPaths,
+                           const FSEventStreamEventFlags eventFlags[],
+                           const FSEventStreamEventId    eventIds[])
 {
     assert(clientCallBackInfo);
-    const MonitorConfig& config = *(MonitorConfig*)clientCallBackInfo;
-    int i;
-    char **paths = (char**)eventPaths;
-    
-    for (i=0; i<numEvents; i++) {
+    const MonitorConfig& config = *(MonitorConfig *)clientCallBackInfo;
+    int                  i;
+    char               **paths = (char **)eventPaths;
+
+    for (i = 0; i < numEvents; i++) {
         if (eventFlags[i] & kFSEventStreamEventFlagItemModified) {
             std::string fileContents;
             readFile(&fileContents,
@@ -269,15 +312,18 @@ void fsEventStreamCallback(
                 FSEventStreamRelease(ref);
             }
         }
-   }
+    }
 }
 
-bool createEventStream(const MonitorConfig& config) {
+bool createEventStream(const MonitorConfig& config)
+{
     CFStringRef mypath = __CFStringMakeConstantString(config.d_trapFilePath);
-    CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **)&mypath, 1, nullptr);
-    FSEventStreamContext callbackInfo = {0, (void*)&config, nullptr, nullptr, nullptr};
+    CFArrayRef  pathsToWatch =
+        CFArrayCreate(nullptr, (const void **)&mypath, 1, nullptr);
+    FSEventStreamContext callbackInfo = {
+        0, (void *)&config, nullptr, nullptr, nullptr};
     FSEventStreamRef stream;
-    CFTimeInterval latency = 0.5;
+    CFTimeInterval   latency = 0.5;
 
     spdlog::info("creating fseventstream...");
     stream = FSEventStreamCreate(nullptr,
@@ -285,16 +331,17 @@ bool createEventStream(const MonitorConfig& config) {
                                  &callbackInfo,
                                  (CFArrayRef)pathsToWatch,
                                  kFSEventStreamEventIdSinceNow,
-                                 (CFAbsoluteTime) latency,
+                                 (CFAbsoluteTime)latency,
                                  kFSEventStreamCreateFlagFileEvents);
 
-    FSEventStreamScheduleWithRunLoop(stream,
-    /* see here
-     * https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html
-     * for more details on the below arguments.
-     */
-                                     CFRunLoopGetCurrent(),
-                                     kCFRunLoopDefaultMode);
+    FSEventStreamScheduleWithRunLoop(
+        stream,
+        /* see here
+         * https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html
+         * for more details on the below arguments.
+         */
+        CFRunLoopGetCurrent(),
+        kCFRunLoopDefaultMode);
 
     FSEventStreamStart(stream);
 

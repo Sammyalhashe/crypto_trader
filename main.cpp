@@ -31,6 +31,59 @@
         }                                                                     \
     }
 
+void listTraders(
+    std::vector<std::unique_ptr<crypto_trader::protocols::Trader>> *traders,
+    std::istream                                                  & istream)
+{
+    spdlog::info("=========== The following traders are running ===========");
+    for (const auto& trader : *traders) {
+        spdlog::info("{}", trader->name());
+    }
+}
+
+void swapWebsocketClient(
+    std::vector<std::unique_ptr<crypto_trader::protocols::Trader>> *traders,
+    std::istream                                                  & istream)
+{
+    std::string dummy;
+    istream >> dummy; // consume the swap
+
+    std::string trader_name;
+    istream >> trader_name;
+
+    auto iter = traders->begin();
+
+    while (iter != traders->end()) {
+        if ((*iter)->name() == trader_name) break;
+    }
+
+    if (iter == traders->end()) {
+        spdlog::error("No trader {}", trader_name);
+        return;
+    }
+
+    std::string type;
+    istream >> type;
+
+    // TODO: This is ugly, fix this lol.
+    reinterpret_cast<crypto_trader::traders::CoinbaseTrader*>(iter->get())->swapWebsocketClient(type);
+
+}
+
+void registerMtrap(
+    crypto_trader::common::MonitorConfig                *config,
+    const char                                          *name,
+    const crypto_trader::common::MonitorConfig::MtrapCb& mtrapCb)
+{
+    if (config->d_mtrapMap.contains(name)) {
+        return;
+    }
+
+    spdlog::info("registering {} for handling mtraps...", name);
+
+    config->d_mtrapMap[name] = mtrapCb;
+}
+
 static std::function<void(void)> s_cleaner;
 
 struct SignalContext {
@@ -46,20 +99,25 @@ int main(int argc, char *argv[])
     *context.d_isRunning = true;
 
 #ifdef __linux__
-    const char *trapFileName = "/tmp/crypto_trader";
-    int         inotify_fd   = common::createTrapFile(trapFileName);
+    const char           *trapFileName = "/tmp/crypto_trader";
+    int                   inotify_fd   = common::createTrapFile(trapFileName);
     common::MonitorConfig monitorConfig{.d_inotify_fd   = inotify_fd,
                                         .d_trapFilePath = trapFileName,
-                                        .d_isRunning    = context.d_isRunning};
+                                        .d_mtrapMap =
+                                            common::MonitorConfig::MtrapMap(),
+                                        .d_isRunning = context.d_isRunning};
 
-    boost::thread         trapFileWatchThread{
-        boost::bind(&common::monitorTrapFile, monitorConfig)};
+    boost::thread trapFileWatchThread{
+        boost::bind(&common::monitorTrapFile, &monitorConfig)};
 #endif // __linux__
 
 #if TARGET_OS_MAC
-    common::MonitorConfig monitorConfig{.d_trapFilePath = "/var/tmp/crypto_trader/coinbase_trader_data",
-                                        .d_isRunning    = context.d_isRunning};
-    boost::thread fsRunLoopThread{boost::bind(&common::createEventStream, monitorConfig)};
+    common::MonitorConfig monitorConfig{
+        .d_trapFilePath = "/var/tmp/crypto_trader/coinbase_trader_data",
+        .d_mtrapMap     = common::MonitorConfig::MtrapMap(),
+        .d_isRunning    = context.d_isRunning};
+    boost::thread fsRunLoopThread{
+        boost::bind(&common::createEventStream, monitorConfig)};
 #endif // TARGET_OS_MAC
 
     nlohmann::json jsonFileContents;
@@ -152,24 +210,23 @@ int main(int argc, char *argv[])
                                 strategyJson, "config", "{}"_json));
                     }
 
-                    auto clientType = common::value_or(coinbaseTraderJson,
-                                                       "clientType",
-                                                       "SYNC");
+                    auto clientType = common::value_or(
+                        coinbaseTraderJson, "clientType", "SYNC");
 
                     if (clientType == "SYNC") {
                         coinbaseTraderConfig.setClientType(
-                              traders::CoinbaseTraderConfig::ClientType::SYNC);
+                            traders::CoinbaseTraderConfig::ClientType::SYNC);
                     }
                     else if (clientType == "ASYNC") {
                         coinbaseTraderConfig.setClientType(
-                             traders::CoinbaseTraderConfig::ClientType::ASYNC);
+                            traders::CoinbaseTraderConfig::ClientType::ASYNC);
                     }
                     else {
-                        spdlog::error(
-                           "Recieved invalid client type for coinbase trader, "
-                           "defaulting to SYNC");
+                        spdlog::error("Recieved invalid client type for "
+                                      "coinbase trader, "
+                                      "defaulting to SYNC");
                         coinbaseTraderConfig.setClientType(
-                              traders::CoinbaseTraderConfig::ClientType::SYNC);
+                            traders::CoinbaseTraderConfig::ClientType::SYNC);
                     }
 
                     traders.push_back(
@@ -181,6 +238,17 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    // register mtraps...
+    registerMtrap(
+        &monitorConfig,
+        "swap",
+        boost::bind(&swapWebsocketClient, &traders, boost::placeholders::_1));
+
+    registerMtrap(
+        &monitorConfig,
+        "list",
+        boost::bind(&listTraders, &traders, boost::placeholders::_1));
 
     boost::asio::thread_pool running_traders(numTraders);
 
