@@ -40,8 +40,8 @@ concept MarketData = requires(T a)
 template <typename T>
 concept SerializeableData = requires(T a)
 {
-    MarketData<T>;
-    Serializeable<T>;
+    requires MarketData<T>;
+    requires Serializeable<T>;
 };
 
 
