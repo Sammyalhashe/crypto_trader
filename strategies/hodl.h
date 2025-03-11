@@ -30,6 +30,11 @@ class HodlStrategyConfig {
     float d_percentUp;
     // Y percent down to buy if the market dips
     float d_percentDown;
+    // Pool of funds allocated to this strategy. Only emit
+    // a buy action if you have enough funds.
+    float d_pool;
+    // Flag if we are in paper trading mode.
+    bool d_paperTrading;
     // Callback called on emitted action by strategy.
     common::Emit d_emit;
 
@@ -38,6 +43,8 @@ class HodlStrategyConfig {
     HodlStrategyConfig& setInitStrategy(const InitStrategy& initStrat);
     HodlStrategyConfig& setPercentUp(float percentUp);
     HodlStrategyConfig& setPercentDown(float percentDown);
+    HodlStrategyConfig& setPool(float pool);
+    HodlStrategyConfig& setPaperTrading(bool paperTrading);
     HodlStrategyConfig& setEmit(const common::Emit& emit);
 
     // ACCESSORS
@@ -56,6 +63,8 @@ struct Trade {
     float d_price;
     // did we already buy the dip? If yes don't do it again lol.
     bool d_boughtAgain;
+    // Amount of crypto to buy.
+    float d_amount;
 }; // Trade
 
 class HodlStrategy : public protocols::Strategy {
@@ -100,6 +109,7 @@ class HodlStrategy : public protocols::Strategy {
     void handleNewData(const nlohmann::json& data) override;
 
     // ACCESSORS
+    float profit(float currentPrice) override;
     // Return a non-modifiable reference to the list of positions
     // we currently have
     const TradeMap& trades() const;
@@ -134,6 +144,20 @@ inline HodlStrategyConfig&
 HodlStrategyConfig::setPercentDown(float percentDown)
 {
     d_percentDown = percentDown;
+    return *this;
+}
+
+inline HodlStrategyConfig&
+HodlStrategyConfig::setPool(float pool)
+{
+    d_pool = pool;
+    return *this;
+}
+
+inline HodlStrategyConfig&
+HodlStrategyConfig::setPaperTrading(bool paperTrading)
+{
+    d_paperTrading = paperTrading;
     return *this;
 }
 

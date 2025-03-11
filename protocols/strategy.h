@@ -24,6 +24,9 @@ class Strategy {
     // MANIPULATORS
     virtual void handleNewData(const nlohmann::json& data) = 0;
 
+    // ACCESSORS
+    virtual float profit(float currentPrice) = 0;
+
 }; // Strategy
 } // namespace protocols
 } // namespace crypto_trader

@@ -131,6 +131,8 @@ int main(int argc, char *argv[])
                     coinbaseTraderConfig.setChannels(channels);
                     coinbaseTraderConfig.setNumThreads(
                         common::value_or(coinbaseTraderJson, "numThreads", 1));
+                    coinbaseTraderConfig.setPaperTrading(common::value_or(
+                        coinbaseTraderJson, "paperTrading", false));
                     if (coinbaseTraderJson.contains("strategy")) {
                         const auto strategyJson =
                             coinbaseTraderJson["strategy"];
@@ -152,24 +154,23 @@ int main(int argc, char *argv[])
                                 strategyJson, "config", "{}"_json));
                     }
 
-                    auto clientType = common::value_or(coinbaseTraderJson,
-                                                       "clientType",
-                                                       "SYNC");
+                    auto clientType = common::value_or(
+                        coinbaseTraderJson, "clientType", "SYNC");
 
                     if (clientType == "SYNC") {
                         coinbaseTraderConfig.setClientType(
-                              traders::CoinbaseTraderConfig::ClientType::SYNC);
+                            traders::CoinbaseTraderConfig::ClientType::SYNC);
                     }
                     else if (clientType == "ASYNC") {
                         coinbaseTraderConfig.setClientType(
-                             traders::CoinbaseTraderConfig::ClientType::ASYNC);
+                            traders::CoinbaseTraderConfig::ClientType::ASYNC);
                     }
                     else {
-                        spdlog::error(
-                           "Recieved invalid client type for coinbase trader, "
-                           "defaulting to SYNC");
+                        spdlog::error("Recieved invalid client type for "
+                                      "coinbase trader, "
+                                      "defaulting to SYNC");
                         coinbaseTraderConfig.setClientType(
-                              traders::CoinbaseTraderConfig::ClientType::SYNC);
+                            traders::CoinbaseTraderConfig::ClientType::SYNC);
                     }
 
                     traders.push_back(

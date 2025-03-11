@@ -55,6 +55,16 @@ void HodlStrategy::handleNewData(const nlohmann::json& data)
     }
 }
 
+// ACCESSORS
+float HodlStrategy::profit(float currentPrice)
+{
+    float profit = 0.0;
+    for (const auto& trade : d_trades) {
+        profit += trade.second.d_price - currentPrice;
+    }
+    return profit;
+}
+
 // PRIVATE MANIPULATORS
 void HodlStrategy::goOverTradesAtPrice(float                   price,
                                        const std::string_view& timestamp)
@@ -127,7 +137,8 @@ void HodlStrategy::buy(const BuyConfig& config)
     back.d_price       = config.d_price;
 
     if (d_emit) {
-        common::Action action{.d_type = common::Action::e_BUY};
+        common::Action action{.d_actionType =
+                                  common::Action::ActionType::e_BUY};
         d_emit(action);
     }
 }
@@ -147,7 +158,8 @@ void HodlStrategy::sell(const SellConfig& config)
     }
 
     if (d_emit) {
-        common::Action action{.d_type = common::Action::e_SELL};
+        common::Action action{.d_actionType =
+                                  common::Action::ActionType::e_SELL};
         d_emit(action);
     }
 }

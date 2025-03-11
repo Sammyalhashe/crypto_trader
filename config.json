@@ -18,11 +18,13 @@
                     "config": {
                         "percentUp": 0.001,
                         "percentDown": 0.001,
-                        "initStrategy": "buy_immediately"
+                        "initStrategy": "buy_immediately",
+                        "pool": 1000
                     }
                 },
                 "numThreads": 4,
-                "clientType": "ASYNC"
+                "clientType": "ASYNC",
+                "paperTrading": true
             }
         }
     ]

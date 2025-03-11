@@ -32,11 +32,7 @@ class CoinbaseTraderConfig {
         std::vector<std::string> d_products;
     }; // ChannelDefinition
 
-    enum class ClientType {
-        SYNC,
-        ASYNC,
-        COUNT
-    }; // ClientType
+    enum class ClientType { SYNC, ASYNC, COUNT }; // ClientType
 
   private:
     // PRIVATE TYPES
@@ -46,6 +42,8 @@ class CoinbaseTraderConfig {
     // PRIVATE DATA
     // The products to monitor/trade.
     StringVec d_products;
+    // The initial funds allocated to the trader.
+    float d_pool;
     // The channels to subscribe to if using a websocket strategy
     boost::optional<ChannelVec> d_channels;
     // The strategy to use to trade with.
@@ -58,6 +56,8 @@ class CoinbaseTraderConfig {
     unsigned int d_numThreads;
     // use the async client?
     ClientType d_clientType;
+    // Paper trading enabled?
+    bool d_paperTrading;
     // Shared atomic state declaring whether the application is running.
     std::shared_ptr<std::atomic_bool> d_isRunning;
 
@@ -69,6 +69,7 @@ class CoinbaseTraderConfig {
 
     // PUBLIC MANIPULATORS
     CoinbaseTraderConfig& setProducts(const StringVec& products);
+    CoinbaseTraderConfig& setInitialPool(float pool);
     CoinbaseTraderConfig&
     setChannels(const boost::optional<ChannelVec>& products);
     CoinbaseTraderConfig& setChannels(const ChannelVec& products);
@@ -79,15 +80,17 @@ class CoinbaseTraderConfig {
     setStrategyConfig(const nlohmann::json& strategyConfig);
     CoinbaseTraderConfig& setNumThreads(unsigned int numThreads);
     CoinbaseTraderConfig& setClientType(const ClientType clientType);
+    CoinbaseTraderConfig& setPaperTrading(bool paperTrading);
 
     // PUBLIC ACCESSORS
-    const StringVec                        & products() const;
-    const boost::optional<ChannelVec>      & channels() const;
-    const strategies::TradingStrategy      & strategy() const;
-    const std::string                      & url() const;
-    const nlohmann::json                   & strategyConfig() const;
+    const StringVec&                         products() const;
+    const boost::optional<ChannelVec>&       channels() const;
+    const strategies::TradingStrategy&       strategy() const;
+    const std::string&                       url() const;
+    const nlohmann::json&                    strategyConfig() const;
     unsigned int                             numThreads() const;
-    const ClientType clientType() const;
+    bool                                     paperTrading() const;
+    const ClientType                         clientType() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
 }; // CoinbaseTraderConfig
 
@@ -95,7 +98,7 @@ class CoinbaseTrader : public protocols::Trader {
   private:
     // STATIC DATA
     // The file that the database loads/saves data to.
-    static const char* s_databaseFile;
+    static const char *s_databaseFile;
     // PRIVATE DATA
     // Websocket client that may or may not be used.
     std::shared_ptr<protocols::WebsocketClient> d_webSocketClient;
@@ -136,6 +139,7 @@ class CoinbaseTrader : public protocols::Trader {
     void start() override;
     // Stop the trader.
     void stop() override;
+    void submitOrder(const common::Action& action) override;
 
   private:
     // PRIVATE MANIPULATORS
@@ -149,23 +153,23 @@ class CoinbaseTrader : public protocols::Trader {
 // TYPES
 // ClientType
 
-inline
-std::ostream& operator<<(std::ostream&                           out,
-                         const CoinbaseTraderConfig::ClientType& clientType)
+inline std::ostream&
+operator<<(std::ostream&                           out,
+           const CoinbaseTraderConfig::ClientType& clientType)
 {
     switch (clientType) {
-        case CoinbaseTraderConfig::ClientType::SYNC: {
-            out << "SYNC";
-        } break;
-        case CoinbaseTraderConfig::ClientType::ASYNC: {
-            out << "ASYNC";
-        } break;
-        case CoinbaseTraderConfig::ClientType::COUNT: {
-            out << "COUNT";
-        } break;
-        default: {
-            out << "UNKNOWN";
-        }
+    case CoinbaseTraderConfig::ClientType::SYNC: {
+        out << "SYNC";
+    } break;
+    case CoinbaseTraderConfig::ClientType::ASYNC: {
+        out << "ASYNC";
+    } break;
+    case CoinbaseTraderConfig::ClientType::COUNT: {
+        out << "COUNT";
+    } break;
+    default: {
+        out << "UNKNOWN";
+    }
     }
     return out;
 }
@@ -175,6 +179,12 @@ inline CoinbaseTraderConfig&
 CoinbaseTraderConfig::setProducts(const std::vector<std::string>& products)
 {
     d_products = products;
+    return *this;
+}
+
+inline CoinbaseTraderConfig& CoinbaseTraderConfig::setInitialPool(float pool)
+{
+    d_pool = pool;
     return *this;
 }
 
@@ -227,6 +237,13 @@ CoinbaseTraderConfig::setClientType(const ClientType clientType)
     return *this;
 }
 
+inline CoinbaseTraderConfig&
+CoinbaseTraderConfig::setPaperTrading(bool paperTrading)
+{
+    d_paperTrading = paperTrading;
+    return *this;
+}
+
 // PUBLIC ACCESSORS
 inline const CoinbaseTraderConfig::StringVec&
 CoinbaseTraderConfig::products() const
@@ -258,7 +275,13 @@ inline unsigned int CoinbaseTraderConfig::numThreads() const
     return d_numThreads;
 }
 
-inline const CoinbaseTraderConfig::ClientType CoinbaseTraderConfig::clientType() const 
+inline bool CoinbaseTraderConfig::paperTrading() const
+{
+    return d_paperTrading;
+}
+
+inline const CoinbaseTraderConfig::ClientType
+CoinbaseTraderConfig::clientType() const
 {
     return d_clientType;
 }
