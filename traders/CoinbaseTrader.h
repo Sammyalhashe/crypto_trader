@@ -32,11 +32,7 @@ class CoinbaseTraderConfig {
         std::vector<std::string> d_products;
     }; // ChannelDefinition
 
-    enum class ClientType {
-        SYNC,
-        ASYNC,
-        COUNT
-    }; // ClientType
+    enum class ClientType { SYNC, ASYNC, COUNT }; // ClientType
 
   private:
     // PRIVATE TYPES
@@ -60,6 +56,7 @@ class CoinbaseTraderConfig {
     ClientType d_clientType;
     // Shared atomic state declaring whether the application is running.
     std::shared_ptr<std::atomic_bool> d_isRunning;
+    double                            d_initialAmount;
 
   public:
     // CREATORS
@@ -79,23 +76,25 @@ class CoinbaseTraderConfig {
     setStrategyConfig(const nlohmann::json& strategyConfig);
     CoinbaseTraderConfig& setNumThreads(unsigned int numThreads);
     CoinbaseTraderConfig& setClientType(const ClientType clientType);
+    CoinbaseTraderConfig& setInitialAmount(double initialAmount);
 
     // PUBLIC ACCESSORS
-    const StringVec                        & products() const;
-    const boost::optional<ChannelVec>      & channels() const;
-    const strategies::TradingStrategy      & strategy() const;
-    const std::string                      & url() const;
-    const nlohmann::json                   & strategyConfig() const;
+    const StringVec&                         products() const;
+    const boost::optional<ChannelVec>&       channels() const;
+    const strategies::TradingStrategy&       strategy() const;
+    const std::string&                       url() const;
+    const nlohmann::json&                    strategyConfig() const;
     unsigned int                             numThreads() const;
-    const ClientType clientType() const;
+    const ClientType                         clientType() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
+    double                                   initialAmount() const;
 }; // CoinbaseTraderConfig
 
-class CoinbaseTrader : public protocols::Trader {
+class CoinbaseTrader : public protocols::Trader<common::MarketDataCoinbase> {
   private:
     // STATIC DATA
     // The file that the database loads/saves data to.
-    static const char* s_databaseFile;
+    static const char *s_databaseFile;
     // PRIVATE DATA
     // Websocket client that may or may not be used.
     std::shared_ptr<protocols::WebsocketClient> d_webSocketClient;
@@ -130,12 +129,18 @@ class CoinbaseTrader : public protocols::Trader {
     // Handle new data available to the trader.
     void handleNewData(const std::string_view& buffer);
 
+    // PUBLIC ACCESSORS
+    // Does the trader have enough funds to execute a trade?
+    bool hasFunds(double amount) const;
+
     // protocols::Trader
     void listen(const std::string_view& buffer) override;
     // Start the trader.
     void start() override;
     // Stop the trader.
     void stop() override;
+    // Load data and compute the output
+    float loadData(std::vector<common::MarketDataCoinbase> data) override;
 
   private:
     // PRIVATE MANIPULATORS
@@ -149,23 +154,23 @@ class CoinbaseTrader : public protocols::Trader {
 // TYPES
 // ClientType
 
-inline
-std::ostream& operator<<(std::ostream&                           out,
-                         const CoinbaseTraderConfig::ClientType& clientType)
+inline std::ostream&
+operator<<(std::ostream&                           out,
+           const CoinbaseTraderConfig::ClientType& clientType)
 {
     switch (clientType) {
-        case CoinbaseTraderConfig::ClientType::SYNC: {
-            out << "SYNC";
-        } break;
-        case CoinbaseTraderConfig::ClientType::ASYNC: {
-            out << "ASYNC";
-        } break;
-        case CoinbaseTraderConfig::ClientType::COUNT: {
-            out << "COUNT";
-        } break;
-        default: {
-            out << "UNKNOWN";
-        }
+    case CoinbaseTraderConfig::ClientType::SYNC: {
+        out << "SYNC";
+    } break;
+    case CoinbaseTraderConfig::ClientType::ASYNC: {
+        out << "ASYNC";
+    } break;
+    case CoinbaseTraderConfig::ClientType::COUNT: {
+        out << "COUNT";
+    } break;
+    default: {
+        out << "UNKNOWN";
+    }
     }
     return out;
 }
@@ -227,6 +232,13 @@ CoinbaseTraderConfig::setClientType(const ClientType clientType)
     return *this;
 }
 
+inline CoinbaseTraderConfig&
+CoinbaseTraderConfig::setInitialAmount(double initialAmount)
+{
+    d_initialAmount = initialAmount;
+    return *this;
+}
+
 // PUBLIC ACCESSORS
 inline const CoinbaseTraderConfig::StringVec&
 CoinbaseTraderConfig::products() const
@@ -258,7 +270,8 @@ inline unsigned int CoinbaseTraderConfig::numThreads() const
     return d_numThreads;
 }
 
-inline const CoinbaseTraderConfig::ClientType CoinbaseTraderConfig::clientType() const 
+inline const CoinbaseTraderConfig::ClientType
+CoinbaseTraderConfig::clientType() const
 {
     return d_clientType;
 }
@@ -267,6 +280,11 @@ inline const std::shared_ptr<std::atomic_bool>&
 CoinbaseTraderConfig::isRunning() const
 {
     return d_isRunning;
+}
+
+inline double CoinbaseTraderConfig::initialAmount() const
+{
+    return d_initialAmount;
 }
 
 } // namespace traders

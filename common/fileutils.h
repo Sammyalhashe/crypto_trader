@@ -29,14 +29,14 @@ enum class ReadFileOptions {
 
 struct MonitorConfig {
 #ifdef __linux__
-    int                                d_inotify_fd;
+    int d_inotify_fd;
 #endif // __linux__
     const char                        *d_trapFilePath;
     std::shared_ptr<std::atomic<bool>> d_isRunning;
 }; // struct MonitorConfig
 
 int readFile(std::string           *fileContents,
-             const std::string    & filepath,
+             const std::string&     filepath,
              const ReadFileOptions& readFileptions);
 int readJsonFile(json *parsedJson, const std::string& filepath);
 
@@ -51,13 +51,12 @@ int handleInotifyEvents(const MonitorConfig& config);
 #endif // __linux__
 
 #ifdef TARGET_OS_MAC
-void fsEventStreamCallback(
-    ConstFSEventStreamRef streamRef,
-    void *clientCallBackInfo,
-    size_t numEvents,
-    void *eventPaths,
-    const FSEventStreamEventFlags eventFlags[],
-    const FSEventStreamEventId eventIds[]);
+void fsEventStreamCallback(ConstFSEventStreamRef         streamRef,
+                           void                         *clientCallBackInfo,
+                           size_t                        numEvents,
+                           void                         *eventPaths,
+                           const FSEventStreamEventFlags eventFlags[],
+                           const FSEventStreamEventId    eventIds[]);
 
 bool createEventStream(const MonitorConfig& config);
 #endif // TARGET_OS_MAC

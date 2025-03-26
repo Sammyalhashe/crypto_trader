@@ -2,6 +2,6 @@
 
 namespace crypto_trader {
 namespace databases {
-    
-} // closing namespace databases
-} // closing namespace crypto_trader
+
+} // namespace databases
+} // namespace crypto_trader

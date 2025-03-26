@@ -37,7 +37,7 @@ endif()
 # Also, there is a bug in clang and it specifically affects boost hence the
 # disabling of concepts in boost.
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "-fvisibility=hidden -DBOOST_ASIO_DISABLE_CONCEPTS")
+    set(CMAKE_CXX_FLAGS "-fvisibility=hidden -DBOOST_ASIO_DISABLE_CONCEPTS -DBOOST_NO_CXX11_DECLTYPE_N3276")
 endif()
 
 target_compile_options(project_flags INTERFACE ${SANITIZE})

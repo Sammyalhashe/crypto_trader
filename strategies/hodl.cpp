@@ -18,12 +18,12 @@ using json = nlohmann::json; // from <nlohmann/json.hpp>
                              // namespace
 
 // FREE FUNCTIONS
-float computeXPercentUp(float price, float percent)
+double computeXPercentUp(double price, float percent)
 {
     return price * (1 + percent / 100);
 }
 
-float computeXPercentDown(float price, float percent)
+double computeXPercentDown(double price, float percent)
 {
     return price * (1 - percent / 100);
 }
@@ -38,6 +38,7 @@ HodlStrategy::HodlStrategy(const HodlStrategyConfig& config)
 , d_tradeIdBasis(0)
 , d_trades()
 , d_basisMarketPrice()
+, d_symbolToLastPrice()
 , d_config(config)
 {
 }
@@ -45,26 +46,39 @@ HodlStrategy::HodlStrategy(const HodlStrategyConfig& config)
 HodlStrategy::~HodlStrategy() {}
 
 // MANIPULATORS
+// protocols::strategy
 void HodlStrategy::handleNewData(const nlohmann::json& data)
 {
     auto type = data["type"];
 
     if (type == "ticker") {
-        float price = std::stof(std::string(data["price"]));
-        goOverTradesAtPrice(price, std::string(data["time"]));
+        double price = std::stof(std::string(data["price"]));
+        d_symbolToLastPrice[data["symbol"]] = price;
+        goOverTradesAtPrice(data["symbol"], price, std::string(data["time"]));
     }
 }
 
+// ACCESSORS
+// protocols::strategy
+double HodlStrategy::totalPosition() const
+{
+    double position = d_config.fundsAvailable();
+
+    return position;
+}
+
 // PRIVATE MANIPULATORS
-void HodlStrategy::goOverTradesAtPrice(float                   price,
-                                       const std::string_view& timestamp)
+void HodlStrategy::goOverTradesAtPrice(const std::string& symbol,
+                                       double             price,
+                                       const std::string& timestamp)
 {
     if (d_trades.empty()) {
         if (d_basisMarketPrice) {
             if (price <= computeXPercentDown(d_basisMarketPrice.value(),
                                              d_config.percentDown()))
             {
-                BuyConfig config{.d_timestamp = timestamp,
+                BuyConfig config{.d_symbol    = symbol,
+                                 .d_timestamp = timestamp,
                                  .d_price     = price,
                                  .d_buyAgain  = true};
                 buy(config);
@@ -75,7 +89,8 @@ void HodlStrategy::goOverTradesAtPrice(float                   price,
 
         switch (d_config.initStrategy()) {
         case HodlStrategyConfig::e_BUY_IMMEDIATELY: {
-            BuyConfig config{.d_timestamp = timestamp,
+            BuyConfig config{.d_symbol    = symbol,
+                             .d_timestamp = timestamp,
                              .d_price     = price,
                              .d_buyAgain  = true};
             buy(config);
@@ -94,37 +109,50 @@ void HodlStrategy::goOverTradesAtPrice(float                   price,
         return;
     }
 
-    using IT = TradeMap::iterator;
-    IT it    = d_trades.begin();
-    for (; d_trades.end() != it;) {
-        if (price >=
-            computeXPercentUp(it->second.d_price, d_config.percentUp()))
-        {
-            SellConfig config{.d_trade = it++, .d_price = price};
-            sell(config);
-            continue;
+    using SymbolIT    = TradesForSymbol::iterator;
+    using TradesIT    = TradeMap::iterator;
+    SymbolIT symbolIt = d_trades.begin();
+    for (; d_trades.end() != symbolIt; ++symbolIt) {
+        TradesIT it = symbolIt->second.begin();
+        for (; symbolIt->second.end() != it;) {
+            if (price >=
+                computeXPercentUp(it->second.d_price, d_config.percentUp()))
+            {
+                SellConfig config{
+                    .d_symbol = symbol, .d_trade = it++, .d_price = price};
+                sell(config);
+                continue;
+            }
+            else if (price <= computeXPercentDown(it->second.d_price,
+                                                  d_config.percentDown()) &&
+                     !it->second.d_boughtAgain)
+            {
+                it->second.d_boughtAgain = true;
+                BuyConfig config{.d_symbol    = symbol,
+                                 .d_timestamp = timestamp,
+                                 .d_price     = price,
+                                 .d_buyAgain  = false};
+                buy(config);
+            }
+            ++it;
         }
-        else if (price <= computeXPercentDown(it->second.d_price,
-                                              d_config.percentDown()) &&
-                 !it->second.d_boughtAgain)
-        {
-            it->second.d_boughtAgain = true;
-            BuyConfig config{.d_timestamp = timestamp,
-                             .d_price     = price,
-                             .d_buyAgain  = false};
-            buy(config);
-        }
-        ++it;
     }
 }
 
 void HodlStrategy::buy(const BuyConfig& config)
 {
+    if (d_config.buyAmount() > d_config.fundsAvailable()) {
+        spdlog::warn("BUY not executed due to lack of funds");
+        return;
+    }
     spdlog::info("BUY at price {}", config.d_price);
     auto& back         = d_trades[++d_tradeIdBasis];
     back.d_timestamp   = config.d_timestamp;
     back.d_boughtAgain = !config.d_buyAgain;
     back.d_price       = config.d_price;
+
+    d_config.setFundsAvailable(d_config.fundsAvailable() -
+                               d_config.buyAmount());
 
     if (d_emit) {
         common::Action action{.d_type = common::Action::e_BUY};
@@ -134,7 +162,8 @@ void HodlStrategy::buy(const BuyConfig& config)
 
 void HodlStrategy::sell(const SellConfig& config)
 {
-    spdlog::info("SELL at price {} for trade bought at {}",
+    spdlog::info("SELL {} at price {} for trade bought at {}",
+                 config.d_symbol,
                  config.d_price,
                  config.d_trade->second.d_price);
     d_trades.erase(config.d_trade);

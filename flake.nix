@@ -34,6 +34,7 @@
                   # https://devenv.sh/reference/options/
                   packages = with pkgs; [ 
                     cmake
+                    python312Packages.pip
                     conan
                     gcc
                     clang

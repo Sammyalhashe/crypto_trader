@@ -50,9 +50,7 @@ CoinbaseWebSocketClientAsync::CoinbaseWebSocketClientAsync(
 {
 }
 
-CoinbaseWebSocketClientAsync::~CoinbaseWebSocketClientAsync() {
-    close();
-}
+CoinbaseWebSocketClientAsync::~CoinbaseWebSocketClientAsync() { close(); }
 
 // PRIVATE MANIPULATORS
 
@@ -146,13 +144,12 @@ void CoinbaseWebSocketClientAsync::on_handshake(beast::error_code ec)
         return fail(ec, "handshake");
     }
 
-
     spdlog::info("Writing the request:\n{}\nto coinbase",
                  d_config.d_text.dump(4));
     d_ws.async_write(
         net::buffer(d_config.d_text.dump()),
         beast::bind_front_handler(&CoinbaseWebSocketClientAsync::on_write,
-                            shared_from_this()));
+                                  shared_from_this()));
 }
 
 void CoinbaseWebSocketClientAsync::on_write(beast::error_code ec,
@@ -224,7 +221,8 @@ void CoinbaseWebSocketClientAsync::close()
     d_ioc.stop();
 }
 
-void CoinbaseWebSocketClientAsync::listen() {
+void CoinbaseWebSocketClientAsync::listen()
+{
     spdlog::debug("CoinbaseWebSocketClientAsync::listen");
     open();
 

@@ -8,6 +8,7 @@
 #include "../strategies/index.h"
 
 #include <boost/beast/ssl.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -25,7 +26,7 @@ using json = nlohmann::json; // from <nlohmann/json.hpp>
                              // namespace
 
 void buildCoinbaseWebsocketMessage(nlohmann::json             *message,
-                                   const std::string         & type,
+                                   const std::string&          type,
                                    const CoinbaseTraderConfig& config)
 {
     std::string result;
@@ -106,47 +107,50 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 , d_numThreads(1)
 , d_clientType(CoinbaseTraderConfig::ClientType::SYNC)
 , d_isRunning(isRunning)
+, d_initialAmount(0.0)
 {
 }
 
 // class CoinbaseTrader
 
 // STATIC DATA
-const char* CoinbaseTrader::s_databaseFile = "/var/tmp/crypto_trader/coinbase_trader_data";
+const char *CoinbaseTrader::s_databaseFile =
+    "/var/tmp/crypto_trader/coinbase_trader_data";
 
 void CoinbaseTrader::initWebsocketClient()
 {
     nlohmann::json result;
     buildCoinbaseWebsocketMessage(&result, "subscribe", d_config);
     switch (d_config.clientType()) {
-        case CoinbaseTraderConfig::ClientType::SYNC: {
-            adaptors::CoinbaseWebSocketClientConfig coinbaseWebSocketConfig(
-                d_config.url(),
-                result,
-                std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
-                d_config.isRunning());
-            d_webSocketClient =
-                std::make_unique<adaptors::CoinbaseWebSocketClient>(
-                    coinbaseWebSocketConfig);
-        } break;
-        case CoinbaseTraderConfig::ClientType::ASYNC: {
-            adaptors::CoinbaseWebSocketClientAsyncConfig coinbaseWebSocketConfig(
-               d_config.url(),
-               result,
-               std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
-               d_config.isRunning());
+    case CoinbaseTraderConfig::ClientType::SYNC: {
+        adaptors::CoinbaseWebSocketClientConfig coinbaseWebSocketConfig(
+            d_config.url(),
+            result,
+            std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
+            d_config.isRunning());
+        d_webSocketClient =
+            std::make_unique<adaptors::CoinbaseWebSocketClient>(
+                coinbaseWebSocketConfig);
+    } break;
+    case CoinbaseTraderConfig::ClientType::ASYNC: {
+        adaptors::CoinbaseWebSocketClientAsyncConfig coinbaseWebSocketConfig(
+            d_config.url(),
+            result,
+            std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
+            d_config.isRunning());
 
-            d_webSocketClient = std::make_shared<adaptors::CoinbaseWebSocketClientAsync>(
-                                                      coinbaseWebSocketConfig);
-        } break;
-        case CoinbaseTraderConfig::ClientType::COUNT: {
-            /* noop */
-        } /* fall through */ ;
-        default: {
-            std::stringstream ss;
-            ss << d_config.clientType();
-            spdlog::error("unknown client type: {}", ss.str());
-        } break;
+        d_webSocketClient =
+            std::make_shared<adaptors::CoinbaseWebSocketClientAsync>(
+                coinbaseWebSocketConfig);
+    } break;
+    case CoinbaseTraderConfig::ClientType::COUNT: {
+        /* noop */
+    } /* fall through */;
+    default: {
+        std::stringstream ss;
+        ss << d_config.clientType();
+        spdlog::error("unknown client type: {}", ss.str());
+    } break;
     }
 }
 
@@ -180,11 +184,15 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 
         strategies::HodlStrategyConfig hodlConfig;
         hodlConfig
-            .setPercentUp(common::value_or(hodlConfigJson, "percentUp", 5))
-            .setPercentDown(common::value_or(hodlConfigJson, "percentDown", 5))
+            .setPercentUp(common::value_or(hodlConfigJson, "percentUp", 5.0))
+            .setPercentDown(
+                common::value_or(hodlConfigJson, "percentDown", 5.0))
+            .setBuyAmount(common::value_or(hodlConfigJson, "buyAmount", 100.0))
             .setInitStrategy(initStrat)
             .setEmit(std::bind(
-                &CoinbaseTrader::processAction, this, std::placeholders::_1));
+                &CoinbaseTrader::processAction, this, std::placeholders::_1))
+            .setFundsCb(std::bind(
+                &CoinbaseTrader::hasFunds, this, std::placeholders::_1));
 
         d_strategy = std::make_unique<strategies::HodlStrategy>(hodlConfig);
     } break;
@@ -236,6 +244,21 @@ void CoinbaseTrader::stop()
     d_threadPool.join();
 }
 
+float CoinbaseTrader::loadData(std::vector<common::MarketDataCoinbase> data)
+{
+    for (const auto& d : data) {
+        json new_json = {
+            {"price", boost::lexical_cast<std::string>(d.d_price)},
+            {"product_id", d.d_symbol},
+            {"sequence", d.d_sequence}};
+
+        d_strategy->handleNewData(new_json);
+
+        d_database.add_data(d.d_symbol, d);
+    }
+    return 0.0;
+}
+
 void CoinbaseTrader::processAction(const common::Action& action)
 {
     if (d_isStopped) {
@@ -276,14 +299,13 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
 
                 spdlog::info("{}", ss.str());
 
-
                 d_strategy->handleNewData(data);
 
                 common::MarketDataCoinbase marketData;
 
-                std::string price = data["price"];
-                marketData.d_symbol = data["product_id"];
-                marketData.d_price = std::stod(price);
+                std::string price     = data["price"];
+                marketData.d_symbol   = data["product_id"];
+                marketData.d_price    = std::stod(price);
                 marketData.d_sequence = data["sequence"];
 
                 d_database.add_data(marketData.d_symbol, marketData);
@@ -296,6 +318,12 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
             spdlog::error("{}", e.what());
         }
     }
+}
+
+// PUBLIC ACCESSORS
+bool CoinbaseTrader::hasFunds(double amount) const
+{
+    return amount >= d_config.initialAmount();
 }
 
 // protocols::Trader
