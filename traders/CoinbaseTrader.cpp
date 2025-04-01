@@ -244,7 +244,7 @@ void CoinbaseTrader::stop()
     d_threadPool.join();
 }
 
-float CoinbaseTrader::loadData(std::vector<common::MarketDataCoinbase> data)
+void CoinbaseTrader::loadData(std::vector<common::MarketDataCoinbase> data)
 {
     for (const auto& d : data) {
         json new_json = {
@@ -256,6 +256,11 @@ float CoinbaseTrader::loadData(std::vector<common::MarketDataCoinbase> data)
 
         d_database.add_data(d.d_symbol, d);
     }
+}
+
+float CoinbaseTrader::profit() const
+{
+    // TODO Figure out what to do here...
     return 0.0;
 }
 

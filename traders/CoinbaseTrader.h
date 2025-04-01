@@ -140,7 +140,9 @@ class CoinbaseTrader : public protocols::Trader<common::MarketDataCoinbase> {
     // Stop the trader.
     void stop() override;
     // Load data and compute the output
-    float loadData(std::vector<common::MarketDataCoinbase> data) override;
+    void loadData(std::vector<common::MarketDataCoinbase> data) override;
+    // Get the profit of the trader
+    float profit() const override;
 
   private:
     // PRIVATE MANIPULATORS

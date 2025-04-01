@@ -20,7 +20,8 @@ class Trader {
     virtual void  listen(const std::string_view& buffer) = 0;
     virtual void  start()                                = 0;
     virtual void  stop()                                 = 0;
-    virtual float loadData(std::vector<T> data)          = 0;
+    virtual void  loadData(std::vector<T> data)          = 0;
+    virtual float profit() const                         = 0;
 
 }; // Trader
 

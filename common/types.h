@@ -16,6 +16,10 @@ struct Action {
     // DATA
     // Type of the emitted action.
     ActionType d_type;
+    // What you're buying
+    std::string d_symbol;
+    // How much you're buying
+    double d_amount;
 }; // struct Action
 
 typedef std::function<void(const Action&)> Emit;

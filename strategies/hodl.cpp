@@ -77,10 +77,15 @@ void HodlStrategy::goOverTradesAtPrice(const std::string& symbol,
             if (price <= computeXPercentDown(d_basisMarketPrice.value(),
                                              d_config.percentDown()))
             {
+                // TODO Convert amount to symbol amount
+                // ie. for ETH-USD, convert 100USD to XXXETH
+                // Which is easier to keep track of
+                // and specifically easier to sell
                 BuyConfig config{.d_symbol    = symbol,
                                  .d_timestamp = timestamp,
                                  .d_price     = price,
-                                 .d_buyAgain  = true};
+                                 .d_buyAgain  = true,
+                                 .d_amount    = d_config.buyAmount()};
                 buy(config);
             }
             d_basisMarketPrice.reset();
@@ -92,7 +97,8 @@ void HodlStrategy::goOverTradesAtPrice(const std::string& symbol,
             BuyConfig config{.d_symbol    = symbol,
                              .d_timestamp = timestamp,
                              .d_price     = price,
-                             .d_buyAgain  = true};
+                             .d_buyAgain  = true,
+                             .d_amount    = d_config.buyAmount()};
             buy(config);
         } break;
         case HodlStrategyConfig::e_SET_BASIS_PRICE: {
@@ -131,7 +137,8 @@ void HodlStrategy::goOverTradesAtPrice(const std::string& symbol,
                 BuyConfig config{.d_symbol    = symbol,
                                  .d_timestamp = timestamp,
                                  .d_price     = price,
-                                 .d_buyAgain  = false};
+                                 .d_buyAgain  = false,
+                                 .d_amount    = d_config.buyAmount()};
                 buy(config);
             }
             ++it;
@@ -146,27 +153,34 @@ void HodlStrategy::buy(const BuyConfig& config)
         return;
     }
     spdlog::info("BUY at price {}", config.d_price);
-    auto& back         = d_trades[++d_tradeIdBasis];
+    auto& back         = d_trades[config.d_symbol][++d_tradeIdBasis];
     back.d_timestamp   = config.d_timestamp;
     back.d_boughtAgain = !config.d_buyAgain;
     back.d_price       = config.d_price;
-
-    d_config.setFundsAvailable(d_config.fundsAvailable() -
-                               d_config.buyAmount());
+    back.d_symbol      = config.d_symbol;
+    // NOTE convert to asset price
+    // ie) XXXETH
+    back.d_amount = (config.d_price / config.d_amount);
 
     if (d_emit) {
-        common::Action action{.d_type = common::Action::e_BUY};
+        d_config.setFundsAvailable(d_config.fundsAvailable() -
+                                   d_config.buyAmount());
+        common::Action action{.d_type   = common::Action::e_BUY,
+                              .d_symbol = config.d_symbol,
+                              .d_amount = d_config.buyAmount()};
         d_emit(action);
     }
 }
 
 void HodlStrategy::sell(const SellConfig& config)
 {
-    spdlog::info("SELL {} at price {} for trade bought at {}",
+    float amount = config.d_trade->second.d_amount;
+    spdlog::info("SELL {} of {} at price {} for trade bought at {}",
+                 amount,
                  config.d_symbol,
                  config.d_price,
                  config.d_trade->second.d_price);
-    d_trades.erase(config.d_trade);
+    d_trades[config.d_symbol].erase(config.d_trade);
 
     if (d_config.initStrategy() == HodlStrategyConfig::e_SET_BASIS_PRICE &&
         d_trades.empty())
@@ -176,7 +190,9 @@ void HodlStrategy::sell(const SellConfig& config)
     }
 
     if (d_emit) {
-        common::Action action{.d_type = common::Action::e_SELL};
+        common::Action action{.d_type   = common::Action::e_SELL,
+                              .d_symbol = config.d_symbol,
+                              .d_amount = amount};
         d_emit(action);
     }
 }

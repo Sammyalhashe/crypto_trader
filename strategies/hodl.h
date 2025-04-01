@@ -71,6 +71,8 @@ struct Trade {
     double d_price;
     // did we already buy the dip? If yes don't do it again lol.
     bool d_boughtAgain;
+    // amount traded
+    double d_amount;
 }; // Trade
 
 class HodlStrategy : public protocols::Strategy {
@@ -91,6 +93,8 @@ class HodlStrategy : public protocols::Strategy {
         double d_price;
         // If the buy again flag should be set
         bool d_buyAgain;
+        // Amount to buy
+        double d_amount;
     }; // BuyConfig
 
     struct SellConfig {

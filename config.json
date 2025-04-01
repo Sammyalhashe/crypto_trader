@@ -4,7 +4,7 @@
       "coinbaseTrader": {
         "initialAmount": 1000.0,
         "url": "ws-feed.exchange.coinbase.com",
-        "products": ["ETH-USD"],
+        "products": ["ETH-USD", "BTC-USD"],
         "channels": [
           "heartbeat",
           {
