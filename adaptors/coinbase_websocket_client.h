@@ -38,9 +38,9 @@ struct CoinbaseWebSocketClientConfig {
 
     // CREATORS
     CoinbaseWebSocketClientConfig(
-        const std::string&                       host,
-        const nlohmann::json&                    text,
-        const ListenCb&                          listenCb,
+        const std::string                      & host,
+        const nlohmann::json                   & text,
+        const ListenCb                         & listenCb,
         const std::shared_ptr<std::atomic_bool>& isRunning)
     : d_host(host)
     , d_text(text)

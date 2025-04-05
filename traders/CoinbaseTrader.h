@@ -79,11 +79,11 @@ class CoinbaseTraderConfig {
     CoinbaseTraderConfig& setInitialAmount(double initialAmount);
 
     // PUBLIC ACCESSORS
-    const StringVec&                         products() const;
-    const boost::optional<ChannelVec>&       channels() const;
-    const strategies::TradingStrategy&       strategy() const;
-    const std::string&                       url() const;
-    const nlohmann::json&                    strategyConfig() const;
+    const StringVec                        & products() const;
+    const boost::optional<ChannelVec>      & channels() const;
+    const strategies::TradingStrategy      & strategy() const;
+    const std::string                      & url() const;
+    const nlohmann::json                   & strategyConfig() const;
     unsigned int                             numThreads() const;
     const ClientType                         clientType() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
@@ -157,7 +157,7 @@ class CoinbaseTrader : public protocols::Trader<common::MarketDataCoinbase> {
 // ClientType
 
 inline std::ostream&
-operator<<(std::ostream&                           out,
+operator<<(std::ostream                          & out,
            const CoinbaseTraderConfig::ClientType& clientType)
 {
     switch (clientType) {

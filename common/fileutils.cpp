@@ -1,5 +1,7 @@
 #include "fileutils.h"
 
+#include "stringutils.h"
+
 #include <spdlog/spdlog.h>
 
 #include <cstdio>
@@ -22,7 +24,7 @@ bool isEmptyLine(const std::string& line)
 } // namespace
 
 int readFile(std::string           *fileContents,
-             const std::string&     filepath,
+             const std::string    & filepath,
              const ReadFileOptions& readFileOptions)
 {
     std::ifstream file;
@@ -174,9 +176,7 @@ int handleInotifyEvents(const MonitorConfig& config)
                 std::stringstream ss;
                 ss << fileContents;
 
-                if (fileContents == "exit") {
-                    *config.d_isRunning = false;
-                }
+                handleCommand(fileContents, config, 0);
             }
         }
     }
@@ -251,22 +251,7 @@ void fsEventStreamCallback(ConstFSEventStreamRef         streamRef,
 
             spdlog::info("file contents: {}", ss.str());
 
-            if (fileContents == "exit") {
-                spdlog::info("stopping!");
-                *config.d_isRunning = false;
-
-                // stops the stream.
-                // ensures the client callback will not be called again for the
-                // stream.
-                FSEventStreamRef ref = const_cast<FSEventStreamRef>(streamRef);
-                FSEventStreamStop(ref);
-
-                // Invalidates the stream.
-                FSEventStreamInvalidate(ref);
-
-                // Decrements the refcount on the stream.
-                FSEventStreamRelease(ref);
-            }
+            handleCommand(fileContents, config, (void *)&streamRef);
         }
     }
 }
@@ -306,6 +291,70 @@ bool createEventStream(const MonitorConfig& config)
 }
 
 #endif // TARGET_OS_MAC
+
+void handleCommand(const std::string  & command,
+                   const MonitorConfig& config,
+                   void                *context)
+{
+    std::vector<std::string> command_split = split_by(command, ' ');
+    const unsigned int       n             = command_split.size();
+    if (n == 0) {
+        spdlog::error("no command parsed!");
+        return;
+    }
+    if (command_split[0] == "exit") {
+        command_split.erase(command_split.begin());
+        handleExit(command_split, config, context);
+    }
+    else if (command_split[0] == "run_against") {
+        command_split.erase(command_split.begin());
+        handleRunAgainst(command_split, config, context);
+    }
+}
+
+void handleExit(const std::vector<std::string>& args,
+                const MonitorConfig           & config,
+                void                           *context)
+{
+
+    spdlog::info("stopping!");
+#ifdef __linux__
+    *config.d_isRunning = false;
+#elif TARGET_OS_MAC
+    if (!context) {
+        spdlog::error("A valid context is required exiting on a mac!");
+    }
+    ConstFSEventStreamRef streamRef = *(ConstFSEventStreamRef *)context;
+    *config.d_isRunning             = false;
+
+    // stops the stream.
+    // ensures the client callback will not be called again for the
+    // stream.
+    FSEventStreamRef ref = const_cast<FSEventStreamRef>(streamRef);
+    FSEventStreamStop(ref);
+
+    // Invalidates the stream.
+    FSEventStreamInvalidate(ref);
+
+    // Decrements the refcount on the stream.
+    FSEventStreamRelease(ref);
+#endif
+}
+
+void handleRunAgainst(const std::vector<std::string>& args,
+                      const MonitorConfig           & config,
+                      void                           *context)
+{
+    if (args.size() <= 0) {
+        spdlog::error(
+            "command `run_against` requires at least 1 argument!");
+        return;
+    }
+
+    for (const auto& databaseFilename : args) {
+        // TODO Handle loading the filenames into the trader and running
+    }
+}
 
 } // namespace common
 } // namespace crypto_trader

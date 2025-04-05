@@ -26,7 +26,7 @@ using json = nlohmann::json; // from <nlohmann/json.hpp>
                              // namespace
 
 void buildCoinbaseWebsocketMessage(nlohmann::json             *message,
-                                   const std::string&          type,
+                                   const std::string         & type,
                                    const CoinbaseTraderConfig& config)
 {
     std::string result;

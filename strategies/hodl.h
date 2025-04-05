@@ -51,10 +51,10 @@ class HodlStrategyConfig {
     HodlStrategyConfig& setFundsAvailable(double fundsAvailable);
 
     // ACCESSORS
-    const InitStrategy&                 initStrategy() const;
+    const InitStrategy                & initStrategy() const;
     float                               percentUp() const;
     float                               percentDown() const;
-    const common::Emit&                 emit() const;
+    const common::Emit                & emit() const;
     const protocols::Strategy::FundsCb& fundsCb() const;
     double                              buyAmount() const;
     double                              fundsAvailable() const;

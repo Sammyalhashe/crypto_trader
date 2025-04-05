@@ -7,7 +7,7 @@ namespace crypto_trader {
 namespace common {
 
 inline nlohmann::json value_or(const nlohmann::json& json,
-                               const std::string&    key,
+                               const std::string   & key,
                                const nlohmann::json& def)
 {
     return json.contains(key) ? json[key] : def;

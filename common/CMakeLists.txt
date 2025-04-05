@@ -1,5 +1,5 @@
 
-set(COMMON_H types.h serialization.h fileutils.h jsonutils.h)
+set(COMMON_H types.h serialization.h fileutils.h jsonutils.h stringutils.h)
 set(COMMON_SRC fileutils.cpp)
 
 add_library(common

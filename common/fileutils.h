@@ -36,9 +36,21 @@ struct MonitorConfig {
 }; // struct MonitorConfig
 
 int readFile(std::string           *fileContents,
-             const std::string&     filepath,
+             const std::string    & filepath,
              const ReadFileOptions& readFileptions);
 int readJsonFile(json *parsedJson, const std::string& filepath);
+
+void handleCommand(const std::string  & command,
+                   const MonitorConfig& config,
+                   void                *context);
+
+// COMMANDS
+void handleExit(const std::vector<std::string>& args,
+                const MonitorConfig           & config,
+                void                           *context);
+void handleRunAgainst(const std::vector<std::string>& args,
+                      const MonitorConfig           & config,
+                      void                           *context);
 
 #ifdef __linux__
 int createTrapFile(const char *trapFilePath);

@@ -87,12 +87,12 @@ class MarketDataCoinbase {
 
 // PRIVATE MANIPULATORS
 template <class Archive>
-void MarketDataCoinbase::serialize(Archive&           archive,
+void MarketDataCoinbase::serialize(Archive          & archive,
                                    const unsigned int version)
 {
-    archive & d_symbol;
-    archive & d_price;
-    archive & d_sequence;
+    archive& d_symbol;
+    archive& d_price;
+    archive& d_sequence;
 }
 
 } // namespace common
