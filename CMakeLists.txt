@@ -18,6 +18,12 @@ endif()
 # export a compile commands for lsp
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# https://discourse.nixos.org/t/get-clangd-to-find-standard-headers-in-nix-shell/11268/10
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES 
+      ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+endif()
+
 # standard compiler warnings
 add_library(project_warnings INTERFACE)
 include(cmake/CompilerWarnings.cmake)
