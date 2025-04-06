@@ -29,6 +29,8 @@ concept Serializeable = requires(T a) {
     // requires an `order` static member.
     T::order;
     // requires a `serialize` method.
+    // FIXME This is wrong, you also need to specify arguments that the method
+    // takes.
     {
         a.serialize()
     };

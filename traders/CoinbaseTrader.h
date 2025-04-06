@@ -57,6 +57,7 @@ class CoinbaseTraderConfig {
     // Shared atomic state declaring whether the application is running.
     std::shared_ptr<std::atomic_bool> d_isRunning;
     double                            d_initialAmount;
+    bool d_paperTradingMode;
 
   public:
     // CREATORS
@@ -77,6 +78,7 @@ class CoinbaseTraderConfig {
     CoinbaseTraderConfig& setNumThreads(unsigned int numThreads);
     CoinbaseTraderConfig& setClientType(const ClientType clientType);
     CoinbaseTraderConfig& setInitialAmount(double initialAmount);
+    CoinbaseTraderConfig& setPaperTradingMode(bool paperTradingMode);
 
     // PUBLIC ACCESSORS
     const StringVec                        & products() const;
@@ -90,7 +92,7 @@ class CoinbaseTraderConfig {
     double                                   initialAmount() const;
 }; // CoinbaseTraderConfig
 
-class CoinbaseTrader : public protocols::Trader<common::MarketDataCoinbase> {
+class CoinbaseTrader : public protocols::Trader, protocols::Loadable<common::MarketDataCoinbase> {
   private:
     // STATIC DATA
     // The file that the database loads/saves data to.
@@ -139,10 +141,12 @@ class CoinbaseTrader : public protocols::Trader<common::MarketDataCoinbase> {
     void start() override;
     // Stop the trader.
     void stop() override;
-    // Load data and compute the output
-    void loadData(std::vector<common::MarketDataCoinbase> data) override;
     // Get the profit of the trader
     float profit() const override;
+
+    // protocols::Loadable
+    // Load data and compute the output
+    void loadData(std::vector<common::MarketDataCoinbase> data) override;
 
   private:
     // PRIVATE MANIPULATORS
@@ -238,6 +242,13 @@ inline CoinbaseTraderConfig&
 CoinbaseTraderConfig::setInitialAmount(double initialAmount)
 {
     d_initialAmount = initialAmount;
+    return *this;
+}
+
+inline CoinbaseTraderConfig&
+CoinbaseTraderConfig::setPaperTradingMode(bool paperTradingMode)
+{
+    d_paperTradingMode = paperTradingMode;
     return *this;
 }
 

@@ -79,6 +79,10 @@ int main(int argc, char *argv[])
 
     std::vector<std::unique_ptr<protocols::Trader>> traders;
     unsigned int                                    numTraders = 0;
+    bool paperTradingMode = true;
+    if (jsonFileContents.contains("paper")) {
+        paperTradingMode = bool(jsonFileContents["paper"]);
+    }
     if (jsonFileContents.contains("traders")) {
         for (const auto& trader : jsonFileContents["traders"].items()) {
             std::stringstream ss;
@@ -89,6 +93,7 @@ int main(int argc, char *argv[])
                     auto coinbaseTraderJson = traderConfig.value();
                     traders::CoinbaseTraderConfig coinbaseTraderConfig(
                         context.d_isRunning);
+                    coinbaseTraderConfig.setPaperTradingMode(paperTradingMode);
                     coinbaseTraderConfig.setUrl(common::value_or(
                         coinbaseTraderJson,
                         "url",

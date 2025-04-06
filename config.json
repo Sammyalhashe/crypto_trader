@@ -1,6 +1,7 @@
 {
   "traders": [
     {
+      "paper": true,
       "coinbaseTrader": {
         "initialAmount": 1000.0,
         "url": "ws-feed.exchange.coinbase.com",

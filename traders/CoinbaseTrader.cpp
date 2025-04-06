@@ -108,6 +108,7 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 , d_clientType(CoinbaseTraderConfig::ClientType::SYNC)
 , d_isRunning(isRunning)
 , d_initialAmount(0.0)
+, d_paperTradingMode(true)
 {
 }
 
@@ -244,6 +245,7 @@ void CoinbaseTrader::stop()
     d_threadPool.join();
 }
 
+// protocols::Loadable
 void CoinbaseTrader::loadData(std::vector<common::MarketDataCoinbase> data)
 {
     for (const auto& d : data) {
