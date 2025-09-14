@@ -1,4 +1,4 @@
-# Crpyto Trading Bot
+# Crypto Trading Bot
 - The point of this is to have a bot that trades various crytos using various
   strategies.
 
