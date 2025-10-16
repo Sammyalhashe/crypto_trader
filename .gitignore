@@ -44,4 +44,5 @@ CMakeUserPresets.json
 # build
 compile_commands.json
 cmake.bld/
-.devenv
+.devenv/
+.direnv/
