@@ -1,10 +1,13 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 project(crypto_trader C CXX)
 
 # specify the cmake standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# if a conan build or not
+SET(CACHE{CONAN} BOOL "If in a Conan build" VALUE true false)
 
 # use ccache to improve build times
 find_program(CCACHE ccache)
@@ -51,7 +54,7 @@ enable_doxygen()
 
 # project dependencies below
 find_package(OpenSSL REQUIRED)
-find_package(Boost 1.82.0 COMPONENTS beast system serialization REQUIRED)
+find_package(Boost CONFIG 1.87.0 COMPONENTS thread system serialization REQUIRED)
 find_package(spdlog 1.12.0 REQUIRED)
 
 # NOTE: This may not be needed.
@@ -70,12 +73,21 @@ set(TARGET_SRC
     main.cpp)
 
 # library dependencies
-set(lib_deps
-    Boost::system
-    Boost::thread
-    nlohmann_json::nlohmann_json
-    openssl::openssl
-    spdlog::spdlog)
+if(CONAN)
+    set(lib_deps
+        Boost::system
+        Boost::thread
+        nlohmann_json::nlohmann_json
+        openssl::openssl
+        spdlog::spdlog)
+else()
+    set(lib_deps
+        Boost::system
+        Boost::thread
+        nlohmann_json::nlohmann_json
+        OpenSSL::SSL
+        spdlog::spdlog)
+endif()
 
 # add the actual executable
 add_executable(${PROJECT_NAME} ${TARGET_H} ${TARGET_SRC})

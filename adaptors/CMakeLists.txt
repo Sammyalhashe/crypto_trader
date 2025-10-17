@@ -6,11 +6,22 @@ add_library(adaptors STATIC ${ADAPTORS_H} ${ADAPTORS_SRC})
 # TODO: See how you can link two subdirectories
 # together so you don't have to link everything
 # together in the main executable.
-target_link_libraries(adaptors
-                      PRIVATE
-                      protocols
-                      databases
-                      Boost::system
-                      openssl::openssl
-                      nlohmann_json::nlohmann_json
-                      spdlog::spdlog)
+if(CONAN)
+    target_link_libraries(adaptors
+                          PRIVATE
+                          protocols
+                          databases
+                          Boost::system
+                          openssl::openssl
+                          nlohmann_json::nlohmann_json
+                          spdlog::spdlog)
+else()
+    target_link_libraries(adaptors
+                          PRIVATE
+                          protocols
+                          databases
+                          Boost::system
+                          OpenSSL::SSL
+                          nlohmann_json::nlohmann_json
+                          spdlog::spdlog)
+endif()

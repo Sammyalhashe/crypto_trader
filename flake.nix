@@ -11,7 +11,14 @@
     extra-substituters = "https://devenv.cachix.org";
   };
 
-  outputs = { self, nixpkgs, devenv, systems, ... } @ inputs:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      devenv,
+      systems,
+      ...
+    }@inputs:
     let
       forEachSystem = nixpkgs.lib.genAttrs (import systems);
     in
@@ -21,32 +28,59 @@
         devenv-test = self.devShells.${system}.default.config.test;
       });
 
-      devShells = forEachSystem
-        (system:
-          let
-            pkgs = nixpkgs.legacyPackages.${system};
-          in
-          {
-            default = devenv.lib.mkShell {
-              inherit inputs pkgs;
-              modules = [
-                {
-                  # https://devenv.sh/reference/options/
-                  packages = with pkgs; [ 
-                    cmake
-                    conan
-                    gcc
-                    clang
-                  ];
+      devShells = forEachSystem (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          default = devenv.lib.mkShell {
+            inherit inputs pkgs;
+            modules = [
+              {
+                # https://devenv.sh/reference/options/
+                packages = with pkgs; [
+                  cmake
+                  ccache
+                  # conan
+                  gcc
+                  clang
+                  ninja
 
-                  enterShell = ''
-                    hello
-                  '';
+                  # build dependencies
+                  boost-build
+                  spdlog
+                  openssl
+                  nlohmann_json
+                  boost
+                  gtest
+                ];
 
-                  processes.hello.exec = "hello";
-                }
-              ];
-            };
-          });
+                enterShell = ''
+                  if [[ -x "$(command -v conan)" ]]; then
+                      # conan profile show
+                      #
+                      # if [[ $? != 0 ]]; then
+                      #   conan profile detect
+                      # fi
+                  fi
+                '';
+
+                scripts.prepare.exec = ''
+                  if [[ -x "$(command -v conan)" ]]; then
+                      make prepare CONAN=1
+                  else
+                      make prepare GENERATOR=Ninja
+                  fi
+                '';
+                scripts.build.exec = "make build";
+                scripts.bo.exec = "make bo";
+                scripts.clean.exec = "make clean";
+                scripts.test.exec = "make test";
+              }
+            ];
+          };
+        }
+      );
     };
 }

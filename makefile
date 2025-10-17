@@ -7,7 +7,7 @@ ifneq ($(strip $(SANITIZE)),)
 	ifneq ($(strip $(SANITIZE)), $(filter $(strip $(SANITIZE)), thread address ub))
         $(error SANITIZE either needs to be thread, address, or ub)
 	endif
-	
+
 endif
 
 ifeq ($(strip $(CLANG_FORMAT)),)
@@ -30,7 +30,15 @@ sanitize_flag=
 ifneq ($(strip $(SUFFIX)),)
 	sanitize_flag=-Dcustom_build_type=$(SANITIZE)
 endif
-CMAKE_OPTS := -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} $(sanitize_flag) $(G)
+CMAKE_OPTS := -DCMAKE_BUILD_TYPE=${BUILD_TYPE} $(sanitize_flag) $(G)
+
+# if a conan build add the toolchain
+ifneq ($(strip $(CONAN)),)
+	CMAKE_OPTS += -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+	CMAKE_OPTS += -DCONAN_BUILD=1
+endif
+
+
 EXE := crypto_trader
 
 RUN_CMD:=./${BUILD_DIR}/${EXE}
@@ -48,7 +56,7 @@ BUILD_CMD:=cd ${BUILD_DIR} && cmake --build . && cd -
 .PHONY: build
 build: prepare
 	${BUILD_CMD}
-	
+
 .PHONY: bo
 bo:
 	${BUILD_CMD}
@@ -59,7 +67,9 @@ prepare: conan
 
 .PHONY: conan
 conan: build_dir_prep
-	conan install . --output-folder=${BUILD_DIR} --build=missing -s build_type=${BUILD_TYPE}
+	@if [ -x "$(command -v conan)" ]; then\
+		conan install . --output-folder=${BUILD_DIR} --build=missing -s build_type=${BUILD_TYPE};\
+	fi
 
 .PHONY: build_dir_prep
 build_dir_prep:
