@@ -25,7 +25,7 @@ using json = nlohmann::json; // from <nlohmann/json.hpp>
                              // namespace
 
 void buildCoinbaseWebsocketMessage(nlohmann::json             *message,
-                                   const std::string         & type,
+                                   const std::string&          type,
                                    const CoinbaseTraderConfig& config)
 {
     std::string result;
@@ -112,41 +112,43 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 // class CoinbaseTrader
 
 // STATIC DATA
-const char* CoinbaseTrader::s_databaseFile = "/var/tmp/crypto_trader/coinbase_trader_data";
+const char *CoinbaseTrader::s_databaseFile =
+    "/var/tmp/crypto_trader/coinbase_trader_data";
 
 void CoinbaseTrader::initWebsocketClient()
 {
     nlohmann::json result;
     buildCoinbaseWebsocketMessage(&result, "subscribe", d_config);
     switch (d_config.clientType()) {
-        case CoinbaseTraderConfig::ClientType::SYNC: {
-            adaptors::CoinbaseWebSocketClientConfig coinbaseWebSocketConfig(
-                d_config.url(),
-                result,
-                std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
-                d_config.isRunning());
-            d_webSocketClient =
-                std::make_unique<adaptors::CoinbaseWebSocketClient>(
-                    coinbaseWebSocketConfig);
-        } break;
-        case CoinbaseTraderConfig::ClientType::ASYNC: {
-            adaptors::CoinbaseWebSocketClientAsyncConfig coinbaseWebSocketConfig(
-               d_config.url(),
-               result,
-               std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
-               d_config.isRunning());
+    case CoinbaseTraderConfig::ClientType::SYNC: {
+        adaptors::CoinbaseWebSocketClientConfig coinbaseWebSocketConfig(
+            d_config.url(),
+            result,
+            std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
+            d_config.isRunning());
+        d_webSocketClient =
+            std::make_unique<adaptors::CoinbaseWebSocketClient>(
+                coinbaseWebSocketConfig);
+    } break;
+    case CoinbaseTraderConfig::ClientType::ASYNC: {
+        adaptors::CoinbaseWebSocketClientAsyncConfig coinbaseWebSocketConfig(
+            d_config.url(),
+            result,
+            std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
+            d_config.isRunning());
 
-            d_webSocketClient = std::make_shared<adaptors::CoinbaseWebSocketClientAsync>(
-                                                      coinbaseWebSocketConfig);
-        } break;
-        case CoinbaseTraderConfig::ClientType::COUNT: {
-            /* noop */
-        } /* fall through */ ;
-        default: {
-            std::stringstream ss;
-            ss << d_config.clientType();
-            spdlog::error("unknown client type: {}", ss.str());
-        } break;
+        d_webSocketClient =
+            std::make_shared<adaptors::CoinbaseWebSocketClientAsync>(
+                coinbaseWebSocketConfig);
+    } break;
+    case CoinbaseTraderConfig::ClientType::COUNT: {
+        /* noop */
+    } /* fall through */;
+    default: {
+        std::stringstream ss;
+        ss << d_config.clientType();
+        spdlog::error("unknown client type: {}", ss.str());
+    } break;
     }
 }
 
@@ -276,14 +278,13 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
 
                 spdlog::info("{}", ss.str());
 
-
                 d_strategy->handleNewData(data);
 
                 common::MarketDataCoinbase marketData;
 
-                std::string price = data["price"];
-                marketData.d_symbol = data["product_id"];
-                marketData.d_price = std::stod(price);
+                std::string price     = data["price"];
+                marketData.d_symbol   = data["product_id"];
+                marketData.d_price    = std::stod(price);
                 marketData.d_sequence = data["sequence"];
 
                 d_database.add_data(marketData.d_symbol, marketData);

@@ -32,14 +32,14 @@ class MarketDataDB {
     ~MarketDataDB() {}
 
     // MANIPULATORS
-    inline void add_data(const std::string   & symbol,
+    inline void add_data(const std::string&    symbol,
                          const MarketDataType& market_data) noexcept;
 
     bool load(std::string& file_name);
 
     // ACCESSORS
     std::vector<MarketDataType>
-    get_data(const std::string                       & symbol,
+    get_data(const std::string&                        symbol,
              const typename MarketDataType::Timestamp& min_ts,
              const typename MarketDataType::Timestamp& max_ts) const;
 
@@ -89,7 +89,7 @@ bool MarketDataDB<MarketDataType>::load(std::string& file_name)
 // PUBLIC ACCESSORS
 template <common::MarketData MarketDataType>
 std::vector<MarketDataType> MarketDataDB<MarketDataType>::get_data(
-    const std::string                       & symbol,
+    const std::string&                        symbol,
     const typename MarketDataType::Timestamp& min_ts,
     const typename MarketDataType::Timestamp& max_ts) const
 {
@@ -116,10 +116,10 @@ bool MarketDataDB<MarketDataType>::save(const std::string& file_name) const
 // PRIVATE MANIPULATORS
 template <common::MarketData MarketDataType>
 template <class Archive>
-void MarketDataDB<MarketDataType>::serialize(Archive          & archive,
-                                         const unsigned int version)
+void MarketDataDB<MarketDataType>::serialize(Archive&           archive,
+                                             const unsigned int version)
 {
-    archive& d_symbol_to_data;
+    archive & d_symbol_to_data;
 }
 
 } // namespace databases

@@ -43,6 +43,10 @@ EXE := crypto_trader
 
 RUN_CMD:=./${BUILD_DIR}/${EXE}
 
+
+all: build
+	${BUILD_CMD}
+
 .PHONY: run
 run: build
 	${RUN_CMD}

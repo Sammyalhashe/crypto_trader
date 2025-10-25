@@ -38,9 +38,9 @@ struct CoinbaseWebSocketClientConfig {
 
     // CREATORS
     CoinbaseWebSocketClientConfig(
-        const std::string                      & host,
-        const nlohmann::json                   & text,
-        const ListenCb                         & listenCb,
+        const std::string&                       host,
+        const nlohmann::json&                    text,
+        const ListenCb&                          listenCb,
         const std::shared_ptr<std::atomic_bool>& isRunning)
     : d_host(host)
     , d_text(text)
@@ -62,7 +62,7 @@ class CoinbaseWebSocketClient : public protocols::WebsocketClient {
     net::io_context d_ioc; // The io_context is required for all I/O
     ssl::context    d_ctx; // The ssl context is required, and holds all certs
     tcp::resolver   d_resolver;
-    WebsocketStream           d_ws;     // The websocket
+    WebsocketStream d_ws;                   // The websocket
     CoinbaseWebSocketClientConfig d_config; // The config for this object
 
     // PRIVATE STATIC DATA

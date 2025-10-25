@@ -46,20 +46,22 @@ int main(int argc, char *argv[])
     *context.d_isRunning = true;
 
 #ifdef __linux__
-    const char *trapFileName = "/tmp/crypto_trader";
-    int         inotify_fd   = common::createTrapFile(trapFileName);
+    const char           *trapFileName = "/tmp/crypto_trader";
+    int                   inotify_fd   = common::createTrapFile(trapFileName);
     common::MonitorConfig monitorConfig{.d_inotify_fd   = inotify_fd,
                                         .d_trapFilePath = trapFileName,
                                         .d_isRunning    = context.d_isRunning};
 
-    boost::thread         trapFileWatchThread{
+    boost::thread trapFileWatchThread{
         boost::bind(&common::monitorTrapFile, monitorConfig)};
 #endif // __linux__
 
 #if TARGET_OS_MAC
-    common::MonitorConfig monitorConfig{.d_trapFilePath = "/var/tmp/crypto_trader/coinbase_trader_data",
-                                        .d_isRunning    = context.d_isRunning};
-    boost::thread fsRunLoopThread{boost::bind(&common::createEventStream, monitorConfig)};
+    common::MonitorConfig monitorConfig{
+        .d_trapFilePath = "/var/tmp/crypto_trader/coinbase_trader_data",
+        .d_isRunning    = context.d_isRunning};
+    boost::thread fsRunLoopThread{
+        boost::bind(&common::createEventStream, monitorConfig)};
 #endif // TARGET_OS_MAC
 
     nlohmann::json jsonFileContents;
@@ -120,7 +122,8 @@ int main(int argc, char *argv[])
                                 channelProducts.push_back(
                                     channelProduct.value());
                             }
-                            channels.push_back(
+
+                            channels.emplace_back(
                                 traders::CoinbaseTraderConfig::
                                     ChannelDefinition{
                                         .d_name     = channel["name"],
@@ -152,24 +155,23 @@ int main(int argc, char *argv[])
                                 strategyJson, "config", "{}"_json));
                     }
 
-                    auto clientType = common::value_or(coinbaseTraderJson,
-                                                       "clientType",
-                                                       "SYNC");
+                    auto clientType = common::value_or(
+                        coinbaseTraderJson, "clientType", "SYNC");
 
                     if (clientType == "SYNC") {
                         coinbaseTraderConfig.setClientType(
-                              traders::CoinbaseTraderConfig::ClientType::SYNC);
+                            traders::CoinbaseTraderConfig::ClientType::SYNC);
                     }
                     else if (clientType == "ASYNC") {
                         coinbaseTraderConfig.setClientType(
-                             traders::CoinbaseTraderConfig::ClientType::ASYNC);
+                            traders::CoinbaseTraderConfig::ClientType::ASYNC);
                     }
                     else {
-                        spdlog::error(
-                           "Recieved invalid client type for coinbase trader, "
-                           "defaulting to SYNC");
+                        spdlog::error("Recieved invalid client type for "
+                                      "coinbase trader, "
+                                      "defaulting to SYNC");
                         coinbaseTraderConfig.setClientType(
-                              traders::CoinbaseTraderConfig::ClientType::SYNC);
+                            traders::CoinbaseTraderConfig::ClientType::SYNC);
                     }
 
                     traders.push_back(

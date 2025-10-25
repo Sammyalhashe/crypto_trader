@@ -22,7 +22,7 @@ bool isEmptyLine(const std::string& line)
 } // namespace
 
 int readFile(std::string           *fileContents,
-             const std::string    & filepath,
+             const std::string&     filepath,
              const ReadFileOptions& readFileOptions)
 {
     std::ifstream file;
@@ -228,20 +228,19 @@ void monitorTrapFile(const MonitorConfig& config)
 #endif // __linux__
 
 #if TARGET_OS_MAC
-void fsEventStreamCallback(
-    ConstFSEventStreamRef streamRef,
-    void *clientCallBackInfo,
-    size_t numEvents,
-    void *eventPaths,
-    const FSEventStreamEventFlags eventFlags[],
-    const FSEventStreamEventId eventIds[])
+void fsEventStreamCallback(ConstFSEventStreamRef         streamRef,
+                           void                         *clientCallBackInfo,
+                           size_t                        numEvents,
+                           void                         *eventPaths,
+                           const FSEventStreamEventFlags eventFlags[],
+                           const FSEventStreamEventId    eventIds[])
 {
     assert(clientCallBackInfo);
-    const MonitorConfig& config = *(MonitorConfig*)clientCallBackInfo;
-    int i;
-    char **paths = (char**)eventPaths;
-    
-    for (i=0; i<numEvents; i++) {
+    const MonitorConfig& config = *(MonitorConfig *)clientCallBackInfo;
+    int                  i;
+    char               **paths = (char **)eventPaths;
+
+    for (i = 0; i < numEvents; i++) {
         if (eventFlags[i] & kFSEventStreamEventFlagItemModified) {
             std::string fileContents;
             readFile(&fileContents,
@@ -269,15 +268,18 @@ void fsEventStreamCallback(
                 FSEventStreamRelease(ref);
             }
         }
-   }
+    }
 }
 
-bool createEventStream(const MonitorConfig& config) {
+bool createEventStream(const MonitorConfig& config)
+{
     CFStringRef mypath = __CFStringMakeConstantString(config.d_trapFilePath);
-    CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **)&mypath, 1, nullptr);
-    FSEventStreamContext callbackInfo = {0, (void*)&config, nullptr, nullptr, nullptr};
+    CFArrayRef  pathsToWatch =
+        CFArrayCreate(nullptr, (const void **)&mypath, 1, nullptr);
+    FSEventStreamContext callbackInfo = {
+        0, (void *)&config, nullptr, nullptr, nullptr};
     FSEventStreamRef stream;
-    CFTimeInterval latency = 0.5;
+    CFTimeInterval   latency = 0.5;
 
     spdlog::info("creating fseventstream...");
     stream = FSEventStreamCreate(nullptr,
@@ -285,16 +287,17 @@ bool createEventStream(const MonitorConfig& config) {
                                  &callbackInfo,
                                  (CFArrayRef)pathsToWatch,
                                  kFSEventStreamEventIdSinceNow,
-                                 (CFAbsoluteTime) latency,
+                                 (CFAbsoluteTime)latency,
                                  kFSEventStreamCreateFlagFileEvents);
 
-    FSEventStreamScheduleWithRunLoop(stream,
-    /* see here
-     * https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html
-     * for more details on the below arguments.
-     */
-                                     CFRunLoopGetCurrent(),
-                                     kCFRunLoopDefaultMode);
+    FSEventStreamScheduleWithRunLoop(
+        stream,
+        /* see here
+         * https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html
+         * for more details on the below arguments.
+         */
+        CFRunLoopGetCurrent(),
+        kCFRunLoopDefaultMode);
 
     FSEventStreamStart(stream);
 
