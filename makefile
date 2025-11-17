@@ -14,7 +14,7 @@ ifeq ($(strip $(CLANG_FORMAT)),)
 	CLANG_FORMAT=clang-format
 endif
 
-G=Ninja
+G=-GNinja
 ifneq ($(strip $(GENERATOR)),)
 	G=-G $(GENERATOR)
 endif

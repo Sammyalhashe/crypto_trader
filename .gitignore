@@ -46,3 +46,5 @@ compile_commands.json
 cmake.bld/
 .devenv/
 .direnv/
+
+.idea/
