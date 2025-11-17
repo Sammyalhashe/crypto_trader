@@ -10,18 +10,29 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout the repository
       - uses: actions/checkout@v4
+
+      # Step 2: Install Nix
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+
+      # Step 3: Pull Cachix caches
       - uses: cachix/cachix-action@v14
         with:
           name: sammyalhashe
           extraPullNames: devenv
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-      - name: build and test
-        shell: nix develop --no-pure-eval -c bash
-        run: |
-          prepare
-          build
-          test
+
+      # Step 4: Prepare
+      - name: Prepare
+        run: nix develop --no-pure-eval -c prepare
+
+      # Step 5: Build
+      - name: Build
+        run: nix develop --no-pure-eval -c build
+
+      # Step 6: Test
+      - name: Test
+        run: nix develop --no-pure-eval -c test
