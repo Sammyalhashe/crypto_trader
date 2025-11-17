@@ -25,14 +25,10 @@ jobs:
           extraPullNames: devenv
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-      # Step 4: Prepare
-      - name: Prepare
-        run: nix develop --no-pure-eval -c prepare
-
-      # Step 5: Build
+      # Step 4: Build
       - name: Build
         run: nix develop --no-pure-eval -c build
 
-      # Step 6: Test
+      # Step 5: Test
       - name: Test
         run: nix develop --no-pure-eval -c test
