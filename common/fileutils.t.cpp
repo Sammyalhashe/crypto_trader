@@ -1,10 +1,10 @@
-#include "fileutils.h"
-
 #include <nlohmann/json.hpp>
 
 #include <fstream>
 
 #include <gtest/gtest.h>
+
+import fileutils_module;
 
 using Json = nlohmann::json;
 
@@ -29,7 +29,7 @@ TEST(FileUtils, JsonFileTest)
         outFileStream.close();
     }
 
-    using namespace crypto_trader::common;
+    using namespace fileutils_module;
 
     Json result;
     int  rc = readJsonFile(&result, fileName);

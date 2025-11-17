@@ -1,25 +1,47 @@
-#include "fileutils.h"
+module;
 
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <cstdio>
 #include <fcntl.h>
 #include <fstream>
 #include <sstream>
-
 #include <unistd.h>
 
-namespace crypto_trader {
-namespace common {
+#ifdef __linux__
+#include <sys/inotify.h>
+#include <sys/poll.h>
+#elif __APPLE__
+#include <TargetConditionals.h>
+#ifdef TARGET_OS_MAC
+#include <CoreServices/CoreServices.h>
+#endif // TARGET_OS_MAC
+#endif // __linux__
 
-namespace {
+export module fileutils_module;
+
+export namespace fileutils_module {
+
+using json = nlohmann::json;
+
+enum class ReadFileOptions {
+    ALL_CONTENTS,
+    LAST_LINE
+}; // enum class ReadFileOptions
+
+struct MonitorConfig {
+#ifdef __linux__
+    int d_inotify_fd;
+#endif // __linux__
+    const char                        *d_trapFilePath;
+    std::shared_ptr<std::atomic<bool>> d_isRunning;
+}; // struct MonitorConfig
 
 bool isEmptyLine(const std::string& line)
 {
     return line == "" || line == "\n" || line == "\r" || line == "\n\r";
 }
-
-} // namespace
 
 int readFile(std::string           *fileContents,
              const std::string&     filepath,
@@ -307,5 +329,4 @@ bool createEventStream(const MonitorConfig& config)
 
 #endif // TARGET_OS_MAC
 
-} // namespace common
-} // namespace crypto_trader
+}; // namespace fileutils_module

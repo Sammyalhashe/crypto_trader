@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.28)
 
 project(crypto_trader C CXX)
 
 # specify the cmake standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # if a conan build or not
 SET(CACHE{CONAN} BOOL "If in a Conan build" VALUE true false)

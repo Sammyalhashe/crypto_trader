@@ -1,6 +1,3 @@
-#include "common/fileutils.h"
-#include "common/jsonutils.h"
-#include "protocols/trader.h"
 #include "traders/CoinbaseTrader.h"
 
 #include <boost/asio/thread_pool.hpp>
@@ -16,9 +13,6 @@
 #include <cstring>
 #include <functional>
 #include <memory>
-#include <signal.h>
-#include <stdio.h>
-#include <variant>
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -37,6 +31,9 @@ struct SignalContext {
     std::shared_ptr<std::atomic<bool>> d_isRunning;
 };
 
+import fileutils_module;
+import json_module;
+
 int main(int argc, char *argv[])
 {
     using namespace crypto_trader;
@@ -46,22 +43,23 @@ int main(int argc, char *argv[])
     *context.d_isRunning = true;
 
 #ifdef __linux__
-    const char           *trapFileName = "/tmp/crypto_trader";
-    int                   inotify_fd   = common::createTrapFile(trapFileName);
-    common::MonitorConfig monitorConfig{.d_inotify_fd   = inotify_fd,
-                                        .d_trapFilePath = trapFileName,
-                                        .d_isRunning    = context.d_isRunning};
+    const char *trapFileName = "/tmp/crypto_trader";
+    int         inotify_fd   = fileutils_module::createTrapFile(trapFileName);
+    fileutils_module::MonitorConfig monitorConfig{
+        .d_inotify_fd   = inotify_fd,
+        .d_trapFilePath = trapFileName,
+        .d_isRunning    = context.d_isRunning};
 
     boost::thread trapFileWatchThread{
-        boost::bind(&common::monitorTrapFile, monitorConfig)};
+        boost::bind(&fileutils_module::monitorTrapFile, monitorConfig)};
 #endif // __linux__
 
 #if TARGET_OS_MAC
-    common::MonitorConfig monitorConfig{
+    fileutils_module::MonitorConfig monitorConfig{
         .d_trapFilePath = "/var/tmp/crypto_trader/coinbase_trader_data",
         .d_isRunning    = context.d_isRunning};
     boost::thread fsRunLoopThread{
-        boost::bind(&common::createEventStream, monitorConfig)};
+        boost::bind(&fileutils_module::createEventStream, monitorConfig)};
 #endif // TARGET_OS_MAC
 
     nlohmann::json jsonFileContents;
@@ -71,7 +69,7 @@ int main(int argc, char *argv[])
         ss << argv[1];
         spdlog::info("passed in: {}", ss.str());
 
-        int rc = common::readJsonFile(&jsonFileContents, argv[1]);
+        int rc = fileutils_module::readJsonFile(&jsonFileContents, argv[1]);
         assert(0 == rc);
     }
 
@@ -89,11 +87,11 @@ int main(int argc, char *argv[])
                     auto coinbaseTraderJson = traderConfig.value();
                     traders::CoinbaseTraderConfig coinbaseTraderConfig(
                         context.d_isRunning);
-                    coinbaseTraderConfig.setUrl(common::value_or(
+                    coinbaseTraderConfig.setUrl(json_module::value_or(
                         coinbaseTraderJson,
                         "url",
                         "wss://ws-feed-public.sandbox.exchange.coinbase.com"));
-                    auto products = common::value_or(
+                    auto products = json_module::value_or(
                         coinbaseTraderJson, "products", "[\"ETH-USD\"]"_json);
 
                     std::vector<std::string> traderProducts;
@@ -103,7 +101,7 @@ int main(int argc, char *argv[])
 
                     coinbaseTraderConfig.setProducts(traderProducts);
 
-                    auto channelsJson = common::value_or(
+                    auto channelsJson = json_module::value_or(
                         coinbaseTraderJson, "channels", "[]"_json);
 
                     std::vector<std::variant<
@@ -132,13 +130,13 @@ int main(int argc, char *argv[])
                     }
 
                     coinbaseTraderConfig.setChannels(channels);
-                    coinbaseTraderConfig.setNumThreads(
-                        common::value_or(coinbaseTraderJson, "numThreads", 1));
+                    coinbaseTraderConfig.setNumThreads(json_module::value_or(
+                        coinbaseTraderJson, "numThreads", 1));
                     if (coinbaseTraderJson.contains("strategy")) {
                         const auto strategyJson =
                             coinbaseTraderJson["strategy"];
-                        const auto& type =
-                            common::value_or(strategyJson, "type", "hodl");
+                        const auto& type = json_module::value_or(
+                            strategyJson, "type", "hodl");
                         std::stringstream ss;
                         ss << type;
                         spdlog::info("strat: {}", ss.str());
@@ -151,11 +149,11 @@ int main(int argc, char *argv[])
                                 strategies::e_NONE);
                         }
                         coinbaseTraderConfig.setStrategyConfig(
-                            common::value_or(
+                            json_module::value_or(
                                 strategyJson, "config", "{}"_json));
                     }
 
-                    auto clientType = common::value_or(
+                    auto clientType = json_module::value_or(
                         coinbaseTraderJson, "clientType", "SYNC");
 
                     if (clientType == "SYNC") {
@@ -195,7 +193,7 @@ int main(int argc, char *argv[])
 #ifdef __linux__
     trapFileWatchThread.join();
 
-    common::removeTrapFile(monitorConfig);
+    fileutils_module::removeTrapFile(monitorConfig);
 #endif // __linux__
 
 #if TARGET_OS_MAC
