@@ -19,7 +19,7 @@ jobs:
           name: sammyalhashe
           extraPullNames: devenv
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-      - run: nix develop
+      - run: nix develop --no-pure-eval
         name: Instantiate flake
       - run: prepare
         name: prepare
