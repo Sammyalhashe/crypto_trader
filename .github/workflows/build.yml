@@ -25,10 +25,14 @@ jobs:
           extraPullNames: devenv
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-      # Step 4: Build
+      # Step 4: Debug info
+      - name: Debug info
+        run: nix develop --no-pure-eval -c bash -c 'echo $CMAKE_PREFIX_PATH'
+
+      # Step 5: Build
       - name: Build
         run: nix develop --no-pure-eval -c build
 
-      # Step 5: Test
+      # Step 6: Test
       - name: Test
         run: nix develop --no-pure-eval -c test
