@@ -1,6 +1,6 @@
 [requires]
 gtest/cci.20210126
-boost/1.82.0
+boost/1.87.0
 nlohmann_json/3.11.2
 openssl/3.1.1
 spdlog/1.12.0
