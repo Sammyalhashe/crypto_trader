@@ -55,7 +55,7 @@ run: build
 ro:
 	${RUN_CMD}
 
-BUILD_CMD:=cd ${BUILD_DIR} && cmake --build . && cd -
+BUILD_CMD:=cmake --build ${BUILD_DIR}
 
 .PHONY: build
 build: prepare

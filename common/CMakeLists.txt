@@ -15,6 +15,7 @@ endif()
 target_link_libraries(common
                       PUBLIC
                       Boost::serialization
+                      common_modules
                       PRIVATE
                       spdlog::spdlog
                       nlohmann_json::nlohmann_json

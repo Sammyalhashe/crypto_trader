@@ -2,6 +2,7 @@
 #include "common/jsonutils.h"
 #include "protocols/trader.h"
 #include "traders/CoinbaseTrader.h"
+#include "zig/zigmath.h"
 
 #include <boost/asio/thread_pool.hpp>
 #include <boost/beast/ssl.hpp>
@@ -39,6 +40,7 @@ struct SignalContext {
 
 int main(int argc, char *argv[])
 {
+    spdlog::info("Result from zig: {}", add(1, 2));
     using namespace crypto_trader;
 
     SignalContext context;
