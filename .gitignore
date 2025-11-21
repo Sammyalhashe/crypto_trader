@@ -47,4 +47,8 @@ cmake.bld/
 .devenv/
 .direnv/
 
+# jetbrains
 .idea/
+
+# zig
+.zig-cache

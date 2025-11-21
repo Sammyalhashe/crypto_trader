@@ -26,7 +26,6 @@ target_link_libraries(common_modules
 
 target_link_libraries(common
                       PUBLIC
-                      Boost::serialization
                       common_modules
                       PRIVATE
                       ${APPLE_DEPS}

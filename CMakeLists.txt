@@ -36,6 +36,9 @@ if (custom_build_type)
     set(SANITIZE "${CMAKE_CXX_FLAGS} -fsanitize=${custom_build_type}")
 endif()
 
+# add custom functions
+include(cmake/Functions.cmake)
+
 # See https://developer.apple.com/library/archive/documentation/DeveloperTools/Conceptual/CppRuntimeEnv/Articles/SymbolVisibility.html
 # and https://stackoverflow.com/questions/8685045/xcode-with-boost-linkerid-warning-about-visibility-settings/11879361#11879361
 # Also, there is a bug in clang and it specifically affects boost hence the
@@ -103,6 +106,10 @@ endforeach()
 # target_link_directories(adaptors PRIVATE protocols)
 # target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
 
+# zig
+set(ZIG_LIBS "")
+make_zig_lib(ZIG_LIBS ${PROJECT_NAME} zigmath zig)
+
 # link everything together
 message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
 target_link_libraries(${PROJECT_NAME}
@@ -110,13 +117,14 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_warnings}
                       ${project_flags}
                       ${subdirs}
-                      ${lib_deps})
+                      ${lib_deps}
+                      ${ZIG_LIBS})
 
 # testing
 enable_testing()
 include(GoogleTest)
 
-function(add_test name filepath flags)
+function(create_test name filepath flags)
     add_executable(${name} ${filepath})
     target_link_libraries(${name}
                           ${FOUNDATION}
@@ -130,8 +138,11 @@ function(add_test name filepath flags)
 endfunction()
 
 # common util tests
-add_test(fileutil_test common/fileutils.t.cpp project_flags)
+create_test(fileutil_test common/fileutils.t.cpp project_flags)
 # strategy tests
-add_test(simple_test strategies/simple.t.cpp project_flags)
-add_test(hodl_test strategies/hodl.t.cpp project_flags)
-add_test(database_test databases/market_data_db.t.cpp project_flags)
+create_test(simple_test strategies/simple.t.cpp project_flags)
+create_test(hodl_test strategies/hodl.t.cpp project_flags)
+create_test(database_test databases/market_data_db.t.cpp project_flags)
+
+# zig tests
+add_zig_test_module(math_test zig/math.zig)

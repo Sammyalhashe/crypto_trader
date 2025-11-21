@@ -46,6 +46,8 @@
                   gcc
                   clang
                   ninja
+                  zig
+                  zls
 
                   # build dependencies
                   boost-build
