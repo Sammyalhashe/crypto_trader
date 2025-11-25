@@ -1,5 +1,6 @@
 #include "market_data_db.h"
 
+#include <filesystem>
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 #include <string>
@@ -83,12 +84,14 @@ TEST(MarketDataTest, save_and_load_data)
     std::string file_name = "test.db";
 
     spdlog::info("saving");
-    database.save(file_name);
+    bool save_result = database.save(file_name);
+    EXPECT_TRUE(save_result);
 
     databases::MarketDataDB<common::MarketDataCoinbase> loaded_database;
 
     spdlog::info("loading");
-    loaded_database.load(file_name);
+    bool load_result = loaded_database.load(file_name);
+    EXPECT_TRUE(load_result);
 
     auto vec(loaded_database.get_data(data_1.d_symbol, 5, 5));
 
@@ -96,4 +99,48 @@ TEST(MarketDataTest, save_and_load_data)
     EXPECT_EQ(vec[0].d_symbol, "BTC");
     EXPECT_FLOAT_EQ(vec[0].d_price, 1000.0);
     EXPECT_EQ(vec[0].d_sequence, 5);
+
+    std::filesystem::remove(file_name);
+}
+
+// NEW TEST: Thread safety
+TEST(MarketDataTest, thread_safety)
+{
+    databases::MarketDataDB<common::MarketDataCoinbase> database;
+
+    std::thread writer([&database]() {
+        for (int i = 0; i < 500; ++i) {
+            common::MarketDataCoinbase data;
+            data.d_symbol = "BTC";
+            data.d_price = 1000.0 + i;
+            data.d_sequence = i;
+            database.add_data(data.d_symbol, data);
+        }
+    });
+
+    std::thread reader([&database]() {
+        for (int i = 0; i < 100; ++i) {
+            auto data = database.get_data("BTC", 0, 1000);
+        }
+    });
+
+    writer.join();
+    reader.join();
+    EXPECT_EQ(database.size("BTC"), 500);
+}
+
+// NEW TEST: Auto-pruning
+TEST(MarketDataTest, auto_pruning)
+{
+    databases::MarketDataDB<common::MarketDataCoinbase> database(100);
+
+    for (int i = 0; i < 150; ++i) {
+        common::MarketDataCoinbase data;
+        data.d_symbol = "BTC";
+        data.d_price = 1000.0 + i;
+        data.d_sequence = i;
+        database.add_data(data.d_symbol, data);
+    }
+
+    EXPECT_EQ(database.size("BTC"), 100);  // Auto-pruned to 100
 }

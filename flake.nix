@@ -48,6 +48,7 @@
                   ninja
                   zig
                   zls
+                  cmake-language-server
 
                   # build dependencies
                   boost-build

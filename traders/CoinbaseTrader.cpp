@@ -3,7 +3,6 @@
 #include "../adaptors/coinbase_websocket_client.h"
 #include "../adaptors/coinbase_websocket_client_async.h"
 #include "../common/jsonutils.h"
-#include "../protocols/websocket_client.h"
 #include "../strategies/hodl.h"
 #include "../strategies/index.h"
 
@@ -13,6 +12,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -135,6 +135,8 @@ void CoinbaseTrader::initWebsocketClient()
             d_config.url(),
             result,
             std::bind(&CoinbaseTrader::listen, this, std::placeholders::_1),
+            5,
+            std::chrono::seconds{2},
             d_config.isRunning());
 
         d_webSocketClient =
@@ -302,15 +304,9 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
 // protocols::Trader
 void CoinbaseTrader::listen(const std::string_view& buffer)
 {
-    {
-        std::lock_guard<std::mutex> guard(d_mutex); // LOCK
-        if (!*d_config.isRunning()) {
-            d_threadPool.stop();
-            return;
-        }
-    }
-
-    if (d_isStopped) {
+    std::lock_guard<std::mutex> guard(d_mutex); // LOCK
+    if (!*d_config.isRunning() || d_isStopped) {
+        d_threadPool.stop();
         return;
     }
 

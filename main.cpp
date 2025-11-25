@@ -2,7 +2,7 @@
 #include "common/jsonutils.h"
 #include "protocols/trader.h"
 #include "traders/CoinbaseTrader.h"
-#include "zig/zigmath.h"
+#include "zig/zigmath/zigmath.h"
 
 #include <boost/asio/thread_pool.hpp>
 #include <boost/beast/ssl.hpp>

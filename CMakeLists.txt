@@ -107,7 +107,7 @@ endforeach()
 
 # zig
 set(ZIG_LIBS "")
-make_zig_lib(ZIG_LIBS ${PROJECT_NAME} zigmath zig)
+make_zig_lib(ZIG_LIBS ${PROJECT_NAME} zigmath zig/zigmath)
 
 # link everything together
 message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
@@ -144,4 +144,4 @@ create_test(hodl_test strategies/hodl.t.cpp project_flags)
 create_test(database_test databases/market_data_db.t.cpp project_flags)
 
 # zig tests
-add_zig_test_module(math_test zig/math.zig)
+add_zig_test_module(math_test zig/zigmath/math.zig)

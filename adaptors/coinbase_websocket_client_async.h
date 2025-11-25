@@ -13,6 +13,7 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/websocket.hpp>
 
+#include <chrono>
 #include <functional>
 #include <nlohmann/json.hpp>
 
@@ -36,6 +37,11 @@ struct CoinbaseWebSocketClientAsyncConfig {
     nlohmann::json d_text; // The initial message we send to the host
     ListenCb d_listenCb; // Function that is called when a websocket message is
                          // received.
+    // Max number of reconnect we try to make before it gives up after lost
+    // messages.
+    int d_maxReconnectAttempts;
+    // The time between attempted reconnects
+    std::chrono::seconds d_reconnectDelay;
     // Shared atomic state regarding if the program should still be running
     // or not.
     std::shared_ptr<std::atomic_bool> d_isRunning;
@@ -45,10 +51,14 @@ struct CoinbaseWebSocketClientAsyncConfig {
         const std::string&                       host,
         const nlohmann::json&                    text,
         const ListenCb&                          listenCb,
+        int                                      maxReconnectAttempts,
+        const std::chrono::seconds&              reconnectDelay,
         const std::shared_ptr<std::atomic_bool>& isRunning)
     : d_host(host)
     , d_text(text)
     , d_listenCb(listenCb)
+    , d_maxReconnectAttempts(maxReconnectAttempts)
+    , d_reconnectDelay(reconnectDelay)
     , d_isRunning(isRunning)
     {
     }
@@ -72,6 +82,8 @@ class CoinbaseWebSocketClientAsync
     WebsocketStream d_ws;
     // Buffer to hold received messages
     beast::flat_buffer d_buffer;
+    // Number of reconnection attempts made after a network drop or something
+    std::atomic<int> d_reconnectionAttempts;
     // The config for this object
     CoinbaseWebSocketClientAsyncConfig d_config;
 

@@ -14,6 +14,7 @@
 #include <boost/bind/bind.hpp>
 
 #include <spdlog/spdlog.h>
+#include <thread>
 
 namespace crypto_trader {
 namespace adaptors {
@@ -46,6 +47,7 @@ CoinbaseWebSocketClientAsync::CoinbaseWebSocketClientAsync(
 , d_ctx(ssl::context::tlsv12_client)
 , d_resolver(net::make_strand(d_ioc))
 , d_ws(net::make_strand(d_ioc), d_ctx)
+, d_reconnectionAttempts(0)
 , d_config(config)
 {
 }
@@ -172,8 +174,22 @@ void CoinbaseWebSocketClientAsync::on_read(beast::error_code ec,
     boost::ignore_unused(bytes_transferred);
 
     if (ec) {
-        return fail(ec, "read");
+        if (d_reconnectionAttempts < d_config.d_maxReconnectAttempts) {
+            spdlog::warn("Connection lost, reconnecting (attempt {})",
+                         ++d_reconnectionAttempts);
+
+            // Exponential backoff
+            std::this_thread::sleep_for(d_config.d_reconnectDelay *
+                                        (1 << (d_reconnectionAttempts - 1)));
+
+            open();
+            return;
+        }
+        return fail(ec, "Max reconnects exceeded");
     }
+
+    // reset on success
+    d_reconnectionAttempts = 0;
 
     if (d_config.d_listenCb) {
         auto        res = d_buffer.data();
