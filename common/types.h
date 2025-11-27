@@ -11,11 +11,15 @@ namespace crypto_trader {
 namespace common {
 
 struct Action {
-    enum ActionType { e_BUY = 0, e_SELL = 1 };
+    enum Type { e_BUY = 0, e_SELL = 1 };
 
     // DATA
     // Type of the emitted action.
-    ActionType d_type;
+    Type d_type;
+    // Product for the action.
+    std::string d_product;
+    // Quantity for the action.
+    double d_quantity;
 }; // struct Action
 
 typedef std::function<void(const Action&)> Emit;

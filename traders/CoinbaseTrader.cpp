@@ -6,6 +6,9 @@
 #include "../strategies/hodl.h"
 #include "../strategies/index.h"
 
+#include "../executors/paper_trading_executor.h"
+#include "../executors/real_trading_executor.h"
+
 #include <boost/beast/ssl.hpp>
 
 #include <nlohmann/json.hpp>
@@ -97,7 +100,7 @@ void buildCoinbaseWebsocketMessage(nlohmann::json             *message,
 
 // class CoinbaseTraderConfig
 CoinbaseTraderConfig::CoinbaseTraderConfig(
-    const std::shared_ptr<std::atomic_bool>& isRunning)
+    const std::shared_ptr<std::atomic_bool>& isRunning, bool paperTrading)
 : d_channels()
 , d_products()
 , d_strategy(strategies::e_NONE)
@@ -106,6 +109,7 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 , d_numThreads(1)
 , d_clientType(CoinbaseTraderConfig::ClientType::SYNC)
 , d_isRunning(isRunning)
+, d_paperTrading(paperTrading)
 {
 }
 
@@ -163,6 +167,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 , d_database()
 , d_mutex()
 , d_config(config)
+, d_executor()
 {
     switch (d_config.strategy()) {
     case strategies::TradingStrategy::e_HODL: {
@@ -201,6 +206,40 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
         assert(false);
     } break;
     }
+
+    if (d_config.paperTrading()) {
+        executors::PaperTradingExecutorConfig paperTradingConfig;
+        const auto& strategyConfigJson = d_config.strategyConfig();
+        paperTradingConfig
+            .setInitialBalance(common::value_or(
+                strategyConfigJson, "initialBalance", 1000.0f))
+            .setCommissionRate(common::value_or(
+                strategyConfigJson, "commissionRate", 0.001f)); // 0.1%
+
+        if (!d_config.products().empty()) {
+            // Assuming the paper trader operates on the first product in the
+            // list
+            paperTradingConfig.setProduct(d_config.products()[0]);
+        }
+        else {
+            spdlog::error("Paper trading enabled but no products configured "
+                          "for CoinbaseTrader.");
+            assert(false);
+        }
+
+        // The only initial strategy for paper trading is to set the basis price.
+        // No automatic initial buying is performed.
+        paperTradingConfig.setInitStrategy(
+            executors::PaperTradingExecutorConfig::e_SET_BASIS_PRICE);
+
+        d_executor = std::make_unique<executors::PaperTradingExecutor>(
+            paperTradingConfig);
+    }
+    else {
+        executors::RealTradingExecutorConfig realTradingConfig;
+        d_executor = std::make_unique<executors::RealTradingExecutor>(
+            realTradingConfig);
+    }
 }
 
 CoinbaseTrader::~CoinbaseTrader() { stop(); }
@@ -219,7 +258,7 @@ void CoinbaseTrader::start()
     // TODO: Warn if not set?
     if (d_webSocketClient) {
         d_webSocketClient->listen();
-        spdlog::info("after listen");
+        SPDLOG_INFO("after listen");
     }
 }
 
@@ -247,7 +286,7 @@ void CoinbaseTrader::processAction(const common::Action& action)
     }
     std::stringstream ss;
     ss << action.d_type;
-    spdlog::info("Processing action: {}", ss.str());
+    SPDLOG_INFO("Processing action: {}", ss.str());
 
     boost::asio::post(d_threadPool,
                       std::bind(&CoinbaseTrader::handleAction, this, action));
@@ -257,7 +296,22 @@ void CoinbaseTrader::handleAction(const common::Action& action)
 {
     std::stringstream ss;
     ss << action.d_type;
-    spdlog::info("Handling action: {}", ss.str());
+    SPDLOG_INFO("Handling action: {}", ss.str());
+
+    if (d_executor) {
+        if (action.d_type == common::Action::Type::e_BUY) {
+            d_executor->buy(action.d_product, action.d_quantity);
+        }
+        else if (action.d_type == common::Action::Type::e_SELL) {
+            d_executor->sell(action.d_product, action.d_quantity);
+        }
+        else {
+            spdlog::warn("Unsupported action type for executor: {}", ss.str());
+        }
+    }
+    else {
+        spdlog::error("No executor available to handle action.");
+    }
 }
 
 void CoinbaseTrader::handleNewData(const std::string_view& buffer)
@@ -278,9 +332,12 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
                 std::stringstream ss;
                 ss << data;
 
-                spdlog::info("{}", ss.str());
+                SPDLOG_INFO("{}", ss.str());
 
                 d_strategy->handleNewData(data);
+                if (d_executor) {
+                    d_executor->handleNewData(data);
+                }
 
                 common::MarketDataCoinbase marketData;
 
