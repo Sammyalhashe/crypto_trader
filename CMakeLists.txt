@@ -128,6 +128,7 @@ function(create_test name filepath flags)
     target_link_libraries(${name}
                           ${FOUNDATION}
                           GTest::gtest_main
+                          GTest::gmock_main
                           Boost::system
                           nlohmann_json::nlohmann_json
                           spdlog::spdlog
@@ -138,6 +139,7 @@ endfunction()
 
 # common util tests
 create_test(fileutil_test common/fileutils.t.cpp project_flags)
+create_test(accounting_test common/Accounting.t.cpp project_flags)
 # strategy tests
 create_test(simple_test strategies/simple.t.cpp project_flags)
 create_test(hodl_test strategies/hodl.t.cpp project_flags)

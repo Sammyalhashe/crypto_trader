@@ -172,6 +172,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 , d_config(config)
 , d_executor()
 , d_lastSequenceNumbers()
+, d_positionManager()
 {
     switch (d_config.strategy()) {
     case strategies::TradingStrategy::e_HODL: {
@@ -200,7 +201,8 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
             .setEmit(std::bind(
                 &CoinbaseTrader::processAction, this, std::placeholders::_1));
 
-        d_strategy = std::make_unique<strategies::HodlStrategy>(hodlConfig);
+        d_strategy = std::make_unique<strategies::HodlStrategy>(
+            hodlConfig, d_positionManager);
     } break;
     default: {
         std::stringstream ss;
@@ -223,10 +225,12 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 
         d_executor = std::make_unique<
             executors::PaperTradingExecutor<common::MarketDataCoinbase>>(
-            paperTradingConfig);
+            paperTradingConfig, d_positionManager);
     }
     else {
         executors::RealTradingExecutorConfig realTradingConfig;
+
+        // FIX: Need this to also take a position manager
         d_executor = std::make_unique<
             executors::RealTradingExecutor<common::MarketDataCoinbase>>(
             realTradingConfig);
@@ -324,6 +328,78 @@ void CoinbaseTrader::listen(const std::string_view& buffer)
     std::string v(buffer);
     boost::asio::post(d_ioCtx,
                       [this, buf = std::move(v)]() { handleNewData(buf); });
+}
+
+bool CoinbaseTrader::checkSequenceNumber(const std::string_view& product,
+                                         int64_t                 sequence)
+{
+    std::string product_s = std::string(product);
+    auto        it        = d_lastSequenceNumbers.find(product_s);
+
+    if (it == d_lastSequenceNumbers.end()) {
+        // First message for this product
+        d_lastSequenceNumbers[product_s] = sequence;
+        return true;
+    }
+
+    int64_t expected = it->second + 1;
+
+    if (sequence < expected) {
+        SPDLOG_WARN("Out-of-order message for {}: got {}, expected >= {}",
+                    product,
+                    sequence,
+                    expected);
+        return false; // Ignore out-of-order messages
+    }
+
+    if (sequence > expected) {
+        int64_t dropped = sequence - expected;
+        SPDLOG_WARN("Dropped {} message(s) for {} (gap: {} to {})",
+                    dropped,
+                    product,
+                    expected,
+                    sequence - 1);
+        // Continue processing despite gap
+    }
+
+    it->second = sequence;
+    return true;
+}
+
+void CoinbaseTrader::handleTickerMessage(const nlohmann::json& data)
+{
+    common::MarketDataCoinbase marketData;
+
+    std::string price     = data["price"];
+    marketData.d_symbol   = data["product_id"];
+    marketData.d_price    = std::stod(price);
+    marketData.d_sequence = data["sequence"];
+
+    // Parse ISO 8601 timestamp to Unix milliseconds
+    std::string timeStr = data["time"];
+
+    // Check sequence number first
+    if (!checkSequenceNumber(marketData.d_symbol, marketData.d_sequence)) {
+        SPDLOG_DEBUG("Ignoring out-of-order message for {}",
+                     marketData.d_symbol);
+        return; // Skip this message
+    }
+
+    std::stringstream ss;
+    ss << data;
+
+    SPDLOG_INFO("{}", ss.str());
+
+    if (d_executor) {
+        d_executor->processTickerData(
+            marketData.d_symbol, marketData.d_price, marketData.d_timestamp);
+    }
+
+    d_strategy->handleNewData(data);
+
+    marketData.d_timestamp = common::parseISO8601ToMillis(timeStr);
+
+    d_database.add_data(marketData.d_symbol, marketData);
 }
 
 bool CoinbaseTrader::checkSequenceNumber(const std::string_view& product,
