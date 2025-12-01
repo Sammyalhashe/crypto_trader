@@ -7,7 +7,7 @@ namespace strategies {
 
 int simpleStrategy()
 {
-    spdlog::info("simple strategy run!");
+    SPDLOG_INFO("simple strategy run!");
     return 0;
 }
 

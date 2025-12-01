@@ -168,6 +168,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 , d_mutex()
 , d_config(config)
 , d_executor()
+, d_lastSequenceNumbers()
 {
     switch (d_config.strategy()) {
     case strategies::TradingStrategy::e_HODL: {
@@ -216,28 +217,14 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
             .setCommissionRate(common::value_or(
                 strategyConfigJson, "commissionRate", 0.001f)); // 0.1%
 
-        if (!d_config.products().empty()) {
-            // Assuming the paper trader operates on the first product in the
-            // list
-            paperTradingConfig.setProduct(d_config.products()[0]);
-        }
-        else {
-            spdlog::error("Paper trading enabled but no products configured "
-                          "for CoinbaseTrader.");
-            assert(false);
-        }
-
-        // The only initial strategy for paper trading is to set the basis price.
-        // No automatic initial buying is performed.
-        paperTradingConfig.setInitStrategy(
-            executors::PaperTradingExecutorConfig::e_SET_BASIS_PRICE);
-
-        d_executor = std::make_unique<executors::PaperTradingExecutor>(
+        d_executor = std::make_unique<
+            executors::PaperTradingExecutor<common::MarketDataCoinbase>>(
             paperTradingConfig);
     }
     else {
         executors::RealTradingExecutorConfig realTradingConfig;
-        d_executor = std::make_unique<executors::RealTradingExecutor>(
+        d_executor = std::make_unique<
+            executors::RealTradingExecutor<common::MarketDataCoinbase>>(
             realTradingConfig);
     }
 }
@@ -299,18 +286,18 @@ void CoinbaseTrader::handleAction(const common::Action& action)
     SPDLOG_INFO("Handling action: {}", ss.str());
 
     if (d_executor) {
-        if (action.d_type == common::Action::Type::e_BUY) {
+        if (action.d_type == common::Side::e_BUY) {
             d_executor->buy(action.d_product, action.d_quantity);
         }
-        else if (action.d_type == common::Action::Type::e_SELL) {
+        else if (action.d_type == common::Side::e_SELL) {
             d_executor->sell(action.d_product, action.d_quantity);
         }
         else {
-            spdlog::warn("Unsupported action type for executor: {}", ss.str());
+            SPDLOG_WARN("Unsupported action type for executor: {}", ss.str());
         }
     }
     else {
-        spdlog::error("No executor available to handle action.");
+        SPDLOG_ERROR("No executor available to handle action.");
     }
 }
 
@@ -326,27 +313,8 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
             auto data = nlohmann::json::parse(buffer);
 
             auto type = data["type"];
-
             if (type == "ticker") {
-
-                std::stringstream ss;
-                ss << data;
-
-                SPDLOG_INFO("{}", ss.str());
-
-                d_strategy->handleNewData(data);
-                if (d_executor) {
-                    d_executor->handleNewData(data);
-                }
-
-                common::MarketDataCoinbase marketData;
-
-                std::string price     = data["price"];
-                marketData.d_symbol   = data["product_id"];
-                marketData.d_price    = std::stod(price);
-                marketData.d_sequence = data["sequence"];
-
-                d_database.add_data(marketData.d_symbol, marketData);
+                handleTickerMessage(data);
             }
         }
         catch (json::parse_error& e) {
@@ -370,6 +338,78 @@ void CoinbaseTrader::listen(const std::string_view& buffer)
     std::string v(buffer);
     boost::asio::post(d_threadPool,
                       std::bind(&CoinbaseTrader::handleNewData, this, v));
+}
+
+bool CoinbaseTrader::checkSequenceNumber(const std::string_view& product,
+                                         int64_t                 sequence)
+{
+    std::string product_s;
+    auto        it = d_lastSequenceNumbers.find(product_s);
+
+    if (it == d_lastSequenceNumbers.end()) {
+        // First message for this product
+        d_lastSequenceNumbers[product_s] = sequence;
+        return true;
+    }
+
+    int64_t expected = it->second + 1;
+
+    if (sequence < expected) {
+        SPDLOG_WARN("Out-of-order message for {}: got {}, expected >= {}",
+                    product,
+                    sequence,
+                    expected);
+        return false; // Ignore out-of-order messages
+    }
+
+    if (sequence > expected) {
+        int64_t dropped = sequence - expected;
+        SPDLOG_WARN("Dropped {} message(s) for {} (gap: {} to {})",
+                    dropped,
+                    product,
+                    expected,
+                    sequence - 1);
+        // Continue processing despite gap
+    }
+
+    it->second = sequence;
+    return true;
+}
+
+void CoinbaseTrader::handleTickerMessage(const nlohmann::json& data)
+{
+    common::MarketDataCoinbase marketData;
+
+    std::string price     = data["price"];
+    marketData.d_symbol   = data["product_id"];
+    marketData.d_price    = std::stod(price);
+    marketData.d_sequence = data["sequence"];
+
+    // Parse ISO 8601 timestamp to Unix milliseconds
+    std::string timeStr = data["time"];
+
+    // Check sequence number first
+    if (!checkSequenceNumber(marketData.d_symbol, marketData.d_sequence)) {
+        SPDLOG_DEBUG("Ignoring out-of-order message for {}",
+                     marketData.d_symbol);
+        return; // Skip this message
+    }
+
+    std::stringstream ss;
+    ss << data;
+
+    SPDLOG_INFO("{}", ss.str());
+
+    d_strategy->handleNewData(data);
+
+    marketData.d_timestamp = common::parseISO8601ToMillis(timeStr);
+
+    if (d_executor) {
+        d_executor->processTickerData(
+            marketData.d_symbol, marketData.d_price, marketData.d_timestamp);
+    }
+
+    d_database.add_data(marketData.d_symbol, marketData);
 }
 
 } // namespace traders

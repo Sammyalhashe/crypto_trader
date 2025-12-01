@@ -1,7 +1,10 @@
 #ifndef INCLUDED_PAPER_TRADER_EXECUTOR
 #define INCLUDED_PAPER_TRADER_EXECUTOR
 
+#include "../common/timeutils.h"
+#include "../common/types.h"
 #include "../protocols/executor.h"
+#include "../traders/position_manager.h"
 
 #include <spdlog/spdlog.h>
 
@@ -17,65 +20,53 @@ namespace executors {
 class PaperTradingExecutorConfig {
   public:
     // PUBLIC TYPES
-    enum InitStrategy {
-        e_SET_BASIS_PRICE = 0 // Changed from 1 to 0 as it's the only strategy
-    }; // InitStrategy
-
   private:
     // PRIVATE DATA
-    // Action to take when the strategy first starts.
-    InitStrategy d_initStrategy;
     // Initial balance for paper trading
-    float d_initialBalance;
+    double d_initialBalance;
     // Commission percentage per trade
-    float d_commissionRate;
-    // The product this paper trader is for
-    std::string d_product;
+    double d_commissionRate;
 
   public:
     // MANIPULATORS
-    PaperTradingExecutorConfig& setInitStrategy(const InitStrategy& initStrat);
-    PaperTradingExecutorConfig& setInitialBalance(float initialBalance);
-    PaperTradingExecutorConfig& setCommissionRate(float commissionRate);
-    PaperTradingExecutorConfig& setProduct(const std::string& product);
+
+    PaperTradingExecutorConfig& setInitialBalance(double initialBalance);
+    PaperTradingExecutorConfig& setCommissionRate(double commissionRate);
 
     // ACCESSORS
-    const InitStrategy& initStrategy() const;
-    float               initialBalance() const;
-    float               commissionRate() const;
-    const std::string&  product() const;
 
+    double initialBalance() const;
+    double commissionRate() const;
 }; // PaperTradingExecutorConfig
 
 struct PaperTrade {
     // PUBLIC DATA
+    // The product that was traded
+    std::string d_symbol;
+    // Side of the trade
+    common::Side d_side;
     // time when the trade was finalized
     std::string d_timestamp;
     // price at which the trade was executed
-    float d_price;
+    double d_price;
     // amount of product bought/sold
-    float d_amount;
+    double d_amount;
+    // commission paid on trade
+    double d_commission;
 }; // PaperTrade
 
-class PaperTradingExecutor : public protocols::Executor {
+template <common::MarketData T>
+class PaperTradingExecutor : public protocols::Executor<T> {
 
   private:
-    // PRIVATE TYPES
-    typedef std::vector<PaperTrade> TradeList;
-
     // PRIVATE DATA
     // Current cash balance
-    float d_balance;
-    // Current holdings of the product
-    float d_holdings;
+    double d_balance;
+    // Manages positions for different products
+    traders::PositionManager d_positionManager;
     // Config for the paper trader strategy.
-    PaperTradingExecutorConfig d_config;
-    // List of trades made
-    TradeList d_trades;
-    // The price that helps us to descern what's the best course of action
-    // to take when initially starting or we sold our last position.
-    std::optional<float> d_basisMarketPrice;
-
+    PaperTradingExecutorConfig         d_config;
+    std::unordered_map<std::string, T> d_lastMarketPrices;
 
   public:
     // CREATORS
@@ -83,26 +74,32 @@ class PaperTradingExecutor : public protocols::Executor {
     ~PaperTradingExecutor() = default;
 
     // MANIPULATORS
-    bool buy(const std::string_view& product, double quantity) override;
-    bool sell(const std::string_view& product, double quantity) override;
+    common::TradeResult buy(const std::string_view& product,
+                            double                  quantity) override;
+    common::TradeResult sell(const std::string_view& product,
+                             double                  quantity) override;
     double getBalance(const std::string_view& currency) const override;
-    double getPosition(const std::string_view& product) const override;
-    void handleNewData(const nlohmann::json& data) override;
+    std::optional<double>
+         getPosition(const std::string_view& product) const override;
+    void processTickerData(const std::string_view& product,
+                           double                  price,
+                           const T::Timestamp&     timestamp) override;
+
+    // Get the total realized Profit and Loss for the configured product.
+    double getRealizedPnl(const std::string_view& product) const;
 
     // ACCESSORS
     // Return the current balance
-    float balance() const;
-    // Return the current holdings
-    float holdings() const;
-    // Return a non-modifiable reference to the list of trades
-    const TradeList& trades() const;
-    // Return a non-modifiable reference to the basisMarketPrice.
-    const std::optional<float>& basisMarketPrice() const;
+    double balance() const;
 
+    // Return either the realized or unrealized pnl for the given `product`
+    // depending on the passed in 'realize' boolean (default = false).
+    std::optional<double> pnl(const std::string_view& product,
+                              bool                    realize = false) const;
 
-  private:
-    // PRIVATE MANIPULATORS
-    void processTickerData(float price, const std::string_view& timestamp);
+    // Get the average cost basis for the given `product`
+    std::optional<double>
+    getAverageCostBasis(const std::string_view& product) const;
 
 }; // PaperTradingExecutor
 
@@ -110,60 +107,207 @@ class PaperTradingExecutor : public protocols::Executor {
 // class PaperTradingExecutorConfig
 
 inline PaperTradingExecutorConfig&
-PaperTradingExecutorConfig::setInitStrategy(const InitStrategy& initStrat)
-{
-    d_initStrategy = initStrat;
-    return *this;
-}
-
-inline PaperTradingExecutorConfig&
-PaperTradingExecutorConfig::setInitialBalance(float initialBalance)
+PaperTradingExecutorConfig::setInitialBalance(double initialBalance)
 {
     d_initialBalance = initialBalance;
     return *this;
 }
 
 inline PaperTradingExecutorConfig&
-PaperTradingExecutorConfig::setCommissionRate(float commissionRate)
+PaperTradingExecutorConfig::setCommissionRate(double commissionRate)
 {
     d_commissionRate = commissionRate;
     return *this;
 }
 
-inline PaperTradingExecutorConfig&
-PaperTradingExecutorConfig::setProduct(const std::string& product)
+inline double PaperTradingExecutorConfig::initialBalance() const
 {
-    d_product = product;
-    return *this;
+    return d_initialBalance;
 }
 
-inline const PaperTradingExecutorConfig::InitStrategy&
-PaperTradingExecutorConfig::initStrategy() const
+inline double PaperTradingExecutorConfig::commissionRate() const
 {
-    return d_initStrategy;
+    return d_commissionRate;
 }
-
-inline float PaperTradingExecutorConfig::initialBalance() const { return d_initialBalance; }
-
-inline float PaperTradingExecutorConfig::commissionRate() const { return d_commissionRate; }
-
-inline const std::string& PaperTradingExecutorConfig::product() const { return d_product; }
 
 // class PaperTradingExecutor
 
 // ACCESSORS
-inline float PaperTradingExecutor::balance() const { return d_balance; }
-
-inline float PaperTradingExecutor::holdings() const { return d_holdings; }
-
-inline const PaperTradingExecutor::TradeList& PaperTradingExecutor::trades() const
+template <common::MarketData T>
+double PaperTradingExecutor<T>::balance() const
 {
-    return d_trades;
+    return d_balance;
 }
 
-inline const std::optional<float>& PaperTradingExecutor::basisMarketPrice() const
+template <common::MarketData T>
+PaperTradingExecutor<T>::PaperTradingExecutor(
+    const PaperTradingExecutorConfig& config)
+: d_balance(config.initialBalance())
+, d_positionManager()
+, d_config(config)
 {
-    return d_basisMarketPrice;
+}
+
+template <common::MarketData T>
+common::TradeResult
+PaperTradingExecutor<T>::buy(const std::string_view& product, double quantity)
+{
+    auto it = d_lastMarketPrices.find(std::string(product));
+    if (it == d_lastMarketPrices.end()) {
+        std::stringstream ss;
+        ss << std::format(
+            "Cannot execute buy for product {}, basis market price not set.",
+            product);
+        SPDLOG_WARN(ss.str());
+        return {false, 0.0, 0.0, ss.str()};
+    }
+
+    const auto& marketData = it->second;
+    double      price      = marketData.d_price;
+    double      cost       = price * quantity;
+    double      commission = cost * d_config.commissionRate();
+    double      totalCost  = cost + commission;
+
+    if (d_balance >= totalCost) {
+        d_balance -= totalCost;
+        d_positionManager.addTrade(
+            std::string(product), quantity, price, marketData.d_timestamp);
+        SPDLOG_INFO("PaperTrade BUY: Product={}, Quantity={}, Price={}, "
+                    "TotalCost={}, Balance={}, Holdings={}",
+                    product,
+                    quantity,
+                    price,
+                    totalCost,
+                    d_balance,
+                    d_positionManager.currentHoldings(product).value());
+        return {true, price, commission, ""};
+    }
+    else {
+        std::stringstream ss;
+        ss << std::format("PaperTrade BUY: Insufficient balance. Product={}, "
+                          "Quantity={}, Price={}, TotalCost={}, Balance={}",
+                          product,
+                          quantity,
+                          price,
+                          totalCost,
+                          d_balance);
+        SPDLOG_WARN(ss.str());
+        return {false, 0.0, 0.0, ss.str()};
+    }
+}
+
+template <common::MarketData T>
+common::TradeResult
+PaperTradingExecutor<T>::sell(const std::string_view& product, double quantity)
+{
+    auto it = d_lastMarketPrices.find(std::string(product));
+    if (it == d_lastMarketPrices.end()) {
+        std::stringstream ss;
+        ss << std::format(
+            "Cannot execute sell for product {}, basis market price not set.",
+            product);
+        SPDLOG_WARN(ss.str());
+        return {false, 0.0, 0.0, ss.str()};
+    }
+
+    const auto& marketData = it->second;
+    double      price      = marketData.d_price;
+    double      revenue    = price * quantity;
+    double      commission = revenue * d_config.commissionRate();
+    double      netRevenue = revenue - commission;
+
+    auto holdings = d_positionManager.currentHoldings(product);
+    if (holdings.has_value() && holdings.value() >= quantity) {
+        d_balance += netRevenue;
+        d_positionManager.addTrade(
+            std::string(product), -quantity, price, marketData.d_timestamp);
+        std::stringstream ss;
+        ss << std::format(
+            "PaperTrade SELL: Product={}, Quantity={}, Price={}, "
+            "NetRevenue={}, "
+            "Balance={}, Holdings={}, Realized PnL={}",
+            product,
+            quantity,
+            price,
+            netRevenue,
+            d_balance,
+            d_positionManager.currentHoldings(product).value(),
+            d_positionManager.realizedPnl(product).value());
+        SPDLOG_INFO(ss.str());
+        return {true, price, commission, ""};
+    }
+    else {
+        std::stringstream ss;
+        ss << std::format(
+            "PaperTrade SELL: Insufficient holdings. "
+            "Product={}, Quantity={}, Price={}, Holdings={}",
+            product,
+            quantity,
+            price,
+            d_positionManager.currentHoldings(product).value_or(0.0));
+        SPDLOG_WARN(ss.str());
+        return {false, 0.0, 0.0, ss.str()};
+    }
+}
+
+template <common::MarketData T>
+void PaperTradingExecutor<T>::processTickerData(
+    const std::string_view& product,
+    double                  price,
+    const T::Timestamp&     timestamp)
+{
+    d_lastMarketPrices[std::string(product)] = {
+        std::string(product), price, timestamp};
+    SPDLOG_INFO("Updated basis price for {} to {} at timestamp={}",
+                product,
+                price,
+                timestamp);
+}
+
+template <common::MarketData T>
+double
+PaperTradingExecutor<T>::getBalance(const std::string_view& currency) const
+{
+    if (currency == "USD") { // Assuming USD is the base currency for balance
+        return d_balance;
+    }
+    SPDLOG_WARN("getBalance for unsupported currency: {}", currency);
+    return 0.0;
+}
+
+template <common::MarketData T>
+std::optional<double>
+PaperTradingExecutor<T>::getPosition(const std::string_view& product) const
+{
+    return d_positionManager.currentHoldings(std::string(product));
+}
+
+template <common::MarketData T>
+std::optional<double>
+PaperTradingExecutor<T>::pnl(const std::string_view& product,
+                             bool                    realized) const
+{
+    if (realized) {
+        return d_positionManager.realizedPnl(std::string(product));
+    }
+
+    auto it = d_lastMarketPrices.find(std::string(product));
+    if (it == d_lastMarketPrices.end()) {
+        SPDLOG_ERROR("Cannot get unrealized pnl for product {}, basis market "
+                     "price not set.",
+                     product);
+        return std::nullopt;
+    }
+
+    return d_positionManager.unrealizedPnl(std::string(product),
+                                           it->second.d_price);
+}
+
+template <common::MarketData T>
+std::optional<double> PaperTradingExecutor<T>::getAverageCostBasis(
+    const std::string_view& product) const
+{
+    return d_positionManager.averageCostBasis(std::string(product));
 }
 
 } // namespace executors

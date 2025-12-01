@@ -1,4 +1,5 @@
 {
+    "paperTrading": true,
     "traders": [
         {
             "coinbaseTrader": {
@@ -10,7 +11,9 @@
                     "heartbeat",
                     {
                         "name": "ticker",
-                        "products": ["ETH-USD"]
+                        "products": [
+                            "ETH-USD"
+                        ]
                     }
                 ],
                 "strategy": {
@@ -21,7 +24,7 @@
                         "initStrategy": "buy_immediately"
                     }
                 },
-                "numThreads": 4,
+                "numThreads": 1,
                 "clientType": "ASYNC"
             }
         }

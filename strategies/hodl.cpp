@@ -87,7 +87,7 @@ void HodlStrategy::goOverTradesAtPrice(float                   price,
         default: {
             std::stringstream ss;
             ss << d_config.initStrategy();
-            spdlog::error("Recieved unknown initStrategy: {}", ss.str());
+            SPDLOG_ERROR("Recieved unknown initStrategy: {}", ss.str());
             assert(false);
         } break;
         }
@@ -120,23 +120,23 @@ void HodlStrategy::goOverTradesAtPrice(float                   price,
 
 void HodlStrategy::buy(const BuyConfig& config)
 {
-    spdlog::info("BUY at price {}", config.d_price);
+    SPDLOG_INFO("BUY at price {}", config.d_price);
     auto& back         = d_trades[++d_tradeIdBasis];
     back.d_timestamp   = config.d_timestamp;
     back.d_boughtAgain = !config.d_buyAgain;
     back.d_price       = config.d_price;
 
     if (d_emit) {
-        common::Action action{.d_type = common::Action::e_BUY};
+        common::Action action{.d_type = common::Side::e_BUY};
         d_emit(action);
     }
 }
 
 void HodlStrategy::sell(const SellConfig& config)
 {
-    spdlog::info("SELL at price {} for trade bought at {}",
-                 config.d_price,
-                 config.d_trade->second.d_price);
+    SPDLOG_INFO("SELL at price {} for trade bought at {}",
+                config.d_price,
+                config.d_trade->second.d_price);
     d_trades.erase(config.d_trade);
 
     if (d_config.initStrategy() == HodlStrategyConfig::e_SET_BASIS_PRICE &&
@@ -147,7 +147,7 @@ void HodlStrategy::sell(const SellConfig& config)
     }
 
     if (d_emit) {
-        common::Action action{.d_type = common::Action::e_SELL};
+        common::Action action{.d_type = common::Side::e_SELL};
         d_emit(action);
     }
 }

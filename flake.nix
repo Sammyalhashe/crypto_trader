@@ -80,6 +80,7 @@
                 scripts.bo.exec = "make bo";
                 scripts.clean.exec = "make clean";
                 scripts.test.exec = "make test";
+                scripts.run.exec = "make run";
               }
             ];
           };
