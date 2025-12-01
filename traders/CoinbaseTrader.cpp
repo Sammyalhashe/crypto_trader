@@ -343,8 +343,8 @@ void CoinbaseTrader::listen(const std::string_view& buffer)
 bool CoinbaseTrader::checkSequenceNumber(const std::string_view& product,
                                          int64_t                 sequence)
 {
-    std::string product_s;
-    auto        it = d_lastSequenceNumbers.find(product_s);
+    std::string product_s = std::string(product);
+    auto        it        = d_lastSequenceNumbers.find(product_s);
 
     if (it == d_lastSequenceNumbers.end()) {
         // First message for this product
