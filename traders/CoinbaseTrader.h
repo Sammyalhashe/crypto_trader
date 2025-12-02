@@ -9,6 +9,8 @@
 #include "../protocols/websocket_client.h"
 #include "../strategies/index.h"
 
+#include <boost/asio/executor_work_guard.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/thread_pool.hpp>
 #include <boost/optional.hpp>
 
@@ -17,7 +19,6 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
-#include <optional>
 #include <string_view>
 #include <variant>
 #include <vector>
@@ -103,15 +104,19 @@ class CoinbaseTrader : public protocols::Trader {
     std::shared_ptr<protocols::WebsocketClient> d_webSocketClient;
     // The strategy this trader has decided to use.
     std::unique_ptr<protocols::Strategy> d_strategy;
-    // The threadpool to execute received events on.
-    boost::asio::thread_pool d_threadPool;
+    // boost thread to offload items from websocket client
+    boost::asio::io_context d_ioCtx;
+    std::jthread            d_thread;
+    // this keeps the number of processing tasks for the iocontext artificially
+    // at zero to make sure it blocks
+    // should be released on stop.
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type>
+        d_ioWorkGuard;
     // The database that stores the data received from clients and other
     // trade data.
     databases::MarketDataDB<common::MarketDataCoinbase> d_database;
     // If this trader is running or not.
     std::atomic_bool d_isStopped;
-    // The mutex holding access to this class' members.
-    std::mutex d_mutex;
     // The config for this trader.
     CoinbaseTraderConfig d_config;
     // The executor to execute trades on.
@@ -132,8 +137,6 @@ class CoinbaseTrader : public protocols::Trader {
     // PUBLIC MANIPULATORS
     // Process an incoming action.
     void processAction(const common::Action& action);
-    // Handle a new action.
-    void handleAction(const common::Action& action);
     // Handle new data available to the trader.
     void handleNewData(const std::string_view& buffer);
 

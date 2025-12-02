@@ -9,6 +9,7 @@
 #include "../executors/paper_trading_executor.h"
 #include "../executors/real_trading_executor.h"
 
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/beast/ssl.hpp>
 
 #include <nlohmann/json.hpp>
@@ -17,6 +18,7 @@
 
 #include <chrono>
 #include <memory>
+#include <stop_token>
 #include <string>
 
 namespace crypto_trader {
@@ -162,10 +164,11 @@ void CoinbaseTrader::initWebsocketClient()
 CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 : d_webSocketClient()
 , d_strategy()
-, d_threadPool(config.numThreads())
+, d_ioCtx()
+, d_thread()
+, d_ioWorkGuard(boost::asio::make_work_guard(d_ioCtx))
 , d_isStopped(true)
 , d_database()
-, d_mutex()
 , d_config(config)
 , d_executor()
 , d_lastSequenceNumbers()
@@ -192,6 +195,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
         hodlConfig
             .setPercentUp(common::value_or(hodlConfigJson, "percentUp", 5))
             .setPercentDown(common::value_or(hodlConfigJson, "percentDown", 5))
+            .setBuyAmount(common::value_or(hodlConfigJson, "buyAmount", 5))
             .setInitStrategy(initStrat)
             .setEmit(std::bind(
                 &CoinbaseTrader::processAction, this, std::placeholders::_1));
@@ -235,17 +239,14 @@ CoinbaseTrader::~CoinbaseTrader() { stop(); }
 
 void CoinbaseTrader::start()
 {
-    if (!d_isStopped) {
+    if (!d_isStopped.exchange(false)) {
         return;
     }
 
-    // mark this trader as started.
-    d_isStopped = false;
+    d_thread = std::jthread([this](std::stop_token token) { d_ioCtx.run(); });
 
-    // TODO: Warn if not set?
     if (d_webSocketClient) {
         d_webSocketClient->listen();
-        SPDLOG_INFO("after listen");
     }
 }
 
@@ -260,10 +261,9 @@ void CoinbaseTrader::stop()
     // mark this trader as stopped.
     d_isStopped = true;
 
-    // Wait till all events are handled.
-    // NOTE: If trader was never started, no events should be enqueued on so
-    // it should just end.
-    d_threadPool.join();
+    d_ioWorkGuard.reset();
+
+    d_ioCtx.stop();
 }
 
 void CoinbaseTrader::processAction(const common::Action& action)
@@ -274,16 +274,6 @@ void CoinbaseTrader::processAction(const common::Action& action)
     std::stringstream ss;
     ss << action.d_type;
     SPDLOG_INFO("Processing action: {}", ss.str());
-
-    boost::asio::post(d_threadPool,
-                      std::bind(&CoinbaseTrader::handleAction, this, action));
-}
-
-void CoinbaseTrader::handleAction(const common::Action& action)
-{
-    std::stringstream ss;
-    ss << action.d_type;
-    SPDLOG_INFO("Handling action: {}", ss.str());
 
     if (d_executor) {
         if (action.d_type == common::Side::e_BUY) {
@@ -303,9 +293,7 @@ void CoinbaseTrader::handleAction(const common::Action& action)
 
 void CoinbaseTrader::handleNewData(const std::string_view& buffer)
 {
-    std::lock_guard<std::mutex> guard(d_mutex); // LOCK
     if (!*d_config.isRunning()) {
-        d_threadPool.stop();
         return;
     }
     if (d_strategy) {
@@ -318,10 +306,10 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
             }
         }
         catch (json::parse_error& e) {
-            spdlog::error("{}", e.what());
+            SPDLOG_ERROR("{}", e.what());
         }
         catch (json::type_error& e) {
-            spdlog::error("{}", e.what());
+            SPDLOG_ERROR("{}", e.what());
         }
     }
 }
@@ -329,15 +317,13 @@ void CoinbaseTrader::handleNewData(const std::string_view& buffer)
 // protocols::Trader
 void CoinbaseTrader::listen(const std::string_view& buffer)
 {
-    std::lock_guard<std::mutex> guard(d_mutex); // LOCK
     if (!*d_config.isRunning() || d_isStopped) {
-        d_threadPool.stop();
         return;
     }
 
     std::string v(buffer);
-    boost::asio::post(d_threadPool,
-                      std::bind(&CoinbaseTrader::handleNewData, this, v));
+    boost::asio::post(d_ioCtx,
+                      [this, buf = std::move(v)]() { handleNewData(buf); });
 }
 
 bool CoinbaseTrader::checkSequenceNumber(const std::string_view& product,
@@ -400,14 +386,14 @@ void CoinbaseTrader::handleTickerMessage(const nlohmann::json& data)
 
     SPDLOG_INFO("{}", ss.str());
 
-    d_strategy->handleNewData(data);
-
-    marketData.d_timestamp = common::parseISO8601ToMillis(timeStr);
-
     if (d_executor) {
         d_executor->processTickerData(
             marketData.d_symbol, marketData.d_price, marketData.d_timestamp);
     }
+
+    d_strategy->handleNewData(data);
+
+    marketData.d_timestamp = common::parseISO8601ToMillis(timeStr);
 
     d_database.add_data(marketData.d_symbol, marketData);
 }

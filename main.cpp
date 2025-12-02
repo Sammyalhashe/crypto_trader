@@ -40,7 +40,7 @@ struct SignalContext {
 
 int main(int argc, char *argv[])
 {
-    spdlog::set_pattern("[source %s] [function %!] [line %#] %v");
+    spdlog::set_pattern("[%^%l%$] [source %s] [function %!] [line %#] %v");
     SPDLOG_INFO("Result from zig: {}", add(1, 2));
     // SPDLOG_INFO();
     using namespace crypto_trader;

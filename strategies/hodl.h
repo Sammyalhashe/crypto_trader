@@ -32,6 +32,8 @@ class HodlStrategyConfig {
     float d_percentDown;
     // Callback called on emitted action by strategy.
     common::Emit d_emit;
+    // amount in USD to buy
+    double d_buyAmount;
 
   public:
     // MANIPULATORS
@@ -39,21 +41,25 @@ class HodlStrategyConfig {
     HodlStrategyConfig& setPercentUp(float percentUp);
     HodlStrategyConfig& setPercentDown(float percentDown);
     HodlStrategyConfig& setEmit(const common::Emit& emit);
+    HodlStrategyConfig& setBuyAmount(double buyAmount);
 
     // ACCESSORS
     const InitStrategy& initStrategy() const;
     float               percentUp() const;
     float               percentDown() const;
     const common::Emit& emit() const;
+    double              buyAmount() const;
 
 }; // HodlStrategyConfig
 
 struct Trade {
     // PUBLIC DATA
+    // product
+    std::string d_product;
     // time when the trade was finalized
     std::string d_timestamp;
     // price at which the trade was executed
-    float d_price;
+    double d_price;
     // did we already buy the dip? If yes don't do it again lol.
     bool d_boughtAgain;
 }; // Trade
@@ -62,32 +68,38 @@ class HodlStrategy : public protocols::Strategy {
 
   private:
     // PRIVATE TYPES
-    typedef std::unordered_map<unsigned int, Trade> TradeMap;
+    typedef std::unordered_map<unsigned int, Trade>   TradeMap;
+    typedef std::unordered_map<std::string, TradeMap> TradesForProduct;
+    typedef std::unordered_map<std::string, double>   BasisPrices;
 
     struct BuyConfig {
+        // product
+        std::string d_product;
         // Timestamp
         std::string_view d_timestamp;
         // Price we bought at.
-        float d_price;
+        double d_price;
         // If the buy again flag should be set
         bool d_buyAgain;
     }; // BuyConfig
 
     struct SellConfig {
+        // product
+        std::string d_product;
         // Position we are selling.
         TradeMap::iterator d_trade;
         // price we are selling at
-        float d_price;
+        double d_price;
     }; // SellConfig
 
     // PRIVATE DATA
     // monotonically increasing trade id;
     unsigned int d_tradeIdBasis;
-    // List of trades that have been finalized.
-    TradeMap d_trades;
+    // List of trades that have been finalized for each product
+    TradesForProduct d_tradesForProduct;
     // The price that helps us to descern what's the best course of action
     // to take when initially starting or we sold our last position.
-    boost::optional<float> d_basisMarketPrice;
+    BasisPrices d_basisMarketPrices;
     // Config to the hodl strategy.
     HodlStrategyConfig d_config;
 
@@ -101,14 +113,16 @@ class HodlStrategy : public protocols::Strategy {
 
     // ACCESSORS
     // Return a non-modifiable reference to the list of positions
-    // we currently have
-    const TradeMap& trades() const;
+    // we currently have for each product.
+    const TradesForProduct& tradesForProduct() const;
     // Return a non-modifiable reference to the basisMarketPrice.
-    const boost::optional<float>& basisMarketPrice() const;
+    const BasisPrices& basisMarketPrices() const;
 
   private:
     // PRIVATE MANIPULATORS
-    void goOverTradesAtPrice(float price, const std::string_view& timestamp);
+    void goOverTradesAtPrice(const std::string_view& product,
+                             double                  price,
+                             const std::string_view& timestamp);
     void buy(const BuyConfig& config);
     void sell(const SellConfig& config);
 
@@ -144,6 +158,12 @@ HodlStrategyConfig::setEmit(const common::Emit& emit)
     return *this;
 }
 
+inline HodlStrategyConfig& HodlStrategyConfig::setBuyAmount(double buyAmount)
+{
+    d_buyAmount = buyAmount;
+    return *this;
+}
+
 inline const HodlStrategyConfig::InitStrategy&
 HodlStrategyConfig::initStrategy() const
 {
@@ -156,17 +176,20 @@ inline float HodlStrategyConfig::percentDown() const { return d_percentDown; }
 
 inline const common::Emit& HodlStrategyConfig::emit() const { return d_emit; }
 
+inline double HodlStrategyConfig::buyAmount() const { return d_buyAmount; }
+
 // class HodlStrategy
 
 // ACCESSORS
-inline const HodlStrategy::TradeMap& HodlStrategy::trades() const
+inline const HodlStrategy::TradesForProduct&
+HodlStrategy::tradesForProduct() const
 {
-    return d_trades;
+    return d_tradesForProduct;
 }
 
-inline const boost::optional<float>& HodlStrategy::basisMarketPrice() const
+inline const HodlStrategy::BasisPrices& HodlStrategy::basisMarketPrices() const
 {
-    return d_basisMarketPrice;
+    return d_basisMarketPrices;
 }
 
 } // namespace strategies

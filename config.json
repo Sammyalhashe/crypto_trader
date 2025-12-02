@@ -21,7 +21,8 @@
                     "config": {
                         "percentUp": 0.001,
                         "percentDown": 0.001,
-                        "initStrategy": "buy_immediately"
+                        "initStrategy": "buy_immediately",
+                        "buyAmount": 100
                     }
                 },
                 "numThreads": 1,
