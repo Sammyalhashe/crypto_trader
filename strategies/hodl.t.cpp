@@ -18,11 +18,13 @@ namespace {
 void buildNewSocketMessage(Json     *json,
                            const SV& type,
                            const SV& price,
-                           const SV& time)
+                           const SV& time,
+                           const SV& product)
 {
-    (*json)["type"]  = type;
-    (*json)["price"] = price;
-    (*json)["time"]  = time;
+    (*json)["type"]       = type;
+    (*json)["price"]      = price;
+    (*json)["time"]       = time;
+    (*json)["product_id"] = product;
 }
 
 void dummyHandleAction(const common::Action& action) {}
@@ -39,20 +41,21 @@ TEST(HodlStrategyTest, XPercentRiseTest)
         .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
     HodlStrategy hodl(config);
 
-    Json data;
+    std::string product("ETH-USD");
+    Json        data;
     buildNewSocketMessage(
-        &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z");
+        &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z", product);
 
     hodl.handleNewData(data);
 
-    EXPECT_EQ(1, hodl.trades().size());
+    EXPECT_EQ(1, hodl.tradesForProduct().at(product).size());
 
     buildNewSocketMessage(
-        &data, "ticker", "1680", "2023-09-04T18:38:49.279032Z");
+        &data, "ticker", "1680", "2023-09-04T18:38:49.279032Z", product);
 
     hodl.handleNewData(data);
 
-    EXPECT_EQ(0, hodl.trades().size());
+    EXPECT_EQ(0, hodl.tradesForProduct().at(product).size());
 }
 
 TEST(HodlStrategyTest, YPercentFallTest)
@@ -64,27 +67,29 @@ TEST(HodlStrategyTest, YPercentFallTest)
         .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
     HodlStrategy hodl(config);
 
+    std::string product("ETH-USD");
+
     Json data;
     buildNewSocketMessage(
-        &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z");
+        &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z", product);
 
     hodl.handleNewData(data);
 
-    EXPECT_EQ(1, hodl.trades().size());
+    EXPECT_EQ(1, hodl.tradesForProduct().at(product).size());
 
     buildNewSocketMessage(
-        &data, "ticker", "1519", "2023-09-04T18:38:49.279032Z");
+        &data, "ticker", "1519", "2023-09-04T18:38:49.279032Z", product);
 
     hodl.handleNewData(data);
 
-    EXPECT_EQ(2, hodl.trades().size());
+    EXPECT_EQ(2, hodl.tradesForProduct().at(product).size());
 
     buildNewSocketMessage(
-        &data, "ticker", "1443", "2023-09-04T18:38:50.279032Z");
+        &data, "ticker", "1443", "2023-09-04T18:38:50.279032Z", "ETH-USD");
 
     hodl.handleNewData(data);
 
-    EXPECT_EQ(2, hodl.trades().size());
+    EXPECT_EQ(2, hodl.tradesForProduct().at(product).size());
 }
 
 TEST(HodlStrategyTest, BASIS_PRICE_INIT)
@@ -96,48 +101,59 @@ TEST(HodlStrategyTest, BASIS_PRICE_INIT)
         .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
     HodlStrategy hodl(config);
 
-    Json data;
+    std::string product("ETH-USD");
+    Json        data;
     buildNewSocketMessage(
-        &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z");
+        &data, "ticker", "1600", "2023-09-04T18:38:48.279032Z", product);
 
     hodl.handleNewData(data);
 
-    EXPECT_EQ(1600, hodl.basisMarketPrice().value());
-    EXPECT_EQ(0, hodl.trades().size());
+    EXPECT_EQ(1600, hodl.basisMarketPrices().at(product));
+    EXPECT_EQ(0, hodl.tradesForProduct().at(product).size());
 
     buildNewSocketMessage(
-        &data, "ticker", "1520", "2023-09-04T18:38:49.279032Z");
+        &data, "ticker", "1519", "2023-09-04T18:38:49.279032Z", product);
 
     hodl.handleNewData(data);
-    EXPECT_EQ(1, hodl.trades().size());
-    EXPECT_EQ(false, hodl.basisMarketPrice().has_value());
+    EXPECT_EQ(1, hodl.tradesForProduct().at(product).size());
+    EXPECT_EQ(false,
+              hodl.basisMarketPrices().find(product) !=
+                  hodl.basisMarketPrices().end());
 
     buildNewSocketMessage(
-        &data, "ticker", "1444", "2023-09-04T18:38:50.279032Z");
+        &data, "ticker", "1443", "2023-09-04T18:38:50.279032Z", product);
 
     hodl.handleNewData(data);
-    EXPECT_EQ(2, hodl.trades().size());
-    EXPECT_EQ(false, hodl.basisMarketPrice().has_value());
+    EXPECT_EQ(2, hodl.tradesForProduct().at(product).size());
+    EXPECT_EQ(false,
+              hodl.basisMarketPrices().find(product) !=
+                  hodl.basisMarketPrices().end());
 
     buildNewSocketMessage(
-        &data, "ticker", "1378", "2023-09-04T18:38:51.279032Z");
+        &data, "ticker", "1378", "2023-09-04T18:38:51.279032Z", product);
 
     hodl.handleNewData(data);
-    EXPECT_EQ(2, hodl.trades().size());
-    EXPECT_EQ(false, hodl.basisMarketPrice().has_value());
+    EXPECT_EQ(2, hodl.tradesForProduct().at(product).size());
+    EXPECT_EQ(false,
+              hodl.basisMarketPrices().find(product) !=
+                  hodl.basisMarketPrices().end());
 
     buildNewSocketMessage(
-        &data, "ticker", "1520", "2023-09-04T18:38:52.279032Z");
+        &data, "ticker", "1520", "2023-09-04T18:38:52.279032Z", product);
 
     hodl.handleNewData(data);
-    EXPECT_EQ(1, hodl.trades().size());
-    EXPECT_EQ(false, hodl.basisMarketPrice().has_value());
+    EXPECT_EQ(1, hodl.tradesForProduct().at(product).size());
+    EXPECT_EQ(false,
+              hodl.basisMarketPrices().find(product) !=
+                  hodl.basisMarketPrices().end());
 
     buildNewSocketMessage(
-        &data, "ticker", "1600", "2023-09-04T18:38:52.279032Z");
+        &data, "ticker", "1600", "2023-09-04T18:38:52.279032Z", product);
 
     hodl.handleNewData(data);
-    EXPECT_EQ(0, hodl.trades().size());
-    EXPECT_EQ(true, hodl.basisMarketPrice().has_value());
-    EXPECT_EQ(1600, hodl.basisMarketPrice().value());
+    EXPECT_EQ(0, hodl.tradesForProduct().at(product).size());
+    EXPECT_EQ(true,
+              hodl.basisMarketPrices().find(product) !=
+                  hodl.basisMarketPrices().end());
+    EXPECT_EQ(1600.0, hodl.basisMarketPrices().find(product)->second);
 }

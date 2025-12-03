@@ -83,13 +83,13 @@ TEST(MarketDataTest, save_and_load_data)
 
     std::string file_name = "test.db";
 
-    spdlog::info("saving");
+    SPDLOG_INFO("saving");
     bool save_result = database.save(file_name);
     EXPECT_TRUE(save_result);
 
     databases::MarketDataDB<common::MarketDataCoinbase> loaded_database;
 
-    spdlog::info("loading");
+    SPDLOG_INFO("loading");
     bool load_result = loaded_database.load(file_name);
     EXPECT_TRUE(load_result);
 

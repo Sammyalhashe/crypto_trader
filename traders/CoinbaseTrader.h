@@ -3,11 +3,14 @@
 
 #include "../common/types.h"
 #include "../databases/market_data_db.h"
+#include "../protocols/executor.h"
 #include "../protocols/strategy.h"
 #include "../protocols/trader.h"
 #include "../protocols/websocket_client.h"
 #include "../strategies/index.h"
 
+#include <boost/asio/executor_work_guard.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/thread_pool.hpp>
 #include <boost/optional.hpp>
 
@@ -16,7 +19,6 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
-#include <optional>
 #include <string_view>
 #include <variant>
 #include <vector>
@@ -56,11 +58,14 @@ class CoinbaseTraderConfig {
     ClientType d_clientType;
     // Shared atomic state declaring whether the application is running.
     std::shared_ptr<std::atomic_bool> d_isRunning;
+    // Determines whether to use the paper or real trading executor.
+    bool d_paperTrading;
 
   public:
     // CREATORS
     explicit CoinbaseTraderConfig(
-        const std::shared_ptr<std::atomic_bool>& isRunning);
+        const std::shared_ptr<std::atomic_bool>& isRunning,
+        bool                                     paperTrading = false);
     CoinbaseTraderConfig(const CoinbaseTraderConfig& orig) = default;
 
     // PUBLIC MANIPULATORS
@@ -75,6 +80,7 @@ class CoinbaseTraderConfig {
     setStrategyConfig(const nlohmann::json& strategyConfig);
     CoinbaseTraderConfig& setNumThreads(unsigned int numThreads);
     CoinbaseTraderConfig& setClientType(const ClientType clientType);
+    CoinbaseTraderConfig& setPaperTrading(bool paperTrading);
 
     // PUBLIC ACCESSORS
     const StringVec&                         products() const;
@@ -85,6 +91,7 @@ class CoinbaseTraderConfig {
     unsigned int                             numThreads() const;
     const ClientType                         clientType() const;
     const std::shared_ptr<std::atomic_bool>& isRunning() const;
+    bool                                     paperTrading() const;
 }; // CoinbaseTraderConfig
 
 class CoinbaseTrader : public protocols::Trader {
@@ -97,17 +104,26 @@ class CoinbaseTrader : public protocols::Trader {
     std::shared_ptr<protocols::WebsocketClient> d_webSocketClient;
     // The strategy this trader has decided to use.
     std::unique_ptr<protocols::Strategy> d_strategy;
-    // The threadpool to execute received events on.
-    boost::asio::thread_pool d_threadPool;
+    // boost thread to offload items from websocket client
+    boost::asio::io_context d_ioCtx;
+    std::jthread            d_thread;
+    // this keeps the number of processing tasks for the iocontext artificially
+    // at zero to make sure it blocks
+    // should be released on stop.
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type>
+        d_ioWorkGuard;
     // The database that stores the data received from clients and other
     // trade data.
     databases::MarketDataDB<common::MarketDataCoinbase> d_database;
     // If this trader is running or not.
     std::atomic_bool d_isStopped;
-    // The mutex holding access to this class' members.
-    std::mutex d_mutex;
     // The config for this trader.
     CoinbaseTraderConfig d_config;
+    // The executor to execute trades on.
+    std::unique_ptr<protocols::Executor<common::MarketDataCoinbase>>
+        d_executor;
+    // sequence numbers received for each product
+    std::unordered_map<std::string, int64_t> d_lastSequenceNumbers;
 
   public:
     // CREATORS
@@ -121,8 +137,6 @@ class CoinbaseTrader : public protocols::Trader {
     // PUBLIC MANIPULATORS
     // Process an incoming action.
     void processAction(const common::Action& action);
-    // Handle a new action.
-    void handleAction(const common::Action& action);
     // Handle new data available to the trader.
     void handleNewData(const std::string_view& buffer);
 
@@ -136,6 +150,10 @@ class CoinbaseTrader : public protocols::Trader {
   private:
     // PRIVATE MANIPULATORS
     void initWebsocketClient();
+
+    bool checkSequenceNumber(const std::string_view& product,
+                             int64_t                 sequence);
+    void handleTickerMessage(const nlohmann::json& msg);
 
 }; // CoinbaseTrader
 
@@ -223,6 +241,13 @@ CoinbaseTraderConfig::setClientType(const ClientType clientType)
     return *this;
 }
 
+inline CoinbaseTraderConfig&
+CoinbaseTraderConfig::setPaperTrading(bool paperTrading)
+{
+    d_paperTrading = paperTrading;
+    return *this;
+}
+
 // PUBLIC ACCESSORS
 inline const CoinbaseTraderConfig::StringVec&
 CoinbaseTraderConfig::products() const
@@ -264,6 +289,11 @@ inline const std::shared_ptr<std::atomic_bool>&
 CoinbaseTraderConfig::isRunning() const
 {
     return d_isRunning;
+}
+
+inline bool CoinbaseTraderConfig::paperTrading() const
+{
+    return d_paperTrading;
 }
 
 } // namespace traders

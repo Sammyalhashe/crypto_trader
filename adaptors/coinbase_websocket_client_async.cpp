@@ -129,7 +129,7 @@ void CoinbaseWebSocketClientAsync::on_ssl_handshake(beast::error_code ec)
                         " crypto_trader");
             std::stringstream ss;
             ss << req;
-            spdlog::info("req: {}", ss.str());
+            SPDLOG_INFO("req: {}", ss.str());
         }));
 
     d_ws.async_handshake(
@@ -146,7 +146,7 @@ void CoinbaseWebSocketClientAsync::on_handshake(beast::error_code ec)
         return fail(ec, "handshake");
     }
 
-    spdlog::info("Writing the request:\n{}\nto coinbase",
+    SPDLOG_INFO("Writing the request:\n{}\nto coinbase",
                  d_config.d_text.dump(4));
     d_ws.async_write(
         net::buffer(d_config.d_text.dump()),
@@ -222,7 +222,7 @@ void CoinbaseWebSocketClientAsync::do_read()
 // WebsocketClient
 void CoinbaseWebSocketClientAsync::open()
 {
-    spdlog::info("CoinbaseWebSocketClientAsync::open");
+    SPDLOG_INFO("CoinbaseWebSocketClientAsync::open");
     d_resolver.async_resolve(
         d_config.d_host,
         s_port,
@@ -232,7 +232,7 @@ void CoinbaseWebSocketClientAsync::open()
 
 void CoinbaseWebSocketClientAsync::close()
 {
-    spdlog::info("calling close!!!");
+    SPDLOG_INFO("calling close!!!");
     d_ws.close(websocket::close_code::normal);
     d_ioc.stop();
 }

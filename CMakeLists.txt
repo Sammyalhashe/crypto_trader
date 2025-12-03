@@ -96,7 +96,7 @@ endif()
 add_executable(${PROJECT_NAME} ${TARGET_H} ${TARGET_SRC})
 
 # handle all subdirectories
-set(subdirs traders strategies common protocols adaptors databases)
+set(subdirs traders strategies common protocols adaptors databases executors)
 foreach(dir ${subdirs})
     message("\tadding dir ${dir}...")
     add_subdirectory(${dir})

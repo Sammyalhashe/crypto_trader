@@ -71,7 +71,7 @@ void CoinbaseWebSocketClient::open()
     }
 
     // perform ssl handshake
-    spdlog::info("performing ssl handshake");
+    SPDLOG_INFO("performing ssl handshake");
     d_ws.next_layer().handshake(ssl::stream_base::client);
 
     // Set a decorator to change the user-agent of the request.
@@ -82,14 +82,14 @@ void CoinbaseWebSocketClient::open()
                         " crypto_trader");
             std::stringstream ss;
             ss << req;
-            spdlog::info("req: {}", ss.str());
+            SPDLOG_INFO("req: {}", ss.str());
         }));
 
     // perform the websocket handshake
     d_ws.handshake(d_config.d_host + ":" + std::to_string(ep.port()), "/");
 
     // Send the message
-    spdlog::info("Writing the request:\n{}\nto coinbase",
+    SPDLOG_INFO("Writing the request:\n{}\nto coinbase",
                  d_config.d_text.dump(4));
     d_ws.write(net::buffer(d_config.d_text.dump()));
 
@@ -100,13 +100,13 @@ void CoinbaseWebSocketClient::open()
     // write message received to stdout
     std::stringstream ss;
     ss << beast::make_printable(buffer.data());
-    spdlog::info("message received: {}", ss.str());
+    SPDLOG_INFO("message received: {}", ss.str());
 }
 
 void CoinbaseWebSocketClient::close()
 {
     // Close the WebSocket connection
-    spdlog::info("calling close!!!");
+    SPDLOG_INFO("calling close!!!");
     d_ws.close(websocket::close_code::normal);
 }
 

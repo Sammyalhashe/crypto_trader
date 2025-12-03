@@ -165,7 +165,7 @@ int handleInotifyEvents(const MonitorConfig& config)
             event = (const struct inotify_event *)ptr;
 
             if (event->mask & IN_MODIFY) {
-                spdlog::info("inotify_fd detected change in file: {}",
+                SPDLOG_INFO("inotify_fd detected change in file: {}",
                              config.d_trapFilePath);
                 std::string fileContents;
                 readFile(&fileContents,
@@ -186,7 +186,7 @@ int handleInotifyEvents(const MonitorConfig& config)
 
 void monitorTrapFile(const MonitorConfig& config)
 {
-    spdlog::info("watching inotify_fd: {}", config.d_inotify_fd);
+    SPDLOG_INFO("watching inotify_fd: {}", config.d_inotify_fd);
 
     if (config.d_inotify_fd < 0) {
         return;
@@ -203,7 +203,7 @@ void monitorTrapFile(const MonitorConfig& config)
         // last value is timeout
         pollNum = poll(pfds, nfds, -1);
 
-        spdlog::info("pollNum: {}", pollNum);
+        SPDLOG_INFO("pollNum: {}", pollNum);
 
         if (-1 == pollNum) {
             // interrupted system call just keep going
@@ -249,10 +249,10 @@ void fsEventStreamCallback(ConstFSEventStreamRef         streamRef,
             std::stringstream ss;
             ss << fileContents;
 
-            spdlog::info("file contents: {}", ss.str());
+            SPDLOG_INFO("file contents: {}", ss.str());
 
             if (fileContents == "exit") {
-                spdlog::info("stopping!");
+                SPDLOG_INFO("stopping!");
                 *config.d_isRunning = false;
 
                 // stops the stream.
@@ -281,7 +281,7 @@ bool createEventStream(const MonitorConfig& config)
     FSEventStreamRef stream;
     CFTimeInterval   latency = 0.5;
 
-    spdlog::info("creating fseventstream...");
+    SPDLOG_INFO("creating fseventstream...");
     stream = FSEventStreamCreate(nullptr,
                                  &fsEventStreamCallback,
                                  &callbackInfo,

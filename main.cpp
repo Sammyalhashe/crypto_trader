@@ -40,7 +40,9 @@ struct SignalContext {
 
 int main(int argc, char *argv[])
 {
-    spdlog::info("Result from zig: {}", add(1, 2));
+    spdlog::set_pattern("[%^%l%$] [source %s] [function %!] [line %#] %v");
+    SPDLOG_INFO("Result from zig: {}", add(1, 2));
+    // SPDLOG_INFO();
     using namespace crypto_trader;
 
     SignalContext context;
@@ -67,30 +69,34 @@ int main(int argc, char *argv[])
 #endif // TARGET_OS_MAC
 
     nlohmann::json jsonFileContents;
-    spdlog::info("argc {}", argc);
+    SPDLOG_INFO("argc {}", argc);
     if (argc > 1) {
         std::stringstream ss;
         ss << argv[1];
-        spdlog::info("passed in: {}", ss.str());
+        SPDLOG_INFO("passed in: {}", ss.str());
 
         int rc = common::readJsonFile(&jsonFileContents, argv[1]);
         assert(0 == rc);
     }
 
-    spdlog::info("starting crypto_trader");
+    SPDLOG_INFO("starting crypto_trader");
 
     std::vector<std::unique_ptr<protocols::Trader>> traders;
     unsigned int                                    numTraders = 0;
+
+    bool paperTrading =
+        common::value_or(jsonFileContents, "paperTrading", true);
     if (jsonFileContents.contains("traders")) {
         for (const auto& trader : jsonFileContents["traders"].items()) {
             std::stringstream ss;
             ss << trader.key() << " " << trader.value().dump(4);
-            spdlog::info("configuring trader {}", ss.str());
+            SPDLOG_INFO("configuring trader {}", ss.str());
             for (const auto& traderConfig : trader.value().items()) {
                 if (traderConfig.key() == "coinbaseTrader") {
                     auto coinbaseTraderJson = traderConfig.value();
                     traders::CoinbaseTraderConfig coinbaseTraderConfig(
                         context.d_isRunning);
+                    coinbaseTraderConfig.setPaperTrading(paperTrading);
                     coinbaseTraderConfig.setUrl(common::value_or(
                         coinbaseTraderJson,
                         "url",
@@ -143,18 +149,21 @@ int main(int argc, char *argv[])
                             common::value_or(strategyJson, "type", "hodl");
                         std::stringstream ss;
                         ss << type;
-                        spdlog::info("strat: {}", ss.str());
+                        SPDLOG_INFO("strat: {}", ss.str());
                         if (type.get<std::string>() == "hodl") {
                             coinbaseTraderConfig.setStrategy(
                                 strategies::e_HODL);
+                            coinbaseTraderConfig.setStrategyConfig(
+                                common::value_or(
+                                    strategyJson, "config", "{}"_json));
                         }
                         else {
                             coinbaseTraderConfig.setStrategy(
                                 strategies::e_NONE);
+                            coinbaseTraderConfig.setStrategyConfig(
+                                common::value_or(
+                                    strategyJson, "config", "{}"_json));
                         }
-                        coinbaseTraderConfig.setStrategyConfig(
-                            common::value_or(
-                                strategyJson, "config", "{}"_json));
                     }
 
                     auto clientType = common::value_or(
