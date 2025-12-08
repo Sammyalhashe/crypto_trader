@@ -70,13 +70,19 @@ EventPositionManager::averageCostBasis(const std::string_view& symbol) const
 std::optional<double>
 EventPositionManager::realizedPnl(const std::string_view& symbol) const
 {
+    const auto& snapshot = d_accounting_.snapshot();
+    auto it       = snapshot.find(std::string(symbol));
+    
+    if (it != snapshot.end()) {
+        return it->second.d_realizedPnl;
+    }
     return std::nullopt;
 }
 std::optional<double>
 EventPositionManager::unrealizedPnl(const std::string_view& symbol,
                                     double                  currentPrice) const
 {
-    auto snapshot = d_accounting_.snapshot();
+    const auto& snapshot = d_accounting_.snapshot();
     auto it       = snapshot.find(std::string(symbol));
 
     if (it != snapshot.end()) {

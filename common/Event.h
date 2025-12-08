@@ -1,8 +1,9 @@
 #ifndef INCLUDED_CRYPTO_TRADER_COMMON_EVENT_H
 #define INCLUDED_CRYPTO_TRADER_COMMON_EVENT_H
 
-#include <string>
+#include <boost/mpl/int_fwd.hpp>
 #include <nlohmann/json.hpp>
+#include <string>
 
 using nlohmann::json;
 
@@ -15,10 +16,11 @@ enum class EventType {
 
 struct Event {
     std::string d_symbol;
-    double d_qty;
-    double d_price;
-    EventType d_type;
-    json d_payload;
+    double      d_qty;
+    double      d_price;
+    EventType   d_type;
+    json        d_payload;
+    int64_t     d_timestamp;
 };
 
 #endif // INCLUDED_CRYPTO_TRADER_COMMON_EVENT_H

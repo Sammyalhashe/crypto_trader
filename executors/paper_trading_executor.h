@@ -176,7 +176,8 @@ PaperTradingExecutor<T>::buy(const std::string_view& product, double quantity)
                    quantity,
                    price,
                    EventType::ORDER_FILLED,
-                   {}};
+                   {},
+                   marketData.d_timestamp};
         d_positionManager.submit_event(e);
         SPDLOG_INFO("PaperTrade BUY: Product={}, Quantity={}, Price={}, "
                     "TotalCost={}, Balance={}, Holdings={}",
@@ -229,7 +230,8 @@ PaperTradingExecutor<T>::sell(const std::string_view& product, double quantity)
                    -quantity,
                    price,
                    EventType::ORDER_FILLED,
-                   {}};
+                   {},
+                   marketData.d_timestamp};
         d_positionManager.submit_event(e);
         std::stringstream ss;
         ss << std::format(
