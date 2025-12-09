@@ -97,5 +97,5 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 
 ## 9. Git Remotes Syncing
 -   **Multi-Remote Push**: The main remote is GitHub (often named `upstream`). You **must** push to it.
--   **Syncing**: If you detect a Gitea remote (e.g., matching the `picloud.*` domain, often named `origin`), you **must** push to that remote as well to ensure synchronization.
+-   **Syncing**: If you detect a Gitea remote (e.g., matching the `picloud.*` or an IP address domain, often named `origin`), you **must** push to that remote as well to ensure synchronization.
 
