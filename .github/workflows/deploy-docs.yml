@@ -21,12 +21,21 @@ jobs:
     - name: Run Doxygen Build
       run: |
         nix develop --impure --command "prepare"
-        nix develop --impure --command "docs"
+        nix develop --impure --command "cmake --build cmake.bld/Linux/full --target doc_doxygen"
+
+    - name: Prepare Docs for Main Branch
+      run: |
+        # Clean up any existing docs folder to ensure fresh content
+        rm -rf docs
+        # Copy newly generated Doxygen HTML to the 'docs' folder
+        mkdir -p docs
+        cp -r cmake.bld/Linux/full/doc_doxygen/html/* docs/
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./cmake.bld/Linux/full/doc_doxygen/html # Path to Doxygen's HTML output
-        publish_branch: gh-pages # The branch for GitHub Pages
-        full_commit_message: "Deploy Doxygen documentation"
+        publish_dir: ./docs # Path to the folder containing docs for GitHub Pages
+        publish_branch: main # Deploy directly to the main branch
+        destination_dir: docs # Publish to the 'docs' subdirectory on the main branch
+        full_commit_message: "Deploy Doxygen documentation to main/docs"

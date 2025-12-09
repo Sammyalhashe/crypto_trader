@@ -93,11 +93,4 @@ test:
 format:
 	find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec ${CLANG_FORMAT} -style=file -i {} \;
 
-.PHONY: docs
-docs:
-	cmake --build ${BUILD_DIR} --target doc_doxygen
 
-.PHONY: serve-docs
-serve-docs: docs
-	@echo "Serving Doxygen documentation locally at http://localhost:8000"
-	python3 -m http.server 8000 --directory ${BUILD_DIR}/doc_doxygen/html
