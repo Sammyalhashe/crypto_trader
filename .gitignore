@@ -52,3 +52,4 @@ cmake.bld/
 
 # zig
 .zig-cache
+zig-out/

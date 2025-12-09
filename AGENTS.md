@@ -17,9 +17,8 @@ The project uses a Nix flake for reproducible builds and development environment
     This command will set up the necessary dependencies and make the following commands available in your shell:
     -   `prepare`: Configures the project (likely CMake).
     -   `build`: Compiles the project.
-    -   `test`: Runs the project's tests.
-
-## 3. Core Directory Structure and Components
+        -   `make test`: Runs the project's tests.. **Note**: This command does *not* rebuild the code. Always run `build` before testing if you have modified source files.
+                        -   **Approved Commands**: You are explicitly allowed and encouraged to use `prepare`, `build`, `make test`, `git` (status, add, commit, push, diff, remote, ls-files, rm), `clang-format`, `ls`, `cat`, `rm`, `mkdir`, `touch`, `find`, `grep`, `echo` and `nvim` to manage the project lifecycle.
 
 -   **`adaptors/`**: Contains client implementations for interacting with external services, primarily WebSocket clients for exchanges (e.g., `coinbase_websocket_client`).
 -   **`cmake/`**: CMake utility files for compiler warnings, Doxygen, static analyzers, and common functions.
@@ -63,7 +62,7 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 
 ## 5. Coding Conventions and Style
 
--   **C++**: The presence of `.clang-format` suggests that `clang-format` is used for code formatting. Adhere to the existing style for indentation, brace placement, and naming conventions.
+-   **C++ Formatting**: A `.clang-format` file exists in the project root. You **must** verify that all C++ code edits conform to these rules. Run `clang-format -i ` (if available) or check the `.clang-format` configuration before finalizing changes.
 -   **Logging**: `spdlog` is used for logging throughout the codebase. Use `SPDLOG_INFO`, `spdlog::warn`, `spdlog::error` as appropriate.
 -   **JSON Handling**: `nlohmann::json` is used for JSON parsing and manipulation (`common/jsonutils.h` provides utility functions).
 -   **Error Handling**: Assertions (`assert(false)`) are used for unrecoverable errors, and `spdlog::error` for runtime errors.
@@ -74,3 +73,29 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 -   **Executor Management**: The `CoinbaseTrader` dynamically manages its `Executor` based on configuration. Be aware of which executor is active when debugging or extending functionality.
 -   **Market Data Timestamping**: In `PaperTradingExecutor`, trade timestamps are currently updated in `processTickerData` when empty. This might be a simplification and could need refinement for more precise historical trade tracking.
 -   **Live Trading Stubs**: The `RealTradingExecutor` and the non-paper trading path in `CoinbaseTrader::handleAction` are currently stubs. Expanding these would involve integrating with actual exchange APIs for order placement and account management.
+
+## 7. Editor Instructions
+-   **Neovim**: If you detect that the neovim instance is listening on `/tmp/nvimtrader`, perform all file edits and diffs through that instance. Use a dedicated tab for your agent operations.
+    1.  **Create/Focus Tab**: Check if a tab with var `agent_tab` exists. If not, create it.
+        2.  **Label Tab**: Set the tab variable `t:agent_tab` to identify it.
+                        3.  **Send Commands**: Use `nvim --server /tmp/nvimtrader --remote-send` to send commands. **Crucially**, prefix commands with `:tabnext
+    ` or ensure you are operating within that tab to avoid interfering with the user's active buffer.
+
+
+## 8. Git Best Practices
+-   **Complex Commit Messages**: To avoid bash syntax errors (e.g., with newlines or special characters), write the commit message to a temporary file first, use `git commit -F <file>`, and then **remove the temporary file**.
+    ```bash
+    cat <<EOF > commit_msg.txt
+    Title
+
+    Body.
+    EOF
+    git commit -F commit_msg.txt
+    rm commit_msg.txt
+    ```
+
+
+## 9. Git Remotes Syncing
+-   **Multi-Remote Push**: The main remote is GitHub (often named `upstream`). You **must** push to it.
+-   **Syncing**: If you detect a Gitea remote (e.g., matching the `picloud.*` or an IP address domain, often named `origin`), you **must** push to that remote as well to ensure synchronization.
+

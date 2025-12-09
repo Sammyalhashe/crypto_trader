@@ -1,34 +1,46 @@
-# Crypto Trading Bot
-- The point of this is to have a bot that trades various crytos using various
-  strategies.
+# Crypto Trader
 
-## Questions
-- Is this going to be a long running daemon or something that is fired an
-  intervals?
-- What language are we using (C++)
-- Build system? (CMake with modern approaches)
-- Paper trading? (being able to test but making mock trades)
-- Backtesting?
-- What strategies?
-    - Should probably start with a simple strategy.
-    - One simple one:
-        - start monitoring
-        - buy if dips 5%
-        - sell if raises 5%
-    - arbitrage?
-    - market making
-- how often can we work on this?
-    - dedicate a couple of hours in the workweek (1-2).
-    - 4 hours per day (max).
-- how can we track progress?
-    - trello?
-    - basecamp?
-- keeping track of resources?
-    - does trello do this? Nope.
-    - Just put in the repo.
-        - But separate into topics to make it easy to look up.
-        - A doc section.
-- start with ETH?
-- CI
-    - run unit tests
-    - run integration tests with a constant dataset.
+A high-performance cryptocurrency trading bot written in C++20, featuring real-time WebSocket integration, flexible strategy implementation, and hybrid paper/real trading execution modes. It leverages Zig for specific performance-critical components.
+
+## Features
+
+-   **Hybrid Execution**: Seamlessly switch between Paper Trading (simulated) and Real Trading.
+-   **Exchange Integration**: Native support for Coinbase Advanced Trade WebSockets.
+-   **Strategies**:
+    -   **HODL**: Configurable buy/sell logic based on percentage dips and gains.
+    -   Extensible `Strategy` interface for custom logic.
+-   **Performance**:
+    -   C++20 codebase.
+    -   Zig integration for optimized math and order book operations.
+    -   Asynchronous I/O using Boost.Asio.
+-   **Data Management**: Local storage of market data sequence and ticker history.
+
+## Project Structure
+
+-   `adaptors/`: Exchange connectivity (WebSocket clients).
+-   `common/`: Shared utilities (Math, JSON, Time, Serialization).
+-   `executors/`: Order execution logic (Paper vs. Real).
+-   `strategies/`: Trading algorithms (HODL, Simple).
+-   `traders/`: Core orchestration connecting adaptors, strategies, and executors.
+-   `zig/`: Zig modules for performance-critical math and data structures.
+
+## Development
+
+This project uses **Nix** for a reproducible development environment.
+
+### Setup
+```bash
+nix develop
+```
+
+### Build & Test
+Inside the Nix shell:
+1.  **Configure**: `prepare` (runs CMake).
+2.  **Build**: `build` (compiles the project).
+3.  **Test**: `make test` (runs GoogleTest suite). *Note: Run `build` before testing if source changed.*
+
+## Learnings
+
+Documentation on technical concepts and design decisions:
+
+-   [Floating Point Comparisons](docs/learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.

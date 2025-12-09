@@ -2,8 +2,8 @@
 #define INCLUDED_HODL_STRATEGY
 
 #include "../common/types.h"
-#include "../protocols/strategy.h"
 #include "../protocols/observer.h"
+#include "../protocols/strategy.h"
 #include "../traders/event_position_manager.h"
 
 #include <boost/beast/core.hpp>
@@ -59,34 +59,39 @@ class HodlStrategy : public protocols::Strategy, public protocols::Observer {
   private:
     // MINIMAL derived state per symbol
     struct SymbolState {
-        double lastBuyPrice = 0.0;
-        bool hasBoughtAgain = false;
-        bool waitingForSell = false;
+        double lastBuyPrice   = 0.0;
+        bool   hasBoughtAgain = false;
+        bool   waitingForSell = false;
     };
-    
+
     std::unordered_map<std::string, SymbolState> d_symbolStates;
-    traders::EventPositionManager& d_positionManager;
+    traders::EventPositionManager&               d_positionManager;
     // Config to the hodl strategy.
     HodlStrategyConfig d_config;
 
   public:
     // CREATORS
-    HodlStrategy(const HodlStrategyConfig& config,
+    HodlStrategy(const HodlStrategyConfig&      config,
                  traders::EventPositionManager& positionManager);
     ~HodlStrategy();
 
     // MANIPULATORS
     void handleNewData(const nlohmann::json& data) override;
     void on_trade(const common::Trade& trade) override;
-    void on_position_update(const std::string& symbol, double new_position) override;
+    void on_position_update(const std::string& symbol,
+                            double             new_position) override;
 
   private:
     // PRIVATE MANIPULATORS
     void goOverTradesAtPrice(const std::string_view& product,
                              double                  price,
                              const std::string_view& timestamp);
-    void buy(const std::string& product, double price, const std::string& timestamp);
-    void sell(const std::string& product, double price, const std::string& timestamp);
+    void buy(const std::string& product,
+             double             price,
+             const std::string& timestamp);
+    void sell(const std::string& product,
+              double             price,
+              const std::string& timestamp);
 
 }; // HodlStrategy
 

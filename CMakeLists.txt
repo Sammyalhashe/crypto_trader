@@ -126,7 +126,6 @@ include(GoogleTest)
 function(create_test name filepath flags)
     add_executable(${name} ${filepath})
     target_link_libraries(${name}
-                          ${FOUNDATION}
                           GTest::gtest_main
                           GTest::gmock_main
                           Boost::system
@@ -140,6 +139,7 @@ endfunction()
 # common util tests
 create_test(fileutil_test common/fileutils.t.cpp project_flags)
 create_test(accounting_test common/Accounting.t.cpp project_flags)
+create_test(common_math_test common/math.t.cpp project_flags)
 # strategy tests
 create_test(simple_test strategies/simple.t.cpp project_flags)
 create_test(hodl_test strategies/hodl.t.cpp project_flags)

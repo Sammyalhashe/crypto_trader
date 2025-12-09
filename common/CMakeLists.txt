@@ -1,5 +1,5 @@
 
-set(COMMON_H types.h serialization.h fileutils.h jsonutils.h timeutils.h Event.h Accounting.h)
+set(COMMON_H types.h serialization.h fileutils.h jsonutils.h timeutils.h Event.h Accounting.h math.h)
 set(COMMON_SRC fileutils.cpp Accounting.cpp)
 
 add_library(common
