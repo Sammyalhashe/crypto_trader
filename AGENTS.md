@@ -93,7 +93,7 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 
 ## 8. Git Best Practices
 -   **Commit Message Length**: Keep the subject line (first line) of commit messages concise and under 50-72 characters. The body can provide more detail, but the subject should be a quick summary.
--   **Complex Commit Messages**: To avoid bash syntax errors (e.g., with newlines or special characters), write the commit message to a temporary file first, use `git commit -F <file>`, and then **remove the temporary file**.
+-   **Standard Commit Workflow**: Always write the commit message to a temporary file and use `git commit -F ` (e.g., `commit_msg.txt`). This avoids bash escaping issues, especially for multi-line messages, and improves readability. Remember to **remove the temporary file** afterwards.
     ```bash
     cat <<EOF > commit_msg.txt
     Title
