@@ -44,7 +44,7 @@ Inside the Nix shell:
 Comprehensive API documentation for the project is generated using Doxygen directly from the C++ source code comments and deployed to GitHub Pages.
 
 ### View Online
-The latest documentation is available at [GitHub Pages URL](https://Sammyalhashe.github.io/crypto_trader/).
+The latest **API Reference** documentation is available on [GitHub Pages](https://Sammyalhashe.github.io/crypto_trader/html/index.html).
 
 ### Generate & View Locally
 To generate and view the Doxygen documentation locally:
