@@ -75,7 +75,10 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 -   **Live Trading Stubs**: The `RealTradingExecutor` and the non-paper trading path in `CoinbaseTrader::handleAction` are currently stubs. Expanding these would involve integrating with actual exchange APIs for order placement and account management.
 
 ## 7. Editor Instructions
--   **Neovim**: If you detect that the neovim instance is listening on `/tmp/nvimtrader`, perform all file edits and diffs through that instance using `nvim --server /tmp/nvimtrader ...`.
+-   **Neovim**: If you detect that the neovim instance is listening on `/tmp/nvimtrader`, perform all file edits and diffs through that instance. Use a dedicated tab for your agent operations.
+    1.  **Create/Focus Tab**: Check if a tab with var `agent_tab` exists. If not, create it.
+        2.  **Label Tab**: Set the tab variable `t:agent_tab` to identify it.
+            3.  **Send Commands**: Use `nvim --server /tmp/nvimtrader --remote-send` to send commands to this specific tab context.
 
 
 ## 8. Git Best Practices
