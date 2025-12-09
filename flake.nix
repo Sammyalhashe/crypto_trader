@@ -48,8 +48,8 @@
                   zig
                   zls
                   cmake-language-server
-                                                      doxygen
                   doxygen
+                  graphviz
 
                   # build dependencies
                   boost-build
@@ -78,6 +78,8 @@
                 scripts.clean.exec = "make clean";
                 scripts.test.exec = "make test";
                 scripts.run.exec = "make run";
+                scripts.doxygen.exec = "cmake --build cmake.bld/Linux/full --target doc_doxygen";
+                scripts.serve-docs.exec = "python3 -m http.server 8000 --directory cmake.bld/Linux/full/doc_doxygen/html";
               }
             ];
           };
