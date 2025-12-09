@@ -32,11 +32,9 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          # Define the custom Python environment here
           myPythonEnv = pkgs.python3.withPackages (
             ps: with ps; [
               mkdocs
-              # We'll re-add pymdown-extensions if needed, after basic mkdocs builds
             ]
           );
         in
