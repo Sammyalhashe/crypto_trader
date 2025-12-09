@@ -58,8 +58,10 @@ void Accounting::apply_event(const Event& e)
                     (e.d_price - position.d_price) * quantity_to_sell;
                 symbolPositions.d_total_qty -= quantity_to_sell;
 
+                bool shouldRemove = (position.d_total_qty <= 0.0);
+
                 // remove position if fully sold
-                if (position.d_total_qty <= 0.0) {
+                if (shouldRemove) {
                     if (symbolPositions.d_fifo) {
                         symbolPositions.d_positions_in_time.pop_front();
                     }
