@@ -49,6 +49,8 @@
                   zig
                   zls
                   cmake-language-server
+                  python3
+                  python3Packages.mkdocs
 
                   # build dependencies
                   boost-build
@@ -61,8 +63,6 @@
 
                 enterShell = ''
                   if [[ -x "$(command -v conan)" ]]; then
-                      # conan profile show
-                      #
                       # if [[ $? != 0 ]]; then
                       #   conan profile detect
                       # fi

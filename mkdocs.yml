@@ -1,0 +1,40 @@
+site_name: "Crypto Trader Documentation"
+site_url: "https://sammyalhashe.github.io/crypto_trader/"
+repo_url: "https://github.com/Sammyalhashe/crypto_trader/"
+repo_name: "Sammyalhashe/crypto_trader"
+edit_uri: "edit/doubleMath/docs/" # Assuming edits are on 'doubleMath' branch within 'docs/'
+
+theme:
+  name: "readthedocs"
+  highlightjs: true
+  hljs_languages:
+    - cpp
+    - bash
+    - python
+    - zig
+
+nav:
+  - Home: 'index.md'
+  - API Reference:
+    - Protocols:
+      - Executor: 'api/protocols/executor.md'
+      - Strategy: 'api/protocols/strategy.md'
+      - Trader: 'api/protocols/trader.md'
+    - Common:
+      - Math Utilities: 'api/common/math.md'
+      - Accounting: 'api/common/accounting.md'
+    - Executors:
+      - Paper Trading Executor: 'api/executors/paper_trading_executor.md'
+    - Strategies:
+      - HODL Strategy: 'api/strategies/hodl.md'
+  - Learning:
+    - Floating Point Comparisons: 'learning/numerics/floating_point_comparisons.md'
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_numbers: true
+  - pymdownx.superfences
+  - pymdownx.details
+  - attr_list
