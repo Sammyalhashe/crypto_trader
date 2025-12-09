@@ -3,6 +3,8 @@
 
 #include "../common/types.h"
 #include "../protocols/strategy.h"
+#include "../protocols/observer.h"
+#include "../traders/event_position_manager.h"
 
 #include <boost/beast/core.hpp>
 
@@ -52,79 +54,39 @@ class HodlStrategyConfig {
 
 }; // HodlStrategyConfig
 
-struct Trade {
-    // PUBLIC DATA
-    // product
-    std::string d_product;
-    // time when the trade was finalized
-    std::string d_timestamp;
-    // price at which the trade was executed
-    double d_price;
-    // did we already buy the dip? If yes don't do it again lol.
-    bool d_boughtAgain;
-}; // Trade
-
-class HodlStrategy : public protocols::Strategy {
+class HodlStrategy : public protocols::Strategy, public protocols::Observer {
 
   private:
-    // PRIVATE TYPES
-    typedef std::unordered_map<unsigned int, Trade>   TradeMap;
-    typedef std::unordered_map<std::string, TradeMap> TradesForProduct;
-    typedef std::unordered_map<std::string, double>   BasisPrices;
-
-    struct BuyConfig {
-        // product
-        std::string d_product;
-        // Timestamp
-        std::string_view d_timestamp;
-        // Price we bought at.
-        double d_price;
-        // If the buy again flag should be set
-        bool d_buyAgain;
-    }; // BuyConfig
-
-    struct SellConfig {
-        // product
-        std::string d_product;
-        // Position we are selling.
-        TradeMap::iterator d_trade;
-        // price we are selling at
-        double d_price;
-    }; // SellConfig
-
-    // PRIVATE DATA
-    // monotonically increasing trade id;
-    unsigned int d_tradeIdBasis;
-    // List of trades that have been finalized for each product
-    TradesForProduct d_tradesForProduct;
-    // The price that helps us to descern what's the best course of action
-    // to take when initially starting or we sold our last position.
-    BasisPrices d_basisMarketPrices;
+    // MINIMAL derived state per symbol
+    struct SymbolState {
+        double lastBuyPrice = 0.0;
+        bool hasBoughtAgain = false;
+        bool waitingForSell = false;
+    };
+    
+    std::unordered_map<std::string, SymbolState> d_symbolStates;
+    traders::EventPositionManager& d_positionManager;
     // Config to the hodl strategy.
     HodlStrategyConfig d_config;
 
   public:
     // CREATORS
-    HodlStrategy(const HodlStrategyConfig& config);
+    HodlStrategy(const HodlStrategyConfig& config,
+                 traders::EventPositionManager& positionManager);
     ~HodlStrategy();
 
     // MANIPULATORS
     void handleNewData(const nlohmann::json& data) override;
-
-    // ACCESSORS
-    // Return a non-modifiable reference to the list of positions
-    // we currently have for each product.
-    const TradesForProduct& tradesForProduct() const;
-    // Return a non-modifiable reference to the basisMarketPrice.
-    const BasisPrices& basisMarketPrices() const;
+    void on_trade(const common::Trade& trade) override;
+    void on_position_update(const std::string& symbol, double new_position) override;
 
   private:
     // PRIVATE MANIPULATORS
     void goOverTradesAtPrice(const std::string_view& product,
                              double                  price,
                              const std::string_view& timestamp);
-    void buy(const BuyConfig& config);
-    void sell(const SellConfig& config);
+    void buy(const std::string& product, double price, const std::string& timestamp);
+    void sell(const std::string& product, double price, const std::string& timestamp);
 
 }; // HodlStrategy
 
@@ -177,20 +139,6 @@ inline float HodlStrategyConfig::percentDown() const { return d_percentDown; }
 inline const common::Emit& HodlStrategyConfig::emit() const { return d_emit; }
 
 inline double HodlStrategyConfig::buyAmount() const { return d_buyAmount; }
-
-// class HodlStrategy
-
-// ACCESSORS
-inline const HodlStrategy::TradesForProduct&
-HodlStrategy::tradesForProduct() const
-{
-    return d_tradesForProduct;
-}
-
-inline const HodlStrategy::BasisPrices& HodlStrategy::basisMarketPrices() const
-{
-    return d_basisMarketPrices;
-}
 
 } // namespace strategies
 } // namespace crypto_trader

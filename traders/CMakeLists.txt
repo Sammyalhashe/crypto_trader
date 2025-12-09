@@ -1,5 +1,5 @@
-set(TRADERS_H CoinbaseTrader.h position_manager.h)
-set(TRADERS_SRC CoinbaseTrader.cpp position_manager.cpp)
+set(TRADERS_H CoinbaseTrader.h event_position_manager.h)
+set(TRADERS_SRC CoinbaseTrader.cpp event_position_manager.cpp)
 
 add_library(traders STATIC ${TRADERS_H} ${TRADERS_SRC})
 

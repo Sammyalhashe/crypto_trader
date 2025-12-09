@@ -8,6 +8,7 @@
 #include "../protocols/trader.h"
 #include "../protocols/websocket_client.h"
 #include "../strategies/index.h"
+#include "event_position_manager.h"
 
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
@@ -18,7 +19,6 @@
 
 #include <atomic>
 #include <memory>
-#include <mutex>
 #include <string_view>
 #include <variant>
 #include <vector>
@@ -124,6 +124,8 @@ class CoinbaseTrader : public protocols::Trader {
         d_executor;
     // sequence numbers received for each product
     std::unordered_map<std::string, int64_t> d_lastSequenceNumbers;
+    // Position Manager
+    EventPositionManager d_positionManager;
 
   public:
     // CREATORS

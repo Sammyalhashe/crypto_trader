@@ -3,6 +3,7 @@
 #include "../adaptors/coinbase_websocket_client.h"
 #include "../adaptors/coinbase_websocket_client_async.h"
 #include "../common/jsonutils.h"
+#include "../common/timeutils.h"
 #include "../strategies/hodl.h"
 #include "../strategies/index.h"
 
@@ -172,6 +173,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 , d_config(config)
 , d_executor()
 , d_lastSequenceNumbers()
+, d_positionManager()
 {
     switch (d_config.strategy()) {
     case strategies::TradingStrategy::e_HODL: {
@@ -200,7 +202,8 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
             .setEmit(std::bind(
                 &CoinbaseTrader::processAction, this, std::placeholders::_1));
 
-        d_strategy = std::make_unique<strategies::HodlStrategy>(hodlConfig);
+        d_strategy = std::make_unique<strategies::HodlStrategy>(
+            hodlConfig, d_positionManager);
     } break;
     default: {
         std::stringstream ss;
@@ -223,10 +226,12 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 
         d_executor = std::make_unique<
             executors::PaperTradingExecutor<common::MarketDataCoinbase>>(
-            paperTradingConfig);
+            paperTradingConfig, d_positionManager);
     }
     else {
         executors::RealTradingExecutorConfig realTradingConfig;
+
+        // FIX: Need this to also take a position manager
         d_executor = std::make_unique<
             executors::RealTradingExecutor<common::MarketDataCoinbase>>(
             realTradingConfig);

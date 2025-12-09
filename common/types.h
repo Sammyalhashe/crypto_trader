@@ -46,6 +46,12 @@ struct Action {
     double d_quantity;
 }; // struct Action
 
+struct Trade {
+    std::string d_symbol;
+    double d_price;
+    double d_quantity;
+};
+
 typedef std::function<void(const Action&)> Emit;
 
 template <typename T>

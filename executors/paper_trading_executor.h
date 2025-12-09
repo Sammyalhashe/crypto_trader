@@ -1,18 +1,16 @@
 #ifndef INCLUDED_PAPER_TRADER_EXECUTOR
 #define INCLUDED_PAPER_TRADER_EXECUTOR
 
-#include "../common/timeutils.h"
+#include "../common/Event.h"
 #include "../common/types.h"
 #include "../protocols/executor.h"
-#include "../traders/position_manager.h"
+#include "../traders/event_position_manager.h"
 
 #include <spdlog/spdlog.h>
 
-#include <iostream>
 #include <optional>
 #include <string_view>
 #include <unordered_map>
-#include <vector>
 
 namespace crypto_trader {
 namespace executors {
@@ -63,14 +61,16 @@ class PaperTradingExecutor : public protocols::Executor<T> {
     // Current cash balance
     double d_balance;
     // Manages positions for different products
-    traders::PositionManager d_positionManager;
-    // Config for the paper trader strategy.
-    PaperTradingExecutorConfig         d_config;
+    traders::EventPositionManager& d_positionManager;
+    // the last market prices recorded for each product
     std::unordered_map<std::string, T> d_lastMarketPrices;
+    // Config for the paper trader strategy.
+    PaperTradingExecutorConfig d_config;
 
   public:
     // CREATORS
-    PaperTradingExecutor(const PaperTradingExecutorConfig& config);
+    PaperTradingExecutor(const PaperTradingExecutorConfig& config,
+                         traders::EventPositionManager&    positionManager);
     ~PaperTradingExecutor() = default;
 
     // MANIPULATORS
@@ -95,7 +95,7 @@ class PaperTradingExecutor : public protocols::Executor<T> {
     // Return either the realized or unrealized pnl for the given `product`
     // depending on the passed in 'realize' boolean (default = false).
     std::optional<double> pnl(const std::string_view& product,
-                              bool                    realize = false) const;
+                              bool                    realize) const;
 
     // Get the average cost basis for the given `product`
     std::optional<double>
@@ -141,9 +141,11 @@ double PaperTradingExecutor<T>::balance() const
 
 template <common::MarketData T>
 PaperTradingExecutor<T>::PaperTradingExecutor(
-    const PaperTradingExecutorConfig& config)
+    const PaperTradingExecutorConfig& config,
+    traders::EventPositionManager&    positionManager)
 : d_balance(config.initialBalance())
-, d_positionManager()
+, d_positionManager(positionManager)
+, d_lastMarketPrices()
 , d_config(config)
 {
 }
@@ -155,9 +157,9 @@ PaperTradingExecutor<T>::buy(const std::string_view& product, double quantity)
     auto it = d_lastMarketPrices.find(std::string(product));
     if (it == d_lastMarketPrices.end()) {
         std::stringstream ss;
-        ss << std::format(
-            "Cannot execute buy for product {}, basis market price not set.",
-            product);
+        ss << std::format("Cannot execute buy for product {}, basis "
+                          "market price not set.",
+                          product);
         SPDLOG_WARN(ss.str());
         return {false, 0.0, 0.0, ss.str()};
     }
@@ -170,8 +172,13 @@ PaperTradingExecutor<T>::buy(const std::string_view& product, double quantity)
 
     if (d_balance >= totalCost) {
         d_balance -= totalCost;
-        d_positionManager.addTrade(
-            std::string(product), quantity, price, marketData.d_timestamp);
+        Event e = {std::string(product),
+                   quantity,
+                   price,
+                   EventType::ORDER_FILLED,
+                   {},
+                   marketData.d_timestamp};
+        d_positionManager.submit_event(e);
         SPDLOG_INFO("PaperTrade BUY: Product={}, Quantity={}, Price={}, "
                     "TotalCost={}, Balance={}, Holdings={}",
                     product,
@@ -203,9 +210,9 @@ PaperTradingExecutor<T>::sell(const std::string_view& product, double quantity)
     auto it = d_lastMarketPrices.find(std::string(product));
     if (it == d_lastMarketPrices.end()) {
         std::stringstream ss;
-        ss << std::format(
-            "Cannot execute sell for product {}, basis market price not set.",
-            product);
+        ss << std::format("Cannot execute sell for product {}, basis "
+                          "market price not set.",
+                          product);
         SPDLOG_WARN(ss.str());
         return {false, 0.0, 0.0, ss.str()};
     }
@@ -219,8 +226,13 @@ PaperTradingExecutor<T>::sell(const std::string_view& product, double quantity)
     auto holdings = d_positionManager.currentHoldings(product);
     if (holdings.has_value() && holdings.value() >= quantity) {
         d_balance += netRevenue;
-        d_positionManager.addTrade(
-            std::string(product), -quantity, price, marketData.d_timestamp);
+        Event e = {std::string(product),
+                   -quantity,
+                   price,
+                   EventType::ORDER_FILLED,
+                   {},
+                   marketData.d_timestamp};
+        d_positionManager.submit_event(e);
         std::stringstream ss;
         ss << std::format(
             "PaperTrade SELL: Product={}, Quantity={}, Price={}, "
@@ -232,7 +244,7 @@ PaperTradingExecutor<T>::sell(const std::string_view& product, double quantity)
             netRevenue,
             d_balance,
             d_positionManager.currentHoldings(product).value(),
-            d_positionManager.realizedPnl(product).value());
+            0.0);
         SPDLOG_INFO(ss.str());
         return {true, price, commission, ""};
     }
@@ -285,9 +297,9 @@ PaperTradingExecutor<T>::getPosition(const std::string_view& product) const
 template <common::MarketData T>
 std::optional<double>
 PaperTradingExecutor<T>::pnl(const std::string_view& product,
-                             bool                    realized) const
+                             bool                    realize) const
 {
-    if (realized) {
+    if (realize) {
         return d_positionManager.realizedPnl(std::string(product));
     }
 
