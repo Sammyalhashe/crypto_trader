@@ -32,6 +32,13 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+          # Define the custom Python environment here
+          myPythonEnv = pkgs.python3.withPackages (
+            ps: with ps; [
+              mkdocs
+              # We'll re-add pymdown-extensions if needed, after basic mkdocs builds
+            ]
+          );
         in
         {
           default = devenv.lib.mkShell {
@@ -42,15 +49,13 @@
                 packages = with pkgs; [
                   cmake
                   ccache
-                  # conan
                   gcc
                   clang
                   ninja
                   zig
                   zls
                   cmake-language-server
-                  python3
-                  python3Packages.mkdocs
+                  myPythonEnv # <--- Add the custom Python environment here
 
                   # build dependencies
                   boost-build
@@ -60,22 +65,15 @@
                   boost
                   gtest
                 ];
-                scripts.build-docs.exec = "mkdocs build";
+
                 enterShell = ''
-                                                    enterShell = 
-                                                                      if [[ -x "$(command -v conan)" ]]; then
-                                                                                            conan profile detect || true
-                                                                                                              fi
-                                                                                                                              ;
-                      # if [[ $? != 0 ]]; then
-                      #   conan profile detect
-                      # fi
+                  if [[ -x "$(command -v conan)" ]]; then
+                      conan profile detect || true
                   fi
                 '';
 
                 scripts.prepare.exec = ''
-                  in profile detect || true
-                                    fif [[ -x "$(command -v conan)" ]]; then
+                  if [[ -x "$(command -v conan)" ]]; then
                       make prepare CONAN=1
                   else
                       make prepare GENERATOR=Ninja
@@ -86,6 +84,7 @@
                 scripts.clean.exec = "make clean";
                 scripts.test.exec = "make test";
                 scripts.run.exec = "make run";
+                scripts.build-docs.exec = "mkdocs build"; # Add build-docs script
               }
             ];
           };
