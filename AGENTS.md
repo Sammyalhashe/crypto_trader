@@ -78,7 +78,8 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 -   **Neovim**: If you detect that the neovim instance is listening on `/tmp/nvimtrader`, perform all file edits and diffs through that instance. Use a dedicated tab for your agent operations.
     1.  **Create/Focus Tab**: Check if a tab with var `agent_tab` exists. If not, create it.
         2.  **Label Tab**: Set the tab variable `t:agent_tab` to identify it.
-            3.  **Send Commands**: Use `nvim --server /tmp/nvimtrader --remote-send` to send commands to this specific tab context.
+                        3.  **Send Commands**: Use `nvim --server /tmp/nvimtrader --remote-send` to send commands. **Crucially**, prefix commands with `:tabnext
+    ` or ensure you are operating within that tab to avoid interfering with the user's active buffer.
 
 
 ## 8. Git Best Practices
