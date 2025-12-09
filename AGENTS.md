@@ -79,3 +79,16 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 
 ## 7. Editor Instructions
 -   **Neovim**: If you detect that the neovim instance is listening on `/tmp/nvimtrader`, perform all file edits and diffs through that instance using `nvim --server /tmp/nvimtrader ...`.
+
+
+## 8. Git Best Practices
+-   **Complex Commit Messages**: To avoid bash syntax errors (e.g., with newlines or special characters), write the commit message to a temporary file first, use `git commit -F <file>`, and then **remove the temporary file**.
+    ```bash
+    cat <<EOF > commit_msg.txt
+    Title
+
+    Body.
+    EOF
+    git commit -F commit_msg.txt
+    rm commit_msg.txt
+    ```
