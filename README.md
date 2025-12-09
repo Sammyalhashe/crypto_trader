@@ -43,7 +43,7 @@ Inside the Nix shell:
 
 Documentation on technical concepts and design decisions:
 
--   [Floating Point Comparisons](learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.
+-   [Floating Point Comparisons](docs/learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.
 
 ---
 
