@@ -91,6 +91,4 @@ test:
 format:
 	find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec ${CLANG_FORMAT} -style=file -i {} \;
 
-.PHONY: docs
-docs:
 	mkdocs build

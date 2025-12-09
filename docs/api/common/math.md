@@ -12,4 +12,4 @@ The `Math` class (defined in `common/math.h`) provides static utility methods fo
 -   `isGreaterOrEqual(a, b, relEpsilon, absEpsilon)`: Checks if `a` is greater than or equal to `b`.
 -   `isZero(a, absEpsilon)`: Checks if a double is effectively zero.
 
-For a detailed explanation of the hybrid comparison approach, refer to the [Floating Point Comparisons](learning/numerics/floating_point_comparisons.md) learning document.
+For a detailed explanation of the hybrid comparison approach, refer to the [Floating Point Comparisons](../../learning/numerics/floating_point_comparisons.md) learning document.

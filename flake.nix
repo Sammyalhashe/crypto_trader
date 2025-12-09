@@ -60,7 +60,7 @@
                   boost
                   gtest
                 ];
-
+                                                scripts.build-docs.exec = "mkdocs build";
                 enterShell = ''
                   if [[ -x "$(command -v conan)" ]]; then
                       # if [[ $? != 0 ]]; then
@@ -70,7 +70,8 @@
                 '';
 
                 scripts.prepare.exec = ''
-                  if [[ -x "$(command -v conan)" ]]; then
+                  in profile detect || true
+                                    fif [[ -x "$(command -v conan)" ]]; then
                       make prepare CONAN=1
                   else
                       make prepare GENERATOR=Ninja

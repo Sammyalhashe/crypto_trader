@@ -14,27 +14,18 @@ theme:
     - zig
 
 nav:
-  - Home: 'index.md'
+  - Home: "index.md"
   - API Reference:
-    - Protocols:
-      - Executor: 'api/protocols/executor.md'
-      - Strategy: 'api/protocols/strategy.md'
-      - Trader: 'api/protocols/trader.md'
-    - Common:
-      - Math Utilities: 'api/common/math.md'
-      - Accounting: 'api/common/accounting.md'
-    - Executors:
-      - Paper Trading Executor: 'api/executors/paper_trading_executor.md'
-    - Strategies:
-      - HODL Strategy: 'api/strategies/hodl.md'
+      - Protocols:
+          - Executor: "api/protocols/executor.md"
+          - Strategy: "api/protocols/strategy.md"
+          - Trader: "api/protocols/trader.md"
+      - Common:
+          - Math Utilities: "api/common/math.md"
+          - Accounting: "api/common/accounting.md"
+      - Executors:
+          - Paper Trading Executor: "api/executors/paper_trading_executor.md"
+      - Strategies:
+          - HODL Strategy: "api/strategies/hodl.md"
   - Learning:
-    - Floating Point Comparisons: 'learning/numerics/floating_point_comparisons.md'
-
-markdown_extensions:
-  - admonition
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_numbers: true
-  - pymdownx.superfences
-  - pymdownx.details
-  - attr_list
+      - Floating Point Comparisons: "learning/numerics/floating_point_comparisons.md"
