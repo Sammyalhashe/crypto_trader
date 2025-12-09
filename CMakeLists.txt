@@ -126,7 +126,6 @@ include(GoogleTest)
 function(create_test name filepath flags)
     add_executable(${name} ${filepath})
     target_link_libraries(${name}
-                          ${FOUNDATION}
                           GTest::gtest_main
                           GTest::gmock_main
                           Boost::system
