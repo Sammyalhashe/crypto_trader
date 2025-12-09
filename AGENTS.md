@@ -1,4 +1,4 @@
-#AGENTS.md - Codebase Documentation for AI Agents
+ #AGENTS.md - Codebase Documentation for AI Agents
 
 This document provides essential information for AI agents working in the `crypto_trader` repository.
 
