@@ -63,4 +63,4 @@ To generate and view the Doxygen documentation locally:
 
 Documentation on technical concepts and design decisions:
 
--   [Floating Point Comparisons](docs/learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.
+-   [Floating Point Comparisons](doc/learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.
