@@ -39,12 +39,28 @@ Inside the Nix shell:
 2.  **Build**: `build` (compiles the project).
 3.  **Test**: `make test` (runs GoogleTest suite). *Note: Run `build` before testing if source changed.*
 
+## Documentation
+
+Comprehensive documentation for the project is generated using MkDocs.
+
+### View Online
+For the most complete and up-to-date documentation, please visit the [Full Documentation Site](site/).
+
+### Build & Serve Locally
+To build and view the documentation locally:
+1.  **Build Documentation**:
+    ```bash
+    nix develop --impure --command "build-docs"
+    ```
+    This generates the static site files in the `site/` directory.
+2.  **Serve Locally**:
+    ```bash
+    nix develop --impure --command "serve-docs"
+    ```
+    Open your web browser and navigate to `http://127.0.0.1:8000` (or the address shown in the terminal) to view.
+
 ## Learnings
 
 Documentation on technical concepts and design decisions:
 
 -   [Floating Point Comparisons](docs/learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.
-
----
-
-For complete and up-to-date documentation, please visit the [Full Documentation Site](site/).
