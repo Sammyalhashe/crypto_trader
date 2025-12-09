@@ -92,6 +92,7 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 
 ## 8. Git Best Practices
 -   **Complex Commit Messages**: To avoid bash syntax errors (e.g., with newlines or special characters), write the commit message to a temporary file first, use `git commit -F <file>`, and then **remove the temporary file**.
+-   **Commit Message Length**: Keep the subject line (first line) of commit messages concise and under 50-72 characters. The body can provide more detail, but the subject should be a quick summary.
     ```bash
     cat <<EOF > commit_msg.txt
     Title
