@@ -17,7 +17,7 @@ The project uses a Nix flake for reproducible builds and development environment
     This command will set up the necessary dependencies and make the following commands available in your shell:
     -   `prepare`: Configures the project (likely CMake).
     -   `build`: Compiles the project.
-        -   `make test`: Runs the project's tests.
+        -   `make test`: Runs the project's tests.. **Note**: This command does *not* rebuild the code. Always run `build` before testing if you have modified source files.
 
         **Approved Commands**: You are explicitly allowed and encouraged to use `prepare`, `build`, and `make test` to manage the project lifecycle., `git`, and `clang-format`
 
