@@ -3,7 +3,7 @@ name: Deploy Doxygen Docs to GitHub Pages
 on:
   push:
     branches:
-      - mkdocs # Or 'main' if that's where your documentation source will live
+      - main # Or 'main' if that's where your documentation source will live
 
 jobs:
   deploy:
