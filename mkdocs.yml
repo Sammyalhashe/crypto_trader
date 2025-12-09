@@ -2,7 +2,7 @@ site_name: "Crypto Trader Documentation"
 site_url: "https://sammyalhashe.github.io/crypto_trader/"
 repo_url: "https://github.com/Sammyalhashe/crypto_trader/"
 repo_name: "Sammyalhashe/crypto_trader"
-edit_uri: "edit/doubleMath/docs/" # Assuming edits are on 'doubleMath' branch within 'docs/'
+edit_uri: "edit/main/docs/" # Assuming edits are on 'main' branch within 'docs/'
 
 theme:
   name: "readthedocs"
