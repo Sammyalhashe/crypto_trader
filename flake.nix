@@ -42,13 +42,14 @@
                 packages = with pkgs; [
                   cmake
                   ccache
-                  # conan
                   gcc
                   clang
                   ninja
                   zig
                   zls
                   cmake-language-server
+                  doxygen
+                  graphviz
 
                   # build dependencies
                   boost-build
@@ -61,11 +62,7 @@
 
                 enterShell = ''
                   if [[ -x "$(command -v conan)" ]]; then
-                      # conan profile show
-                      #
-                      # if [[ $? != 0 ]]; then
-                      #   conan profile detect
-                      # fi
+                      conan profile detect || true
                   fi
                 '';
 
@@ -81,6 +78,8 @@
                 scripts.clean.exec = "make clean";
                 scripts.test.exec = "make test";
                 scripts.run.exec = "make run";
+                scripts.docs.exec = "cmake --build cmake.bld/Linux/full --target doc_doxygen";
+                scripts.serve-docs.exec = "python3 -m http.server 8000 --directory cmake.bld/Linux/full/doc_doxygen/html";
               }
             ];
           };

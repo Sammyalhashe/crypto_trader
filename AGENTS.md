@@ -17,8 +17,18 @@ The project uses a Nix flake for reproducible builds and development environment
     This command will set up the necessary dependencies and make the following commands available in your shell:
     -   `prepare`: Configures the project (likely CMake).
     -   `build`: Compiles the project.
-        -   `make test`: Runs the project's tests.. **Note**: This command does *not* rebuild the code. Always run `build` before testing if you have modified source files.
-                        -   **Approved Commands**: You are explicitly allowed and encouraged to use `prepare`, `build`, `make test`, `git` (status, add, commit, push, diff, remote, ls-files, rm), `clang-format`, `ls`, `cat`, `rm`, `mkdir`, `touch`, `find`, `grep`, `echo` and `nvim` to manage the project lifecycle.
+    -   `make test`: Runs the project's tests. **Note**: This command does *not* rebuild the code. Always run `build` before testing if you have modified source files.
+
+-   **Approved Commands**: You are explicitly allowed and encouraged to use the following commands to manage the project lifecycle and interact with the environment:
+    -   **Project Build/Test**: `prepare`, `build`, `make test`
+    -   **Git Version Control**: `git` (specifically `status`, `add`, `commit`, `reset`, `push` to `origin` and `upstream` branches, `diff`, `remote`, `ls-files`, `rm`, `checkout`).
+    -   **Code Formatting**: `clang-format`
+    -   **Documentation**: `doxygen` (for generating API documentation), `make docs` (to build Doxygen documentation), `make serve-docs` (to serve Doxygen documentation locally).
+    -   **File System/Shell Utilities**: `ls`, `cat`, `rm`, `mkdir`, `touch`, `find`, `grep`, `echo`, `cp`.
+    -   **Editor Interaction**: `nvim` (as per Editor Instructions).
+    -   **GitHub Pages**: `git checkout -b gh-pages`, `git push origin gh-pages`.
+
+## 3. Core Directory Structure and Components
 
 -   **`adaptors/`**: Contains client implementations for interacting with external services, primarily WebSocket clients for exchanges (e.g., `coinbase_websocket_client`).
 -   **`cmake/`**: CMake utility files for compiler warnings, Doxygen, static analyzers, and common functions.
@@ -77,13 +87,14 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 ## 7. Editor Instructions
 -   **Neovim**: If you detect that the neovim instance is listening on `/tmp/nvimtrader`, perform all file edits and diffs through that instance. Use a dedicated tab for your agent operations.
     1.  **Create/Focus Tab**: Check if a tab with var `agent_tab` exists. If not, create it.
-        2.  **Label Tab**: Set the tab variable `t:agent_tab` to identify it.
-                        3.  **Send Commands**: Use `nvim --server /tmp/nvimtrader --remote-send` to send commands. **Crucially**, prefix commands with `:tabnext
-    ` or ensure you are operating within that tab to avoid interfering with the user's active buffer.
-
+    2.  **Label Tab**: Set the tab variable `t:agent_tab` to identify it.
+    3.  **Send Commands**: Use `nvim --server /tmp/nvimtrader --remote-send` to send commands.
+        **CRITICAL WARNING**: Never use simple `cc` (change line) or `s/pattern/replacement/` (substitute) commands within `nvim --remote-send` for modifying file *content*. These commands are intended for interactive editing and can accidentally insert the command string itself into the buffer if not executed correctly. For *any* content modification (insertion, deletion, replacement of more than a single character), always prepare the desired content externally in a temporary file and use Neovim's `:r <temp_file>` (read file) command to insert it into the buffer, or `ggdG:r <temp_file>` for full buffer replacement. Then use `:w` to save. This is the only safe way to modify files via `nvim --remote-send`.
+        **Crucially**, prefix commands with `:<tab-number>tabnext<CR>` or ensure you are operating within that tab to avoid interfering with the user's active buffer.
 
 ## 8. Git Best Practices
--   **Complex Commit Messages**: To avoid bash syntax errors (e.g., with newlines or special characters), write the commit message to a temporary file first, use `git commit -F <file>`, and then **remove the temporary file**.
+-   **Commit Message Length**: Keep the subject line (first line) of commit messages concise and under 50-72 characters. The body can provide more detail, but the subject should be a quick summary.
+-   **Standard Commit Workflow**: Always write the commit message to a temporary file and use `git commit -F ` (e.g., `commit_msg.txt`). This avoids bash escaping issues, especially for multi-line messages, and improves readability. Remember to **remove the temporary file** afterwards.
     ```bash
     cat <<EOF > commit_msg.txt
     Title
@@ -94,8 +105,9 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
     rm commit_msg.txt
     ```
 
-
 ## 9. Git Remotes Syncing
 -   **Multi-Remote Push**: The main remote is GitHub (often named `upstream`). You **must** push to it.
 -   **Syncing**: If you detect a Gitea remote (e.g., matching the `picloud.*` or an IP address domain, often named `origin`), you **must** push to that remote as well to ensure synchronization.
 
+## 10. Knowledge Base
+-   **Learning Docs**: If you provide a detailed explanation of a concept (like numerics, algorithms, or architecture), capture it in a markdown file under `docs/learning/<category>/` to preserve that knowledge.

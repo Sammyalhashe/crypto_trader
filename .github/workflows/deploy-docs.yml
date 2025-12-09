@@ -1,0 +1,32 @@
+name: Deploy Doxygen Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v27
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+
+    - name: Run Doxygen Build
+      run: |
+        nix develop --impure --command "prepare"
+        nix develop --impure --command "docs"
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./cmake.bld/Linux/full/doc_doxygen/html # Path to Doxygen's HTML output
+        publish_branch: gh-pages # The branch for GitHub Pages
+        full_commit_message: "Deploy Doxygen documentation"

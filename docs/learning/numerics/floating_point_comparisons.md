@@ -15,8 +15,14 @@ We use a hybrid approach that combines **Relative** and **Absolute** comparisons
 
 $$ |a - b| \le \max(\text{absEpsilon}, \text{relEpsilon} \times \max(|a|, |b|)) $$
 
-1.  **Near Zero**: If the difference is smaller than `absEpsilon` (e.g., `1e-12`), they are equal. This handles the "empty account" case where relative comparison would fail (0 vs 0).
-2.  **Larger Numbers**: We check if the difference is within a percentage (`relEpsilon`) of the larger magnitude. This scales the error margin with the data.
+If $\epsilon$ is `1e-9`, you are effectively asking: **"Do these numbers agree to 9 significant digits?"**
+
+*   **Crypto Example (High Price):** BTC at 100,000.
+    *   Allowed error = $100,000 \times 10^{-9} = 0.0001$.
+    *   This scales appropriately for the asset class.
+*   **Crypto Example (Low Price):** SHIB at 0.00001.
+    *   Allowed error = $0.00001 \times 10^{-9} = 10^{-14}$.
+    *   This tightens the requirement, ensuring we don't treat a 50% price difference as "equal."
 
 ### Example Code
 
@@ -28,4 +34,3 @@ bool isEqual(double a, double b, double relEpsilon = 1e-9, double absEpsilon = 1
 }
 ```
 
-```

@@ -39,6 +39,26 @@ Inside the Nix shell:
 2.  **Build**: `build` (compiles the project).
 3.  **Test**: `make test` (runs GoogleTest suite). *Note: Run `build` before testing if source changed.*
 
+## Documentation
+
+Comprehensive API documentation for the project is generated using Doxygen directly from the C++ source code comments and deployed to GitHub Pages.
+
+### View Online
+The latest **API Reference** documentation is available on [GitHub Pages](https://Sammyalhashe.github.io/crypto_trader/html/index.html).
+
+### Generate & View Locally
+To generate and view the Doxygen documentation locally:
+1.  **Build Doxygen Documentation**:
+    ```bash
+    make docs
+    ```
+    This command will run Doxygen and generate HTML files in the `cmake.bld/Linux/full/doc_doxygen/html` directory.
+2.  **Serve Locally**:
+    ```bash
+    make serve-docs
+    ```
+    Open your web browser and navigate to `http://127.0.0.1:8000` (or the address shown in the terminal) to view.
+
 ## Learnings
 
 Documentation on technical concepts and design decisions:
