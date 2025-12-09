@@ -24,9 +24,8 @@ The project uses a Nix flake for reproducible builds and development environment
     -   **Git Version Control**: `git` (specifically `status`, `add`, `commit`, `reset`, `push` to `origin` and `upstream` branches, `diff`, `remote`, `ls-files`, `rm`, `checkout`).
     -   **Code Formatting**: `clang-format`
     -   **Documentation**: `doxygen` (for generating API documentation), `make docs` (to build Doxygen documentation), `make serve-docs` (to serve Doxygen documentation locally).
-    -   **File System/Shell Utilities**: `ls`, `cat`, `rm`, `mkdir`, `touch`, `find`, `grep`, `echo`, `cp`.
+    -   **File System/Shell Utilities**: `ls`, `cat`, `rm`, `rm -rf`, `mkdir`, `mv`, `touch`, `find`, `grep`, `echo`, `cp`.
     -   **Editor Interaction**: `nvim` (as per Editor Instructions).
-    -   **GitHub Pages**: `git checkout -b gh-pages`, `git push origin gh-pages`.
 
 ## 3. Core Directory Structure and Components
 

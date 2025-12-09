@@ -44,7 +44,7 @@ Inside the Nix shell:
 Comprehensive API documentation for the project is generated using Doxygen directly from the C++ source code comments and deployed to GitHub Pages.
 
 ### View Online
-The latest **API Reference** documentation is available on [GitHub Pages](https://Sammyalhashe.github.io/crypto_trader/html/index.html).
+The latest **API Reference** documentation is available on [GitHub Pages](https://Sammyalhashe.github.io/crypto_trader/).
 
 ### Generate & View Locally
 To generate and view the Doxygen documentation locally:
@@ -63,4 +63,4 @@ To generate and view the Doxygen documentation locally:
 
 Documentation on technical concepts and design decisions:
 
--   [Floating Point Comparisons](docs/learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.
+-   [Floating Point Comparisons](doc/learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.
