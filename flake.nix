@@ -60,9 +60,13 @@
                   boost
                   gtest
                 ];
-                                                scripts.build-docs.exec = "mkdocs build";
+                scripts.build-docs.exec = "mkdocs build";
                 enterShell = ''
-                  if [[ -x "$(command -v conan)" ]]; then
+                                                    enterShell = 
+                                                                      if [[ -x "$(command -v conan)" ]]; then
+                                                                                            conan profile detect || true
+                                                                                                              fi
+                                                                                                                              ;
                       # if [[ $? != 0 ]]; then
                       #   conan profile detect
                       # fi
