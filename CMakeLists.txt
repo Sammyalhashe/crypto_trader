@@ -6,6 +6,13 @@ project(crypto_trader C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# DEBUG: Path variables
+message(STATUS "DEBUG: CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
+message(STATUS "DEBUG: CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
+message(STATUS "DEBUG: PROJECT_SOURCE_DIR = ${PROJECT_SOURCE_DIR}")
+message(STATUS "DEBUG: PROJECT_BINARY_DIR = ${PROJECT_BINARY_DIR}")
+
+
 # if a conan build or not
 SET(CACHE{CONAN} BOOL "If in a Conan build" VALUE true false)
 

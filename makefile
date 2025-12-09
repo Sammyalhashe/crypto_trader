@@ -20,7 +20,7 @@ ifneq ($(strip $(GENERATOR)),)
 endif
 
 BUILD_DIR_PREFIX=cmake.bld
-BUILD_DIR := $(BUILD_DIR_PREFIX)/$(shell uname)/full$(SUFFIX)
+BUILD_DIR := ${BUILD_DIR_PREFIX}/$(shell uname)/full$(SUFFIX)
 
 MAKE := make
 MAKE_OPTS := -j16
@@ -67,7 +67,9 @@ bo:
 
 .PHONY: prepare
 prepare: conan
-	cd ${BUILD_DIR} && cmake ../../.. ${CMAKE_OPTS} && ln -f compile_commands.json ../../.. && cd - && cp config.json ${BUILD_DIR}
+	mkdir -p ${BUILD_DIR} # Ensure build directory exists before cd'ing
+	cd ${BUILD_DIR} && cmake ../../.. ${CMAKE_OPTS} && ln -f compile_commands.json ../../..
+	cp config.json ${BUILD_DIR} # Copy config.json from root to build dir
 
 .PHONY: conan
 conan: build_dir_prep
