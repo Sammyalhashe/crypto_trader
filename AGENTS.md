@@ -23,7 +23,7 @@ The project uses a Nix flake for reproducible builds and development environment
     -   **Project Build/Test**: `prepare`, `build`, `make test`
     -   **Git Version Control**: `git` (specifically `status`, `add`, `commit`, `reset`, `push` to `origin` and `upstream` branches, `diff`, `remote`, `ls-files`, `rm`).
     -   **Code Formatting**: `clang-format`
-    -   **Documentation**: `doxygen` (for generating API documentation).
+    -   **Documentation**: `doxygen` (for generating API documentation), `make docs` (to build Doxygen documentation), `make serve-docs` (to serve Doxygen documentation locally).
     -   **File System/Shell Utilities**: `ls`, `cat`, `rm`, `mkdir`, `touch`, `find`, `grep`, `echo`
     -   **Editor Interaction**: `nvim` (as per Editor Instructions).
 
