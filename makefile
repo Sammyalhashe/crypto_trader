@@ -93,4 +93,4 @@ format:
 
 .PHONY: docs
 docs:
-	nix develop --impure --command "build-docs"
+	cmake --build ${BUILD_DIR} --target doc_doxygen

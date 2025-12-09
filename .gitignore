@@ -54,3 +54,4 @@ cmake.bld/
 .zig-cache
 zig-out/
 site/
+doc_doxygen/

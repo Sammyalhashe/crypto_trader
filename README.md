@@ -41,23 +41,17 @@ Inside the Nix shell:
 
 ## Documentation
 
-Comprehensive documentation for the project is generated using MkDocs.
+Comprehensive API documentation for the project is generated using Doxygen directly from the C++ source code comments.
 
-### View Online
-For the most complete and up-to-date documentation, please visit the [Full Documentation Site](site/).
-
-### Build & Serve Locally
-To build and view the documentation locally:
-1.  **Build Documentation**:
+### Generate & View Locally
+To generate and view the Doxygen documentation locally:
+1.  **Build Doxygen Documentation**:
     ```bash
-    nix develop --impure --command "build-docs"
+    make docs
     ```
-    This generates the static site files in the `site/` directory.
-2.  **Serve Locally**:
-    ```bash
-    nix develop --impure --command "serve-docs"
-    ```
-    Open your web browser and navigate to `http://127.0.0.1:8000` (or the address shown in the terminal) to view.
+    This command will run Doxygen and generate HTML files in the `cmake.bld/Linux/full/doc_doxygen/html` directory.
+2.  **View Locally**:
+    Open the `index.html` file located at `cmake.bld/Linux/full/doc_doxygen/html/index.html` in your web browser.
 
 ## Learnings
 

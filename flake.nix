@@ -32,11 +32,6 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          myPythonEnv = pkgs.python3.withPackages (
-            ps: with ps; [
-              mkdocs
-            ]
-          );
         in
         {
           default = devenv.lib.mkShell {
@@ -53,7 +48,7 @@
                   zig
                   zls
                   cmake-language-server
-                  myPythonEnv # <--- Add the custom Python environment here
+                                                      doxygen
 
                   # build dependencies
                   boost-build
@@ -82,8 +77,6 @@
                 scripts.clean.exec = "make clean";
                 scripts.test.exec = "make test";
                 scripts.run.exec = "make run";
-                scripts.build-docs.exec = "mkdocs build"; # Add build-docs script
-                scripts.serve-docs.exec = "mkdocs serve";
               }
             ];
           };

@@ -23,6 +23,7 @@ The project uses a Nix flake for reproducible builds and development environment
     -   **Project Build/Test**: `prepare`, `build`, `make test`
     -   **Git Version Control**: `git` (specifically `status`, `add`, `commit`, `reset`, `push` to `origin` and `upstream` branches, `diff`, `remote`, `ls-files`, `rm`).
     -   **Code Formatting**: `clang-format`
+    -   **Documentation**: `doxygen` (for generating API documentation).
     -   **File System/Shell Utilities**: `ls`, `cat`, `rm`, `mkdir`, `touch`, `find`, `grep`, `echo`
     -   **Editor Interaction**: `nvim` (as per Editor Instructions).
 
@@ -91,8 +92,8 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
         **Crucially**, prefix commands with `:<tab-number>tabnext<CR>` or ensure you are operating within that tab to avoid interfering with the user's active buffer.
 
 ## 8. Git Best Practices
--   **Complex Commit Messages**: To avoid bash syntax errors (e.g., with newlines or special characters), write the commit message to a temporary file first, use `git commit -F <file>`, and then **remove the temporary file**.
 -   **Commit Message Length**: Keep the subject line (first line) of commit messages concise and under 50-72 characters. The body can provide more detail, but the subject should be a quick summary.
+-   **Complex Commit Messages**: To avoid bash syntax errors (e.g., with newlines or special characters), write the commit message to a temporary file first, use `git commit -F <file>`, and then **remove the temporary file**.
     ```bash
     cat <<EOF > commit_msg.txt
     Title
