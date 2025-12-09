@@ -1,4 +1,5 @@
 #include "Accounting.h"
+#include "math.h"
 #include <algorithm>
 #include <spdlog/spdlog.h>
 
@@ -9,7 +10,7 @@ void Accounting::apply_event(const Event& e)
     if (e.d_type == EventType::ORDER_FILLED) {
         auto& symbolPositions    = d_positions_[e.d_symbol];
         symbolPositions.d_symbol = e.d_symbol;
-        if (e.d_qty > 0) // Buy
+        if (crypto_trader::common::Math::isGreater(e.d_qty, 0.0)) // Buy
         {
             symbolPositions.d_positions_in_time.emplace_back();
             auto&  position = symbolPositions.d_positions_in_time.back();
@@ -29,8 +30,10 @@ void Accounting::apply_event(const Event& e)
         else { // Sell
             double qty_to_sell = -e.d_qty;
 
-            if (symbolPositions.d_total_qty <= 0.0 ||
-                symbolPositions.d_total_qty < qty_to_sell)
+            if (crypto_trader::common::Math::isLessOrEqual(
+                    symbolPositions.d_total_qty, 0.0) ||
+                crypto_trader::common::Math::isLess(
+                    symbolPositions.d_total_qty, qty_to_sell))
             {
                 SPDLOG_ERROR(
                     "Attempting to sell more {} than available.\nTotal "
@@ -41,7 +44,7 @@ void Accounting::apply_event(const Event& e)
                 return;
             }
 
-            while (qty_to_sell > 0.0 &&
+            while (crypto_trader::common::Math::isGreater(qty_to_sell, 0.0) &&
                    !symbolPositions.d_positions_in_time.empty())
             {
                 auto& position =
@@ -58,7 +61,8 @@ void Accounting::apply_event(const Event& e)
                     (e.d_price - position.d_price) * quantity_to_sell;
                 symbolPositions.d_total_qty -= quantity_to_sell;
 
-                bool shouldRemove = (position.d_total_qty <= 0.0);
+                bool shouldRemove = crypto_trader::common::Math::isLessOrEqual(
+                    position.d_total_qty, 0.0);
 
                 // remove position if fully sold
                 if (shouldRemove) {
@@ -71,7 +75,9 @@ void Accounting::apply_event(const Event& e)
                 }
             }
 
-            if (symbolPositions.d_total_qty > 0.0) {
+            if (crypto_trader::common::Math::isGreater(
+                    symbolPositions.d_total_qty, 0.0))
+            {
                 double totalCost = 0.0;
                 for (const auto& lot : symbolPositions.d_positions_in_time) {
                     totalCost += lot.d_price * lot.d_total_qty;

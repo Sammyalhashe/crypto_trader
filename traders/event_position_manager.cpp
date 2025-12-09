@@ -1,4 +1,5 @@
 #include "event_position_manager.h"
+#include "../common/math.h"
 
 #include <algorithm>
 #include <optional>
@@ -61,7 +62,9 @@ EventPositionManager::averageCostBasis(const std::string_view& symbol) const
 {
     auto snapshot = d_accounting_.snapshot();
     auto it       = snapshot.find(std::string(symbol));
-    if (it != snapshot.end() && it->second.d_total_qty > 0) {
+    if (it != snapshot.end() &&
+        crypto_trader::common::Math::isGreater(it->second.d_total_qty, 0.0))
+    {
         return it->second.d_average_price;
     }
     return std::nullopt;
@@ -71,8 +74,8 @@ std::optional<double>
 EventPositionManager::realizedPnl(const std::string_view& symbol) const
 {
     const auto& snapshot = d_accounting_.snapshot();
-    auto it       = snapshot.find(std::string(symbol));
-    
+    auto        it       = snapshot.find(std::string(symbol));
+
     if (it != snapshot.end()) {
         return it->second.d_realizedPnl;
     }
@@ -83,10 +86,12 @@ EventPositionManager::unrealizedPnl(const std::string_view& symbol,
                                     double                  currentPrice) const
 {
     const auto& snapshot = d_accounting_.snapshot();
-    auto it       = snapshot.find(std::string(symbol));
+    auto        it       = snapshot.find(std::string(symbol));
 
     if (it != snapshot.end()) {
-        if (it->second.d_total_qty > 0) {
+        if (crypto_trader::common::Math::isGreater(it->second.d_total_qty,
+                                                   0.0))
+        {
             return (currentPrice - it->second.d_average_price) *
                    it->second.d_total_qty;
         }

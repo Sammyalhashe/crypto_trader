@@ -1,4 +1,4 @@
-# AGENTS.md - Codebase Documentation for AI Agents
+#AGENTS.md - Codebase Documentation for AI Agents
 
 This document provides essential information for AI agents working in the `crypto_trader` repository.
 
@@ -17,7 +17,9 @@ The project uses a Nix flake for reproducible builds and development environment
     This command will set up the necessary dependencies and make the following commands available in your shell:
     -   `prepare`: Configures the project (likely CMake).
     -   `build`: Compiles the project.
-    -   `test`: Runs the project's tests.
+        -   `make test`: Runs the project's tests.
+
+        **Approved Commands**: You are explicitly allowed and encouraged to use `prepare`, `build`, and `make test` to manage the project lifecycle., `git`, and `clang-format`
 
 ## 3. Core Directory Structure and Components
 
@@ -63,7 +65,7 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 
 ## 5. Coding Conventions and Style
 
--   **C++**: The presence of `.clang-format` suggests that `clang-format` is used for code formatting. Adhere to the existing style for indentation, brace placement, and naming conventions.
+-   **C++ Formatting**: A `.clang-format` file exists in the project root. You **must** verify that all C++ code edits conform to these rules. Run `clang-format -i ` (if available) or check the `.clang-format` configuration before finalizing changes.
 -   **Logging**: `spdlog` is used for logging throughout the codebase. Use `SPDLOG_INFO`, `spdlog::warn`, `spdlog::error` as appropriate.
 -   **JSON Handling**: `nlohmann::json` is used for JSON parsing and manipulation (`common/jsonutils.h` provides utility functions).
 -   **Error Handling**: Assertions (`assert(false)`) are used for unrecoverable errors, and `spdlog::error` for runtime errors.
@@ -74,3 +76,6 @@ Market data (e.g., ticker updates) flows from the `WebsocketClient` to the `Trad
 -   **Executor Management**: The `CoinbaseTrader` dynamically manages its `Executor` based on configuration. Be aware of which executor is active when debugging or extending functionality.
 -   **Market Data Timestamping**: In `PaperTradingExecutor`, trade timestamps are currently updated in `processTickerData` when empty. This might be a simplification and could need refinement for more precise historical trade tracking.
 -   **Live Trading Stubs**: The `RealTradingExecutor` and the non-paper trading path in `CoinbaseTrader::handleAction` are currently stubs. Expanding these would involve integrating with actual exchange APIs for order placement and account management.
+
+## 7. Editor Instructions
+-   **Neovim**: If you detect that the neovim instance is listening on `/tmp/nvimtrader`, perform all file edits and diffs through that instance using `nvim --server /tmp/nvimtrader ...`.

@@ -2,6 +2,7 @@
 #define INCLUDED_PAPER_TRADER_EXECUTOR
 
 #include "../common/Event.h"
+#include "../common/math.h"
 #include "../common/types.h"
 #include "../protocols/executor.h"
 #include "../traders/event_position_manager.h"
@@ -170,7 +171,7 @@ PaperTradingExecutor<T>::buy(const std::string_view& product, double quantity)
     double      commission = cost * d_config.commissionRate();
     double      totalCost  = cost + commission;
 
-    if (d_balance >= totalCost) {
+    if (crypto_trader::common::Math::isGreaterOrEqual(d_balance, totalCost)) {
         d_balance -= totalCost;
         Event e = {std::string(product),
                    quantity,
@@ -224,7 +225,9 @@ PaperTradingExecutor<T>::sell(const std::string_view& product, double quantity)
     double      netRevenue = revenue - commission;
 
     auto holdings = d_positionManager.currentHoldings(product);
-    if (holdings.has_value() && holdings.value() >= quantity) {
+    if (holdings.has_value() && crypto_trader::common::Math::isGreaterOrEqual(
+                                    holdings.value(), quantity))
+    {
         d_balance += netRevenue;
         Event e = {std::string(product),
                    -quantity,
