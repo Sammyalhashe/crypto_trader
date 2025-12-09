@@ -49,6 +49,7 @@
                   zls
                   cmake-language-server
                                                       doxygen
+                  doxygen
 
                   # build dependencies
                   boost-build

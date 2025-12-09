@@ -1,9 +1,14 @@
 find_package(Doxygen QUIET)
+
 if(DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    if (EXISTS "${DOXYGEN_IN}")
+        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    else()
+        message(FATAL_ERROR "Doxyfile.in not found at: ${DOXYGEN_IN}")
+    endif()
 
     add_custom_target(doc_doxygen
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
@@ -12,7 +17,7 @@ if(DOXYGEN_FOUND)
         VERBATIM
     )
 
-  add_dependencies(${PROJECT_NAME} doc_doxygen)
+  # Removed: add_dependencies(${PROJECT_NAME} doc_doxygen)
 else()
     message(STATUS "Doxygen not found. Documentation target will not be available.")
 endif()
