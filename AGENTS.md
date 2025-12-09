@@ -18,7 +18,7 @@ The project uses a Nix flake for reproducible builds and development environment
     -   `prepare`: Configures the project (likely CMake).
     -   `build`: Compiles the project.
         -   `make test`: Runs the project's tests.. **Note**: This command does *not* rebuild the code. Always run `build` before testing if you have modified source files.
-            -   **Approved Commands**: You are explicitly allowed and encouraged to use `prepare`, `build`, `make test`, `git` (status, add, commit, push, diff, remote), and `clang-format` to manage the project lifecycle.
+                        -   **Approved Commands**: You are explicitly allowed and encouraged to use `prepare`, `build`, `make test`, `git` (status, add, commit, push, diff, remote, ls-files, rm), `clang-format`, `ls`, `cat`, `rm`, `mkdir`, `touch`, `find`, `grep`, `echo` and `nvim` to manage the project lifecycle.
 
 -   **`adaptors/`**: Contains client implementations for interacting with external services, primarily WebSocket clients for exchanges (e.g., `coinbase_websocket_client`).
 -   **`cmake/`**: CMake utility files for compiler warnings, Doxygen, static analyzers, and common functions.
