@@ -1,0 +1,5 @@
+<map id="crypto_trader::protocols::Strategy" name="crypto_trader::protocols::Strategy">
+<area shape="rect" id="Node000001" title="Abstract base class defining the interface for a trading strategy." alt="" coords="8,5,174,139"/>
+<area shape="rect" id="Node000002" href="$classcrypto__trader_1_1strategies_1_1_hodl_strategy.html" title="Implements a &quot;Buy and Hold&quot; strategy with dynamic adjustments based on price movements." alt="" coords="5,187,176,366"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,154,93,187,88,187,88,154"/>
+</map>

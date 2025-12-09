@@ -1,0 +1,24 @@
+<map id="/home/runner/work/crypto_trader/crypto_trader/protocols/observer.h" name="/home/runner/work/crypto_trader/crypto_trader/protocols/observer.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="526,5,748,67"/>
+<area shape="rect" id="Node000002" href="$types_8h.html" title=" " alt="" coords="513,115,655,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="622,69,602,103,597,100,617,66"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="707,191,765,218"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="657,66,723,176,718,179,653,69"/>
+<area shape="rect" id="Node000003" href="$serialization_8h.html" title=" " alt="" coords="270,191,383,218"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="539,146,388,189,386,183,537,141"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="407,191,473,218"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="559,146,480,186,478,181,557,141"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="497,191,583,218"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="578,145,558,179,553,176,574,142"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="608,191,683,218"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="597,142,627,177,623,181,593,145"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="612,141,697,181,694,186,610,146"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,266,147,311"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="287,221,158,264,156,258,286,216"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="171,266,312,311"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="315,221,277,257,273,253,311,217"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="336,266,491,311"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="342,217,381,253,378,257,339,221"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="515,266,656,311"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="369,216,503,259,502,264,367,221"/>
+</map>

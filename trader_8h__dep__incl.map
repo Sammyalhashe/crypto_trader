@@ -1,0 +1,12 @@
+<map id="/home/runner/work/crypto_trader/crypto_trader/protocols/trader.h" name="/home/runner/work/crypto_trader/crypto_trader/protocols/trader.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="79,5,301,67"/>
+<area shape="rect" id="Node000002" href="$main_8cpp.html" title=" " alt="" coords="5,233,228,278"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,78,85,95,70,116,64,131,62,146,69,177,83,206,100,231,96,234,79,209,64,179,57,146,59,129,65,114,81,92,102,74"/>
+<area shape="rect" id="Node000003" href="$trader_8cpp.html" title=" " alt="" coords="79,115,301,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="192,83,192,114,187,114,187,83"/>
+<area shape="rect" id="Node000004" href="$_coinbase_trader_8h.html" title=" " alt="" coords="326,115,534,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="272,71,364,112,361,117,270,76"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="328,185,180,235,179,230,327,180"/>
+<area shape="rect" id="Node000005" href="$_coinbase_trader_8cpp.html" title=" " alt="" coords="326,225,534,286"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="432,192,432,224,427,224,427,192"/>
+</map>

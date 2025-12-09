@@ -1,0 +1,7 @@
+<map id="crypto_trader::strategies::HodlStrategy" name="crypto_trader::strategies::HodlStrategy">
+<area shape="rect" id="Node000001" title="Implements a &quot;Buy and Hold&quot; strategy with dynamic adjustments based on price movements." alt="" coords="98,187,268,366"/>
+<area shape="rect" id="Node000002" href="$classcrypto__trader_1_1protocols_1_1_strategy.html" title="Abstract base class defining the interface for a trading strategy." alt="" coords="5,5,171,139"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="128,152,144,186,139,189,123,154"/>
+<area shape="rect" id="Node000003" href="$classcrypto__trader_1_1protocols_1_1_observer.html" title=" " alt="" coords="195,5,360,139"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="243,154,227,189,222,186,238,152"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classcrypto__trader_1_1protocols_1_1_executor.html" title="Abstract base class defining the interface for trade execution." alt="" coords="5,40,182,85"/>
+<area shape="rect" id="Node000001" href="$classcrypto__trader_1_1executors_1_1_paper_trading_executor.html" title="A concrete implementation of the Executor protocol for paper (simulated) trading." alt="" coords="230,5,436,50"/>
+<area shape="poly" id="edge1_Node000000_Node000001" title=" " alt="" coords="197,45,229,40,230,45,198,50"/>
+<area shape="rect" id="Node000002" href="$classcrypto__trader_1_1executors_1_1_real_trading_executor.html" title=" " alt="" coords="233,75,432,119"/>
+<area shape="poly" id="edge2_Node000000_Node000002" title=" " alt="" coords="198,75,233,80,232,85,197,80"/>
+</map>

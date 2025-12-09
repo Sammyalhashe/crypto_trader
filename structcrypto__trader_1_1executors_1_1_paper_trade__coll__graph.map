@@ -1,0 +1,3 @@
+<map id="crypto_trader::executors::PaperTrade" name="crypto_trader::executors::PaperTrade">
+<area shape="rect" id="Node000001" title="Represents a simulated trade executed by the PaperTradingExecutor." alt="" coords="5,5,174,206"/>
+</map>

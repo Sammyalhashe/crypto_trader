@@ -1,0 +1,21 @@
+<map id="/home/runner/work/crypto_trader/crypto_trader/common/types.h" name="/home/runner/work/crypto_trader/crypto_trader/common/types.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="430,5,650,67"/>
+<area shape="rect" id="Node000002" href="$serialization_8h.html" title=" " alt="" coords="270,115,383,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="470,70,372,111,370,106,468,65"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="407,115,473,143"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="508,69,467,107,464,103,505,65"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="497,115,583,143"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="543,67,543,99,537,99,537,67"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="608,115,683,143"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="577,65,620,103,617,107,573,69"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="707,115,765,143"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="606,65,695,106,693,111,604,70"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,191,147,235"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="287,146,158,188,156,183,286,141"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="171,191,312,235"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="315,145,277,182,273,178,311,141"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="336,191,491,235"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="342,141,381,178,378,182,339,145"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="515,191,656,235"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="369,141,503,183,502,188,367,146"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="crypto_trader::protocols::WebsocketClient" name="crypto_trader::protocols::WebsocketClient">
+<area shape="rect" id="Node000001" title=" " alt="" coords="286,5,451,229"/>
+<area shape="rect" id="Node000002" href="$classcrypto__trader_1_1adaptors_1_1_coinbase_web_socket_client.html" title=" " alt="" coords="5,352,222,486"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="278,229,172,354,168,351,274,226"/>
+<area shape="rect" id="Node000003" href="$classcrypto__trader_1_1adaptors_1_1_coinbase_web_socket_client_async.html" title=" " alt="" coords="246,344,491,495"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="371,244,371,344,366,344,366,244"/>
+<area shape="rect" id="Node000004" href="$classcrypto__trader_1_1adaptors_1_1_database_websocket_client.html" title=" " alt="" coords="516,277,734,562"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="463,225,518,289,514,292,459,228"/>
+</map>

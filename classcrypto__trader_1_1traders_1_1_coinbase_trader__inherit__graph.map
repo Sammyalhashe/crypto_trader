@@ -1,0 +1,5 @@
+<map id="crypto_trader::traders::CoinbaseTrader" name="crypto_trader::traders::CoinbaseTrader">
+<area shape="rect" id="Node000001" title=" " alt="" coords="12,232,164,500"/>
+<area shape="rect" id="Node000002" href="$classcrypto__trader_1_1protocols_1_1_trader.html" title="Abstract base class defining the interface for a trading entity (Trader)." alt="" coords="5,5,171,184"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,199,91,232,86,232,86,199"/>
+</map>

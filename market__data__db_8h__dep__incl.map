@@ -1,0 +1,17 @@
+<map id="/home/runner/work/crypto_trader/crypto_trader/databases/market_data_db.h" name="/home/runner/work/crypto_trader/crypto_trader/databases/market_data_db.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="381,5,610,67"/>
+<area shape="rect" id="Node000002" href="$database__websocket__client_8h.html" title=" " alt="" coords="11,115,231,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="376,74,227,117,225,112,375,69"/>
+<area shape="rect" id="Node000004" href="$market__data__db_8cpp.html" title=" " alt="" coords="254,115,484,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="450,79,406,117,403,113,447,75"/>
+<area shape="rect" id="Node000005" href="$market__data__db_8t_8cpp.html" title=" " alt="" coords="508,115,737,177"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="544,75,589,113,585,117,541,79"/>
+<area shape="rect" id="Node000006" href="$_coinbase_trader_8h.html" title=" " alt="" coords="761,115,969,177"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="615,69,762,112,761,117,613,74"/>
+<area shape="rect" id="Node000003" href="$database__websocket__client_8cpp.html" title=" " alt="" coords="5,225,237,286"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="124,192,124,224,118,224,118,192"/>
+<area shape="rect" id="Node000007" href="$main_8cpp.html" title=" " alt="" coords="634,233,856,278"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="822,189,771,235,767,231,819,185"/>
+<area shape="rect" id="Node000008" href="$_coinbase_trader_8cpp.html" title=" " alt="" coords="881,225,1089,286"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="911,185,953,222,950,226,908,189"/>
+</map>

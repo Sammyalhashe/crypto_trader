@@ -1,0 +1,29 @@
+var namespacecrypto__trader_1_1common =
+[
+    [ "Action", "structcrypto__trader_1_1common_1_1_action.html", "structcrypto__trader_1_1common_1_1_action" ],
+    [ "MarketDataCoinbase", "classcrypto__trader_1_1common_1_1_market_data_coinbase.html", "classcrypto__trader_1_1common_1_1_market_data_coinbase" ],
+    [ "Math", "classcrypto__trader_1_1common_1_1_math.html", "classcrypto__trader_1_1common_1_1_math" ],
+    [ "MonitorConfig", "structcrypto__trader_1_1common_1_1_monitor_config.html", "structcrypto__trader_1_1common_1_1_monitor_config" ],
+    [ "Trade", "structcrypto__trader_1_1common_1_1_trade.html", "structcrypto__trader_1_1common_1_1_trade" ],
+    [ "TradeResult", "structcrypto__trader_1_1common_1_1_trade_result.html", "structcrypto__trader_1_1common_1_1_trade_result" ],
+    [ "Serializeable", "conceptcrypto__trader_1_1common_1_1_serializeable.html", null ],
+    [ "MarketData", "conceptcrypto__trader_1_1common_1_1_market_data.html", null ],
+    [ "SerializeableData", "conceptcrypto__trader_1_1common_1_1_serializeable_data.html", null ],
+    [ "TimestampLike", "conceptcrypto__trader_1_1common_1_1_timestamp_like.html", null ],
+    [ "Emit", "namespacecrypto__trader_1_1common.html#ad7f65cb8b5caeaa11e11405914149e80", null ],
+    [ "json", "namespacecrypto__trader_1_1common.html#a6e9db9e9990fb36bcb49bfe17a3448e1", null ],
+    [ "ReadFileOptions", "namespacecrypto__trader_1_1common.html#af5c14fd5e6d443f0f8b8f1305da9b799", [
+      [ "ALL_CONTENTS", "namespacecrypto__trader_1_1common.html#af5c14fd5e6d443f0f8b8f1305da9b799ad01d878bb2edcbca05fe010ccb4b124f", null ],
+      [ "LAST_LINE", "namespacecrypto__trader_1_1common.html#af5c14fd5e6d443f0f8b8f1305da9b799ae273595934c5b456284c5b250c3dce93", null ]
+    ] ],
+    [ "Side", "namespacecrypto__trader_1_1common.html#ad0aa4ddb55bcaf23c467e811bfec16de", [
+      [ "e_BUY", "namespacecrypto__trader_1_1common.html#ad0aa4ddb55bcaf23c467e811bfec16dea3526d548059a298e2df69e40309d07fc", null ],
+      [ "e_SELL", "namespacecrypto__trader_1_1common.html#ad0aa4ddb55bcaf23c467e811bfec16dea080fe9ab385d44168fccd35f16d3afa4", null ]
+    ] ],
+    [ "getCurrentTimestampMs", "namespacecrypto__trader_1_1common.html#a1bd6ff1fb759556129f3b9f018312530", null ],
+    [ "operator<<", "namespacecrypto__trader_1_1common.html#aef001db606dfb37faf4d6c0856046e33", null ],
+    [ "parseISO8601ToMillis", "namespacecrypto__trader_1_1common.html#a4f3d634ceb8e5059e7cc96f5d84b4bad", null ],
+    [ "readFile", "namespacecrypto__trader_1_1common.html#ac8b0ed78243259a36d130ef81cb0fffb", null ],
+    [ "readJsonFile", "namespacecrypto__trader_1_1common.html#aa416a417e8b89c3c5ce407447d14f3c0", null ],
+    [ "value_or", "namespacecrypto__trader_1_1common.html#a9e94952a721ea038137806e15536c671", null ]
+];

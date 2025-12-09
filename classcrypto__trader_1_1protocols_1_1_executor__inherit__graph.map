@@ -1,0 +1,7 @@
+<map id="crypto_trader::protocols::Executor&lt; T &gt;" name="crypto_trader::protocols::Executor&lt; T &gt;">
+<area shape="rect" id="Node000001" title="Abstract base class defining the interface for trade execution." alt="" coords="128,5,294,206"/>
+<area shape="rect" id="Node000002" href="$classcrypto__trader_1_1executors_1_1_paper_trading_executor.html" title="A concrete implementation of the Executor protocol for paper (simulated) trading." alt="" coords="5,254,201,567"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,221,161,256,156,254,168,219"/>
+<area shape="rect" id="Node000003" href="$classcrypto__trader_1_1executors_1_1_real_trading_executor.html" title=" " alt="" coords="225,299,414,522"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="254,219,282,298,277,300,249,221"/>
+</map>
