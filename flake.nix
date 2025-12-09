@@ -85,6 +85,7 @@
                 scripts.test.exec = "make test";
                 scripts.run.exec = "make run";
                 scripts.build-docs.exec = "mkdocs build"; # Add build-docs script
+                scripts.serve-docs.exec = "mkdocs serve";
               }
             ];
           };
