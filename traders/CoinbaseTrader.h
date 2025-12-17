@@ -20,6 +20,7 @@
 #include <atomic>
 #include <memory>
 #include <string_view>
+#include <thread>
 #include <variant>
 #include <vector>
 
