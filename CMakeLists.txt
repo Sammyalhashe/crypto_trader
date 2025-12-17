@@ -2,12 +2,25 @@ cmake_minimum_required(VERSION 3.10)
 
 project(crypto_trader C CXX)
 
+if(APPLE)
+    message(STATUS "FORCE ENABLING C++20 CONCURRENCY FOR MACOS")
+    # 1. Disable the "Your OS is too old for this" check
+    add_compile_definitions(_LIBCPP_DISABLE_AVAILABILITY)
+    
+    # 2. Force the headers to reveal jthread and stop_token
+    add_compile_definitions(__cpp_lib_jthread=201907L)
+    add_compile_definitions(__cpp_lib_stop_token=201907L)
+    
+    # 3. Some versions of libc++ require this for experimental features
+    add_compile_options(-fexperimental-library)
+
+    # 4. Target specific OSX version at least
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum OS X version" FORCE)
+endif()
+
 # specify the cmake standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-
-
 
 # if a conan build or not
 SET(CACHE{CONAN} BOOL "If in a Conan build" VALUE true false)
