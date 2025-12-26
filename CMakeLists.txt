@@ -75,6 +75,7 @@ enable_doxygen()
 find_package(OpenSSL REQUIRED)
 find_package(Boost CONFIG 1.87.0 COMPONENTS thread system serialization REQUIRED)
 find_package(spdlog 1.12.0 REQUIRED)
+find_package(SQLiteCpp REQUIRED)
 
 # NOTE: This may not be needed.
 if (Boost_Found)
@@ -117,9 +118,6 @@ foreach(dir ${subdirs})
     message("\tadding dir ${dir}...")
     add_subdirectory(${dir})
 endforeach()
-
-# target_link_directories(adaptors PRIVATE protocols)
-# target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
 
 # zig
 set(ZIG_LIBS "")

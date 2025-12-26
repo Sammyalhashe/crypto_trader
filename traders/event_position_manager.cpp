@@ -11,6 +11,10 @@ namespace traders {
 
 void EventPositionManager::submit_event(const Event& e)
 {
+    if (d_db_p) {
+        d_db_p->logEvent(e);
+    }
+
     d_accounting_.apply_event(e);
 
     if (e.d_type == EventType::ORDER_FILLED) {
@@ -102,6 +106,8 @@ EventPositionManager::unrealizedPnl(const std::string_view& symbol,
 void EventPositionManager::clear(const std::string_view& symbol) {}
 
 void EventPositionManager::clearAll() {}
+
+void EventPositionManager::setEventsDb(const MEDP& db) { d_db_p = db; }
 
 } // namespace traders
 } // namespace crypto_trader

@@ -1,5 +1,6 @@
 #include "common/fileutils.h"
 #include "common/jsonutils.h"
+#include "databases/market_events_db.h"
 #include "protocols/trader.h"
 #include "traders/CoinbaseTrader.h"
 #include "zig/zigmath/zigmath.h"
@@ -17,6 +18,7 @@
 #include <cstring>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <signal.h>
 #include <stdio.h>
 #include <variant>
@@ -38,11 +40,39 @@ struct SignalContext {
     std::shared_ptr<std::atomic<bool>> d_isRunning;
 };
 
+static std::optional<std::string> getDatabasePath()
+{
+    std::filesystem::path dataDir;
+#if defined __APPLE__
+    // Mac: ~/Library/Application Support/crypto_trader
+    const char *home = std::getenv("HOME");
+    dataDir = std::filesystem::path(home) / "Library" / "Application Support" /
+              "crypto_trader";
+#elif defined __linux__
+    // Linux: ~/.local/share/crypto_trader
+    const char *xdgData = std::getenv("XDG_DATA_HOME");
+    if (xdgData) {
+        dataDir = std::filesystem::path(xdgData) / "crypto_trader";
+    }
+    else {
+        dataDir = std::filesystem::path(std::getenv("HOME")) / ".local" /
+                  "share" / "crypto_trader";
+    }
+#else
+    SPDLOG_ERROR("OS not supported");
+    return std::null_opt;
+#endif
+    // Ensure the directory exists
+    std::filesystem::create_directories(dataDir);
+
+    return (dataDir / "events.db").string();
+}
+
 int main(int argc, char *argv[])
 {
     spdlog::set_pattern("[%^%l%$] [source %s] [function %!] [line %#] %v");
     SPDLOG_INFO("Result from zig: {}", add(1, 2));
-    // SPDLOG_INFO();
+
     using namespace crypto_trader;
 
     SignalContext context;
@@ -67,6 +97,23 @@ int main(int argc, char *argv[])
     boost::thread fsRunLoopThread{
         boost::bind(&common::createEventStream, monitorConfig)};
 #endif // TARGET_OS_MAC
+
+    auto                                       eventsDb = getDatabasePath();
+    std::shared_ptr<databases::MarketEventsDb> eventsDb_p;
+    if (!eventsDb.has_value()) {
+        SPDLOG_WARN("Could not determine database path. Will proceed with no "
+                    "persistence...");
+    }
+    else {
+        SPDLOG_INFO("Creating MarketEventsDb at path {}...", eventsDb.value());
+        eventsDb_p =
+            std::make_shared<databases::MarketEventsDb>(eventsDb.value());
+        SPDLOG_INFO("Initializing market events database...");
+        if (!eventsDb_p->init()) {
+            SPDLOG_ERROR("Failed to initialize market events database...");
+            return -1;
+        }
+    }
 
     nlohmann::json jsonFileContents;
     SPDLOG_INFO("argc {}", argc);
@@ -183,6 +230,11 @@ int main(int argc, char *argv[])
                                       "defaulting to SYNC");
                         coinbaseTraderConfig.setClientType(
                             traders::CoinbaseTraderConfig::ClientType::SYNC);
+                    }
+
+                    if (eventsDb_p) {
+                        SPDLOG_INFO("Attaching events db to coinbase trader");
+                        coinbaseTraderConfig.setEventsDb(eventsDb_p);
                     }
 
                     traders.push_back(

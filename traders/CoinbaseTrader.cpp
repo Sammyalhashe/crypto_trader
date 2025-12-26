@@ -102,6 +102,7 @@ void buildCoinbaseWebsocketMessage(nlohmann::json             *message,
 } // unnamed namespace
 
 // class CoinbaseTraderConfig
+// CREATORS
 CoinbaseTraderConfig::CoinbaseTraderConfig(
     const std::shared_ptr<std::atomic_bool>& isRunning, bool paperTrading)
 : d_channels()
@@ -113,6 +114,7 @@ CoinbaseTraderConfig::CoinbaseTraderConfig(
 , d_clientType(CoinbaseTraderConfig::ClientType::SYNC)
 , d_isRunning(isRunning)
 , d_paperTrading(paperTrading)
+, d_db_p()
 {
 }
 
@@ -175,6 +177,11 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 , d_lastSequenceNumbers()
 , d_positionManager()
 {
+
+    if (d_config.eventsDb()) {
+        d_positionManager.setEventsDb(d_config.eventsDb());
+    }
+
     switch (d_config.strategy()) {
     case strategies::TradingStrategy::e_HODL: {
         initWebsocketClient();

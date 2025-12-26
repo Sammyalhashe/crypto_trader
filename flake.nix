@@ -50,6 +50,7 @@
                   cmake-language-server
                   doxygen
                   graphviz
+                  direnv
 
                   # build dependencies
                   boost-build
@@ -58,6 +59,8 @@
                   nlohmann_json
                   boost
                   gtest
+                  sqlitecpp
+                  sqlite
                 ];
 
                 enterShell = ''
