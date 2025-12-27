@@ -78,6 +78,8 @@
                 '';
                 scripts.build.exec = "make build";
                 scripts.bo.exec = "make bo";
+                scripts.fbuild.exec = "make fast-build";
+                scripts.fbo.exec = "make fbo";
                 scripts.clean.exec = "make clean";
                 scripts.test.exec = "make test";
                 scripts.run.exec = "make run";

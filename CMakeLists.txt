@@ -15,7 +15,7 @@ if(APPLE)
     add_compile_options(-fexperimental-library)
 
     # 4. Target specific OSX version at least
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum OS X version" FORCE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum OS X version" FORCE)
 endif()
 
 # specify the cmake standard
@@ -29,7 +29,8 @@ SET(CACHE{CONAN} BOOL "If in a Conan build" VALUE true false)
 find_program(CCACHE ccache)
 if(CCACHE)
     message("using ccache....")
-    set(CMAKE_CXX_COMPILER_LAUNCHERS ${CCACHE})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
 else()
     message("ccache not found")
 endif()

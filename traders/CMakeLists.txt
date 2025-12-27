@@ -3,6 +3,12 @@ set(TRADERS_SRC CoinbaseTrader.cpp event_position_manager.cpp)
 
 add_library(traders STATIC ${TRADERS_H} ${TRADERS_SRC})
 
+target_precompile_headers(traders
+                          PRIVATE
+                          <spdlog/spdlog.h>
+                          <boost/asio.hpp>
+                          <nlohmann/json.hpp>)
+
 if(CONAN)
     target_link_libraries(traders
                           PRIVATE
