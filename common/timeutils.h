@@ -10,6 +10,14 @@ namespace crypto_trader {
 namespace common {
 
 // Get current time as milliseconds since Unix epoch
+inline int64_t getCurrentTimestampMs()
+{
+
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
+
 template <common::MarketData T>
 T::Timestamp getCurrentTimestampMs()
 {
@@ -18,7 +26,7 @@ T::Timestamp getCurrentTimestampMs()
         .count();
 }
 
-int64_t parseISO8601ToMillis(const std::string& iso8601)
+inline int64_t parseISO8601ToMillis(const std::string& iso8601)
 {
     int year, month, day, hour, minute, second, micros = 0;
 

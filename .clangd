@@ -1,2 +1,12 @@
 CompileFlags:
-  Add: [-std=c++20]
+  Add:
+    - "-std=c++20"
+    - "-fvisibility=hidden"
+    - -DFMT_ENFORCE_COMPILE_STRING=0
+    - -DSPDLOG_NO_SOURCE_LOC
+    - Wno-invalid-constexpr
+  CompilationDatabase: .
+
+Diagnostics:
+  Suppress:
+    - "include-cleaner"

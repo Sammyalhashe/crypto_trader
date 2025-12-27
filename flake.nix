@@ -44,6 +44,7 @@
                   ccache
                   gcc
                   clang
+                  clang-tools
                   ninja
                   zig
                   zls
