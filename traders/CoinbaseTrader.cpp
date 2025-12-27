@@ -215,9 +215,9 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
     default: {
         std::stringstream ss;
         ss << d_config.strategy();
-        spdlog::error("CoinbaseTrader was configured with "
-                      "unknown trading strategy: {}",
-                      ss.str());
+        SPDLOG_ERROR("CoinbaseTrader was configured with "
+                     "unknown trading strategy: {}",
+                     ss.str());
         assert(false);
     } break;
     }
