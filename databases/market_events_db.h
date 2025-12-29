@@ -1,6 +1,7 @@
 #ifndef INCLUDED_MARKET_EVENTS_DB
 #define INCLUDED_MARKET_EVENTS_DB
 
+#include "../common/Accounting.h"
 #include "../common/Event.h"
 
 #include <SQLiteCpp/SQLiteCpp.h>
@@ -32,8 +33,9 @@ class MarketEventsDb {
 
   public:
     // TYPES
-    using MarketEventsDbPtr = std::shared_ptr<MarketEventsDb>;
-    using Events            = std::vector<Event>;
+    using MarketEventsDbPtr  = std::shared_ptr<MarketEventsDb>;
+    using Events             = std::vector<Event>;
+    using SymbolPositionsVec = std::vector<SymbolPositions>;
 
     // CREATORS
     explicit MarketEventsDb(const std::string& dbPath);
@@ -77,6 +79,35 @@ class MarketEventsDb {
         const std::string&            symbol,
         int64_t                       start_ts,
         const std::optional<int64_t>& end_ts = std::nullopt) noexcept(true);
+
+    /**
+     * @brief Write a single snapshot synchronously
+     * @param snapshot
+     * @return `bool` on success
+     */
+    bool logSnapshot(const SymbolPositions& snapshot) noexcept(true);
+
+    /**
+     * @brief Write a group of snapshots synchronously in a batch
+     * @param snapshots
+     * @return `bool` on success
+     */
+    bool
+    logSnapshots(const std::vector<SymbolPositions>& snapshots) noexcept(true);
+
+    /**
+     * @brief get latest snapshot for a given `symbol`
+     * @param symbol
+     * @return `std::optional<common::SymbolPositions>`
+     */
+    std::optional<SymbolPositions>
+    getLatestSnapshot(const std::string& symbol) noexcept(true);
+
+    /**
+     * @brief get latest snapshot for all symbols
+     * @return `std::optional<common::SymbolPositions>`
+     */
+    std::optional<SymbolPositionsVec> getLatestSnapshots() noexcept(true);
 
   private:
     // PRIVATE MANIPULATORS

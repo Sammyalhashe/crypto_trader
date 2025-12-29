@@ -26,6 +26,7 @@ void Accounting::apply_event(const Event& e)
             symbolPositions.d_average_price =
                 (current_total_value + new_order_value) /
                 symbolPositions.d_total_qty;
+            symbolPositions.d_timestamp = e.d_timestamp;
         }
         else { // Sell
             double qty_to_sell = -e.d_qty;
@@ -60,6 +61,7 @@ void Accounting::apply_event(const Event& e)
                 symbolPositions.d_realizedPnl +=
                     (e.d_price - position.d_price) * quantity_to_sell;
                 symbolPositions.d_total_qty -= quantity_to_sell;
+                symbolPositions.d_timestamp = e.d_timestamp;
 
                 bool shouldRemove = crypto_trader::common::Math::isLessOrEqual(
                     position.d_total_qty, 0.0);
@@ -88,6 +90,7 @@ void Accounting::apply_event(const Event& e)
             else {
                 symbolPositions.d_average_price = 0.0;
                 symbolPositions.d_total_qty     = 0.0;
+                symbolPositions.d_timestamp     = e.d_timestamp;
             }
         }
     }

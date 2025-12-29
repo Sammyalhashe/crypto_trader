@@ -1,5 +1,7 @@
 #include "market_events_db.h"
+#include "statements.h"
 
+#include "../common/Accounting.h"
 #include "../common/Event.h"
 #include "../common/timeutils.h"
 
@@ -10,7 +12,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <algorithm>
 #include <chrono>
 #include <optional>
 
@@ -19,34 +20,6 @@
 
 namespace crypto_trader {
 namespace databases {
-
-// STATIC DATA
-static constexpr const char *CREATE_EVENTS_TABLE = R"(
-CREATE TABLE IF NOT EXISTS events (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    symbol      TEXT NOT NULL,
-    qty         REAL NOT NULL,
-    price       REAL NOT NULL,
-    type        INTEGER NOT NULL,
-    payload     TEXT,
-    timestamp   INTEGER NOT NULL
-);
-)";
-
-static constexpr const char *CREATE_INDEX_SYMBOL_TS = R"(
-CREATE INDEX IF NOT EXISTS idx_events_symbol_ts 
-ON events(symbol, timestamp);
-)";
-
-static constexpr const char *CREATE_INDEX_TYPE_TS = R"(
-CREATE INDEX IF NOT EXIST idx_events_type_ts
-ON events(type, timestamp);
-)";
-
-static constexpr const char *CREATE_INDEX_SYMBOL_TYPE_TS = R"(
-CREATE INDEX IF NOT EXIST idx_events_symbol_type_ts
-ON events(symbol, type, timestamp);
-)";
 
 // MarketEventsDb
 
@@ -156,7 +129,6 @@ std::optional<MarketEventsDb::Events> MarketEventsDb::getEventsBySymbol(
     int64_t                       start_ts,
     const std::optional<int64_t>& end_ts) noexcept(true)
 {
-    // pass
     SQLite::Statement query(d_db,
                             "SELECT id, symbol, qty, price, type, payload, "
                             "timestamp FROM events WHERE timestamp >= ? AND "
@@ -195,6 +167,180 @@ std::optional<MarketEventsDb::Events> MarketEventsDb::getEventsBySymbol(
     return events;
 }
 
+bool MarketEventsDb::logSnapshot(const SymbolPositions& snapshot) noexcept(
+    true)
+{
+    return logSnapshots({snapshot});
+}
+
+bool MarketEventsDb::logSnapshots(
+    const std::vector<SymbolPositions>& snapshots) noexcept(true)
+{
+
+    if (snapshots.empty())
+        return true;
+
+    // prepare the statement
+    SQLite::Statement query(
+        d_db,
+        "INSERT INTO position_snapshots (symbol, total_qty, average_price, "
+        "realized_pnl, fifo, timestamp, metadata)"
+        "VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+    SQLite::Statement query2(
+        d_db,
+        "INSERT INTO snapshot_lots (snapshot_id, total_qty, price, timestamp) "
+        "VALUES (?, ?, ?, ?)");
+
+    SQLite::Transaction transaction(d_db);
+
+    try {
+        for (const auto& snapshot : snapshots) {
+            query.reset();
+            // bind the values
+            query.bind(1, snapshot.d_symbol);
+            query.bind(2, snapshot.d_total_qty);
+            query.bind(3, snapshot.d_average_price);
+            query.bind(4, snapshot.d_realizedPnl);
+            query.bind(5, snapshot.d_fifo);
+            query.bind(6, snapshot.d_timestamp);
+            query.bind(7, snapshot.d_metadata.dump());
+
+            // execute
+            query.exec();
+
+            int64_t snapshot_id = d_db.getLastInsertRowid();
+
+            for (const auto& lot : snapshot.d_positions_in_time) {
+                query2.reset();
+                query2.bind(1, snapshot_id);
+                query2.bind(2, lot.d_total_qty);
+                query2.bind(3, lot.d_price);
+                query2.bind(4, lot.d_timestamp);
+
+                query2.exec();
+            }
+        }
+        transaction.commit();
+    }
+    catch (const SQLite::Exception& e) {
+        SPDLOG_ERROR("Batch insert failed: {}", e.getErrorStr());
+        return false;
+    }
+    return true;
+}
+
+std::optional<SymbolPositions>
+MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
+{
+    SQLite::Statement query(d_db,
+                            "SELECT id, symbol, total_qty, average_price, "
+                            "realized_pnl, fifo, timestamp, "
+                            "metadata FROM position_snapshots "
+                            "WHERE symbol = ? "
+                            "ORDER BY timestamp DESC "
+                            "LIMIT 1");
+
+    try {
+        query.bind(1, symbol);
+        if (query.executeStep()) {
+            int64_t         snapshot_id = query.getColumn(0).getInt64();
+            SymbolPositions snapshot;
+            snapshot.d_symbol        = query.getColumn(1).getString();
+            snapshot.d_total_qty     = query.getColumn(2).getDouble();
+            snapshot.d_average_price = query.getColumn(3).getDouble();
+            snapshot.d_realizedPnl   = query.getColumn(4).getDouble();
+            snapshot.d_fifo          = query.getColumn(5).getInt();
+            snapshot.d_timestamp     = query.getColumn(6).getInt64();
+            snapshot.d_metadata =
+                nlohmann::json::parse(query.getColumn(7).getString());
+
+            SQLite::Statement innerQuery(
+                d_db,
+                "SELECT total_qty, price, timestamp FROM snapshot_lots WHERE "
+                "snapshot_id = ? ORDER BY timestamp ASC");
+
+            innerQuery.bind(1, snapshot_id);
+
+            std::list<Position> positions;
+            while (innerQuery.executeStep()) {
+                positions.emplace_back();
+                auto& p       = positions.back();
+                p.d_total_qty = innerQuery.getColumn(0).getDouble();
+                p.d_price     = innerQuery.getColumn(1).getDouble();
+                p.d_timestamp = innerQuery.getColumn(2).getInt();
+            }
+
+            snapshot.d_positions_in_time = std::move(positions);
+
+            return snapshot;
+        }
+        return std::nullopt;
+    }
+    catch (const SQLite::Exception& e) {
+        SPDLOG_ERROR("Failed to execute statement: {} with error: {}",
+                     query.getExpandedSQL(),
+                     e.getErrorStr());
+        return std::nullopt;
+    }
+}
+
+std::optional<MarketEventsDb::SymbolPositionsVec>
+MarketEventsDb::getLatestSnapshots() noexcept(true)
+{
+    SQLite::Statement query(
+        d_db,
+        "SELECT id, symbol, total_qty, average_price, "
+        "realized_pnl, timestamp, "
+        "metadata FROM position_snapshots ps1 "
+        "WHERE timestamp = "
+        "(SELECT MAX(timestamp) FROM position_snapshots ps2 "
+        "WHERE ps1.symbol = ps2.symbol)");
+
+    SymbolPositionsVec snapshots;
+    try {
+        while (query.executeStep()) {
+            int64_t         snapshot_id = query.getColumn(0).getInt64();
+            SymbolPositions snapshot;
+            snapshot.d_symbol        = query.getColumn(1).getString();
+            snapshot.d_total_qty     = query.getColumn(2).getDouble();
+            snapshot.d_average_price = query.getColumn(3).getDouble();
+            snapshot.d_realizedPnl   = query.getColumn(4).getDouble();
+            snapshot.d_timestamp     = query.getColumn(5).getInt64();
+            snapshot.d_metadata =
+                nlohmann::json::parse(query.getColumn(6).getString());
+
+            SQLite::Statement innerQuery(
+                d_db,
+                "SELECT total_qty, price, timestamp FROM snapshot_lots WHERE "
+                "snapshot_id = ? ORDER BY timestamp ASC");
+
+            innerQuery.bind(1, snapshot_id);
+
+            std::list<Position> positions;
+            while (innerQuery.executeStep()) {
+                positions.emplace_back();
+                auto& p       = positions.back();
+                p.d_total_qty = innerQuery.getColumn(0).getDouble();
+                p.d_price     = innerQuery.getColumn(1).getDouble();
+                p.d_timestamp = innerQuery.getColumn(2).getInt();
+            }
+
+            snapshot.d_positions_in_time = std::move(positions);
+
+            snapshots.push_back(std::move(snapshot));
+        }
+    }
+    catch (const SQLite::Exception& e) {
+        SPDLOG_ERROR("Failed to execute statement: {} with error: {}",
+                     query.getExpandedSQL(),
+                     e.getErrorStr());
+        return std::nullopt;
+    }
+
+    return snapshots;
+}
+
 // PRIVATE MANIPULATORS
 bool MarketEventsDb::runMigrations() noexcept(true)
 {
@@ -210,10 +356,22 @@ bool MarketEventsDb::runMigrations() noexcept(true)
         SPDLOG_INFO("Migrating to version 1: Creating events table...");
         // execute the schema strings
         try {
+            SPDLOG_INFO("Creating events table...");
             d_db.exec(CREATE_EVENTS_TABLE);
+            SPDLOG_INFO("Creating symbol_ts index...");
             d_db.exec(CREATE_INDEX_SYMBOL_TS);
+            SPDLOG_INFO("Creating type_ts index...");
             d_db.exec(CREATE_INDEX_TYPE_TS);
+            SPDLOG_INFO("Creating symbol_type_ts index...");
             d_db.exec(CREATE_INDEX_SYMBOL_TYPE_TS);
+            SPDLOG_INFO("Creating snapshots table...");
+            d_db.exec(CREATE_SNAPSHOTS_TABLE);
+            SPDLOG_INFO("Creating snapshots index...");
+            d_db.exec(CREATE_INDEX_SNAPSHOTS);
+            SPDLOG_INFO("Creating snapshots_lots tables...");
+            d_db.exec(CREATE_SNAPSHOT_LOTS_TABLE);
+            SPDLOG_INFO("Creating snapshot_lots index...");
+            d_db.exec(CREATE_INDEX_SNAPSHOT_LOTS);
         }
         catch (const SQLite::Exception& e) {
             SPDLOG_ERROR(
@@ -288,7 +446,7 @@ bool MarketEventsDb::setupPerformance() noexcept(true)
 
 bool MarketEventsDb::logEventSync(const Event& event)
 {
-    return logEvent({event});
+    return logEvents({event});
 }
 
 bool MarketEventsDb::logEventAsync(const Event& event)

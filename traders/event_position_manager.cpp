@@ -1,10 +1,15 @@
 #include "event_position_manager.h"
+
+#include "../common/Accounting.h"
 #include "../common/math.h"
+#include "../common/timeutils.h"
 
 #include <algorithm>
 #include <optional>
+#include <ranges>
 #include <spdlog/spdlog.h>
 #include <string_view>
+#include <vector>
 
 namespace crypto_trader {
 namespace traders {
@@ -34,6 +39,13 @@ void EventPositionManager::submit_event(const Event& e)
         for (auto observer : d_observers) {
             observer->on_position_update(e.d_symbol, it->second.d_total_qty);
         }
+    }
+
+    auto now = common::getCurrentTimestampMs();
+
+    if (now - d_lastSnapshotTime >= d_snapshotInterval) {
+        takeSnapshot();
+        d_lastSnapshotTime = now;
     }
 }
 
@@ -108,6 +120,33 @@ void EventPositionManager::clear(const std::string_view& symbol) {}
 void EventPositionManager::clearAll() {}
 
 void EventPositionManager::setEventsDb(const MEDP& db) { d_db_p = db; }
+
+// PRIVATE METHODS
+void EventPositionManager::takeSnapshot() const
+{
+    if (!d_db_p)
+        return;
+
+    const auto& snapshot = d_accounting_.snapshot();
+
+    if (snapshot.empty()) {
+        SPDLOG_DEBUG("No positions to snapshot");
+        return;
+    }
+    int64_t timestamp = common::getCurrentTimestampMs();
+
+    std::vector<SymbolPositions> symbolPositions =
+        snapshot | std::views::values | std::ranges::to<std::vector>();
+
+    if (d_db_p->logSnapshots(symbolPositions)) {
+        SPDLOG_DEBUG("Saved {} positions at timestamp {}",
+                     symbolPositions.size(),
+                     timestamp);
+    }
+    else {
+        SPDLOG_ERROR("Failed to take positions snapshot");
+    }
+}
 
 } // namespace traders
 } // namespace crypto_trader

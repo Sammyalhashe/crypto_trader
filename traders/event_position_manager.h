@@ -3,8 +3,11 @@
 
 #include "../common/Accounting.h"
 #include "../common/Event.h"
+#include "../common/positions_snapshots.h"
 #include "../databases/market_events_db.h"
 #include "../protocols/observer.h"
+
+#include <cstdint>
 #include <optional>
 #include <string_view>
 #include <vector>
@@ -20,6 +23,8 @@ class EventPositionManager {
     Accounting                         d_accounting_;
     std::vector<protocols::Observer *> d_observers;
     MEDP                               d_db_p;
+    int64_t                            d_lastSnapshotTime{0};
+    int64_t                            d_snapshotInterval{60000};
 
   public:
     EventPositionManager() = default;
@@ -51,6 +56,17 @@ class EventPositionManager {
     void clearAll();
 
     void setEventsDb(const MEDP& db);
+
+    // load a snapshot directly (avoiding event replay)
+    void loadSnapshot(const common::PositionSnapshot& snapshot);
+
+  private:
+    // PRIVATE METHODS
+    /**
+     * @brief takes a snapshot from the internal accounting class and saves it
+     * in the database
+     */
+    void takeSnapshot() const;
 };
 
 } // namespace traders
