@@ -24,8 +24,8 @@ TEST(AccountingTest, FIFOSellLogic)
     accounting.apply_event(buy2);
 
     auto snapshot = accounting.snapshot();
-    EXPECT_NEAR(snapshot.at("BTC-USD").d_total_qty, 15.0, 1e-9);
-    EXPECT_NEAR(snapshot.at("BTC-USD").d_average_price,
+    EXPECT_NEAR(snapshot.at("BTC-USD").d_totalQty, 15.0, 1e-9);
+    EXPECT_NEAR(snapshot.at("BTC-USD").d_averagePrice,
                 106.666,
                 1e-3); // (10*100 + 5*120)/15
 
@@ -38,8 +38,8 @@ TEST(AccountingTest, FIFOSellLogic)
     accounting.apply_event(sell);
 
     snapshot = accounting.snapshot();
-    EXPECT_NEAR(snapshot.at("BTC-USD").d_total_qty, 3.0, 1e-9); // 15 - 12
-    EXPECT_NEAR(snapshot.at("BTC-USD").d_average_price,
+    EXPECT_NEAR(snapshot.at("BTC-USD").d_totalQty, 3.0, 1e-9); // 15 - 12
+    EXPECT_NEAR(snapshot.at("BTC-USD").d_averagePrice,
                 120.0,
                 1e-9); // Only second lot remains
 
@@ -84,10 +84,10 @@ TEST(AccountingTest, ReplayEvents)
     ASSERT_EQ(snapshot.size(), 2);
 
     auto btc_position = snapshot.at("BTC-USD");
-    EXPECT_NEAR(btc_position.d_total_qty, 1.3, 1e-9);
-    EXPECT_NEAR(btc_position.d_average_price, 50769.230769230766, 1e-6);
+    EXPECT_NEAR(btc_position.d_totalQty, 1.3, 1e-9);
+    EXPECT_NEAR(btc_position.d_averagePrice, 50769.230769230766, 1e-6);
 
     auto eth_position = snapshot.at("ETH-USD");
-    EXPECT_NEAR(eth_position.d_total_qty, 10.0, 1e-9);
-    EXPECT_NEAR(eth_position.d_average_price, 4000.0, 1e-9);
+    EXPECT_NEAR(eth_position.d_totalQty, 10.0, 1e-9);
+    EXPECT_NEAR(eth_position.d_averagePrice, 4000.0, 1e-9);
 }

@@ -7,92 +7,92 @@
 namespace crypto_trader {
 namespace databases {
 
-struct insert_event_params {
-    std::string symbol;
-    double qty;
-    double price;
-    int type;
-    std::string payload;
-    int64_t timestamp;
+struct InsertEventParams {
+    std::string d_symbol;
+    double d_qty;
+    double d_price;
+    int d_type;
+    std::string d_payload;
+    int64_t d_timestamp;
 };
 
-inline void bind(SQLite::Statement& query, const insert_event_params& params) {
-    query.bind(":symbol", params.symbol);
-    query.bind(":qty", params.qty);
-    query.bind(":price", params.price);
-    query.bind(":type", params.type);
-    query.bind(":payload", params.payload);
-    query.bind(":timestamp", params.timestamp);
+inline void bind(SQLite::Statement& query, const InsertEventParams& params) {
+    query.bind(":symbol", params.d_symbol);
+    query.bind(":qty", params.d_qty);
+    query.bind(":price", params.d_price);
+    query.bind(":type", params.d_type);
+    query.bind(":payload", params.d_payload);
+    query.bind(":timestamp", params.d_timestamp);
 }
 
-struct get_events_since_params {
-    int64_t timestamp;
+struct GetEventsSinceParams {
+    int64_t d_timestamp;
 };
 
-inline void bind(SQLite::Statement& query, const get_events_since_params& params) {
-    query.bind(":timestamp", params.timestamp);
+inline void bind(SQLite::Statement& query, const GetEventsSinceParams& params) {
+    query.bind(":timestamp", params.d_timestamp);
 }
 
-struct get_events_by_symbol_params {
-    int64_t start_ts;
-    int64_t end_ts;
-    std::string symbol;
+struct GetEventsBySymbolParams {
+    int64_t d_startTs;
+    int64_t d_endTs;
+    std::string d_symbol;
 };
 
-inline void bind(SQLite::Statement& query, const get_events_by_symbol_params& params) {
-    query.bind(":start_ts", params.start_ts);
-    query.bind(":end_ts", params.end_ts);
-    query.bind(":symbol", params.symbol);
+inline void bind(SQLite::Statement& query, const GetEventsBySymbolParams& params) {
+    query.bind(":start_ts", params.d_startTs);
+    query.bind(":end_ts", params.d_endTs);
+    query.bind(":symbol", params.d_symbol);
 }
 
-struct insert_position_snapshot_params {
-    std::string symbol;
-    double total_qty;
-    double average_price;
-    double realized_pnl;
-    bool fifo;
-    int64_t timestamp;
-    std::string metadata;
+struct InsertPositionSnapshotParams {
+    std::string d_symbol;
+    double d_totalQty;
+    double d_averagePrice;
+    double d_realizedPnl;
+    bool d_fifo;
+    int64_t d_timestamp;
+    std::string d_metadata;
 };
 
-inline void bind(SQLite::Statement& query, const insert_position_snapshot_params& params) {
-    query.bind(":symbol", params.symbol);
-    query.bind(":total_qty", params.total_qty);
-    query.bind(":average_price", params.average_price);
-    query.bind(":realized_pnl", params.realized_pnl);
-    query.bind(":fifo", params.fifo);
-    query.bind(":timestamp", params.timestamp);
-    query.bind(":metadata", params.metadata);
+inline void bind(SQLite::Statement& query, const InsertPositionSnapshotParams& params) {
+    query.bind(":symbol", params.d_symbol);
+    query.bind(":total_qty", params.d_totalQty);
+    query.bind(":average_price", params.d_averagePrice);
+    query.bind(":realized_pnl", params.d_realizedPnl);
+    query.bind(":fifo", params.d_fifo);
+    query.bind(":timestamp", params.d_timestamp);
+    query.bind(":metadata", params.d_metadata);
 }
 
-struct insert_snapshot_lot_params {
-    int64_t snapshot_id;
-    double total_qty;
-    double price;
-    int64_t timestamp;
+struct InsertSnapshotLotParams {
+    int64_t d_snapshotId;
+    double d_totalQty;
+    double d_price;
+    int64_t d_timestamp;
 };
 
-inline void bind(SQLite::Statement& query, const insert_snapshot_lot_params& params) {
-    query.bind(":snapshot_id", params.snapshot_id);
-    query.bind(":total_qty", params.total_qty);
-    query.bind(":price", params.price);
-    query.bind(":timestamp", params.timestamp);
+inline void bind(SQLite::Statement& query, const InsertSnapshotLotParams& params) {
+    query.bind(":snapshot_id", params.d_snapshotId);
+    query.bind(":total_qty", params.d_totalQty);
+    query.bind(":price", params.d_price);
+    query.bind(":timestamp", params.d_timestamp);
 }
 
-struct get_latest_snapshot_params {
-    std::string symbol;
+struct GetLatestSnapshotParams {
+    std::string d_symbol;
 };
 
-inline void bind(SQLite::Statement& query, const get_latest_snapshot_params& params) {
-    query.bind(":symbol", params.symbol);
+inline void bind(SQLite::Statement& query, const GetLatestSnapshotParams& params) {
+    query.bind(":symbol", params.d_symbol);
 }
 
-struct get_snapshot_lots_params {
-    int64_t snapshot_id;
+struct GetSnapshotLotsParams {
+    int64_t d_snapshotId;
 };
 
-inline void bind(SQLite::Statement& query, const get_snapshot_lots_params& params) {
-    query.bind(":snapshot_id", params.snapshot_id);
+inline void bind(SQLite::Statement& query, const GetSnapshotLotsParams& params) {
+    query.bind(":snapshot_id", params.d_snapshotId);
 }
 
 } // namespace databases

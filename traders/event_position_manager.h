@@ -19,7 +19,7 @@ class EventPositionManager {
     // TYPES
     using MEDP = databases::MarketEventsDb::MarketEventsDbPtr;
     // DATA
-    common::Accounting                 d_accounting_;
+    common::Accounting                 d_accounting;
     std::vector<protocols::Observer *> d_observers;
     MEDP                               d_db_p;
     int64_t                            d_lastSnapshotTime{0};

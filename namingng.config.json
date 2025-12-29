@@ -1,7 +1,8 @@
 {
-    "class": "^[A-Z][a-zA-Z0-9]*$",
-    "struct": "^[A-Z][a-zA-Z0-9]*$",
-    "function": "^[a-z][a-zA-Z0-9]*$",
-    "variable": "^[a-z][a-zA-Z0-9]*$",
-    "private": "^d_[a-z][a-zA-Z0-9]*(_p)?$"
+    "script": [
+        {"rule": "struct, class", "pattern": "[A-Z][a-zA-Z0-9]*", "name": "PascalCase"},
+        {"rule": "function, variable", "pattern": "[a-z][a-zA-Z0-9]*", "name": "camelCase"},
+        {"rule": "private-member, protected-member, public-member", "pattern": "d_[a-z][a-zA-Z0-9]*", "name": "d_camelCase"},
+        {"rule": "private-member, protected-member, public-member", "pattern": "d_[a-z][a-zA-Z0-9]*_p", "name": "d_camelCase_p", "suffix": "*_p"}
+    ]
 }

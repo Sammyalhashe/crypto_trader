@@ -70,12 +70,18 @@ include(cmake/StaticAnalyzers.cmake)
 
 # doxygen support
 include(cmake/Doxygen.cmake)
+add_custom_target(docs
+    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_CONFIG}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating Doxygen documentation..."
+    VERBATIM
+)
+
 add_custom_target(style-check
     COMMAND python3 ${CMAKE_SOURCE_DIR}/style_checker.py adaptors common databases executors protocols strategies traders
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running style checker..."
 )
-
 # project dependencies below
 find_package(OpenSSL REQUIRED)
 find_package(Boost CONFIG 1.87.0 COMPONENTS thread system serialization REQUIRED)

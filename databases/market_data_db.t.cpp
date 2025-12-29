@@ -11,27 +11,27 @@ TEST(MarketDataTest, add_and_get_data)
 {
     databases::MarketDataDB<common::MarketDataCoinbase> database;
 
-    common::MarketDataCoinbase data_1;
-    data_1.d_symbol   = "BTC";
-    data_1.d_price    = 1000.00;
-    data_1.d_sequence = 5;
+    common::MarketDataCoinbase data1;
+    data1.d_symbol   = "BTC";
+    data1.d_price    = 1000.00;
+    data1.d_sequence = 5;
 
-    common::MarketDataCoinbase data_2;
-    data_2.d_symbol   = "BTC";
-    data_2.d_price    = 1002.00;
-    data_2.d_sequence = 10;
+    common::MarketDataCoinbase data2;
+    data2.d_symbol   = "BTC";
+    data2.d_price    = 1002.00;
+    data2.d_sequence = 10;
 
-    common::MarketDataCoinbase data_3;
-    data_3.d_symbol   = "ETH";
-    data_3.d_price    = 1005.00;
-    data_3.d_sequence = 7;
+    common::MarketDataCoinbase data3;
+    data3.d_symbol   = "ETH";
+    data3.d_price    = 1005.00;
+    data3.d_sequence = 7;
 
-    database.add_data(data_1.d_symbol, data_1);
-    database.add_data(data_2.d_symbol, data_2);
-    database.add_data(data_3.d_symbol, data_3);
+    database.add_data(data1.d_symbol, data1);
+    database.add_data(data2.d_symbol, data2);
+    database.add_data(data3.d_symbol, data3);
 
     // inclusive on both ends
-    auto vec(database.get_data(data_1.d_symbol, 5, 5));
+    auto vec(database.get_data(data1.d_symbol, 5, 5));
 
     EXPECT_EQ(vec.size(), 1);
     EXPECT_EQ(vec[0].d_symbol, "BTC");
@@ -39,7 +39,7 @@ TEST(MarketDataTest, add_and_get_data)
     EXPECT_EQ(vec[0].d_sequence, 5);
 
     // gets multiple
-    auto vec_2(database.get_data(data_1.d_symbol, 5, 10));
+    auto vec_2(database.get_data(data1.d_symbol, 5, 10));
 
     EXPECT_EQ(vec_2.size(), 2);
     EXPECT_EQ(vec_2[0].d_symbol, "BTC");
@@ -51,7 +51,7 @@ TEST(MarketDataTest, add_and_get_data)
     EXPECT_EQ(vec_2[1].d_sequence, 10);
 
     // excludes other d_symbols
-    auto vec_3(database.get_data(data_3.d_symbol, 5, 10));
+    auto vec_3(database.get_data(data3.d_symbol, 5, 10));
 
     EXPECT_EQ(vec_3.size(), 1);
     EXPECT_EQ(vec_3[0].d_symbol, "ETH");
@@ -62,24 +62,24 @@ TEST(MarketDataTest, add_and_get_data)
 TEST(MarketDataTest, save_and_load_data)
 {
     databases::MarketDataDB<common::MarketDataCoinbase> database;
-    common::MarketDataCoinbase                          data_1;
-    data_1.d_symbol   = "BTC";
-    data_1.d_price    = 1000.00;
-    data_1.d_sequence = 5;
+    common::MarketDataCoinbase                          data1;
+    data1.d_symbol   = "BTC";
+    data1.d_price    = 1000.00;
+    data1.d_sequence = 5;
 
-    common::MarketDataCoinbase data_2;
-    data_2.d_symbol   = "BTC";
-    data_2.d_price    = 1002.00;
-    data_2.d_sequence = 10;
+    common::MarketDataCoinbase data2;
+    data2.d_symbol   = "BTC";
+    data2.d_price    = 1002.00;
+    data2.d_sequence = 10;
 
-    common::MarketDataCoinbase data_3;
-    data_3.d_symbol   = "ETH";
-    data_3.d_price    = 1005.00;
-    data_3.d_sequence = 7;
+    common::MarketDataCoinbase data3;
+    data3.d_symbol   = "ETH";
+    data3.d_price    = 1005.00;
+    data3.d_sequence = 7;
 
-    database.add_data(data_1.d_symbol, data_1);
-    database.add_data(data_2.d_symbol, data_2);
-    database.add_data(data_3.d_symbol, data_3);
+    database.add_data(data1.d_symbol, data1);
+    database.add_data(data2.d_symbol, data2);
+    database.add_data(data3.d_symbol, data3);
 
     std::string file_name = "test.db";
 
@@ -87,13 +87,13 @@ TEST(MarketDataTest, save_and_load_data)
     bool save_result = database.save(file_name);
     EXPECT_TRUE(save_result);
 
-    databases::MarketDataDB<common::MarketDataCoinbase> loaded_database;
+    databases::MarketDataDB<common::MarketDataCoinbase> loadedDatabase;
 
     SPDLOG_INFO("loading");
-    bool load_result = loaded_database.load(file_name);
+    bool load_result = loadedDatabase.load(file_name);
     EXPECT_TRUE(load_result);
 
-    auto vec(loaded_database.get_data(data_1.d_symbol, 5, 5));
+    auto vec(loadedDatabase.get_data(data1.d_symbol, 5, 5));
 
     EXPECT_EQ(vec.size(), 1);
     EXPECT_EQ(vec[0].d_symbol, "BTC");

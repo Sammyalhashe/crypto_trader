@@ -19,3 +19,7 @@ target_link_libraries(common
                       nlohmann_json::nlohmann_json
                       ${APPLE_DEPS}
                       )
+
+target_include_directories(common PUBLIC ${nlohmann_json_INCLUDE_DIR})
+
+

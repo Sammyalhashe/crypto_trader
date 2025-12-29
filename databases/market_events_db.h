@@ -77,8 +77,8 @@ class MarketEventsDb {
      */
     std::optional<Events> getEventsBySymbol(
         const std::string&            symbol,
-        int64_t                       start_ts,
-        const std::optional<int64_t>& end_ts = std::nullopt) noexcept(true);
+        int64_t                       startTs,
+        const std::optional<int64_t>& endTs = std::nullopt) noexcept(true);
 
     /**
      * @brief Write a single snapshot synchronously
