@@ -46,6 +46,7 @@
                   clang
                   clang-tools
                   cppcheck
+                  python3
                   ninja
                   zig
                   zls
@@ -83,6 +84,11 @@
                   docs.exec = "cmake --build cmake.bld/Linux/full --target doc_doxygen";
                   serve-docs.exec = "python3 -m http.server 8000 --directory cmake.bld/Linux/full/doc_doxygen/html";
                 };
+
+                git-hooks.hooks.cppcheck.enable = true;
+                git-hooks.hooks.cppcheck.entry = "cppcheck";
+                git-hooks.hooks.cppcheck.package = pkgs.cppcheck;
+                git-hooks.hooks.cppcheck.args = [ "--addon=cmake/naming_addon_static.json" ];
               }
             ];
           };
