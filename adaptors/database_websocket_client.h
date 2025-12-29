@@ -70,6 +70,7 @@ void DatabaseWebsocketClient<MarketDataType>::stop()
 template <typename MarketDataType>
 bool DatabaseWebsocketClient<MarketDataType>::open()
 {
+    return true;
 }
 
 template <typename MarketDataType>
@@ -80,11 +81,13 @@ void DatabaseWebsocketClient<MarketDataType>::close()
 template <typename MarketDataType>
 bool DatabaseWebsocketClient<MarketDataType>::is_open()
 {
+    return true;
 }
 
 template <typename MarketDataType>
 bool DatabaseWebsocketClient<MarketDataType>::send_message()
 {
+    return true;
 }
 
 template <typename MarketDataType>
