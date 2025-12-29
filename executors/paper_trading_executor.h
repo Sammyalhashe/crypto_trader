@@ -258,14 +258,15 @@ PaperTradingExecutor<T>::buy(const std::string_view& product, double quantity)
 
     if (crypto_trader::common::Math::isGreaterOrEqual(d_balance, totalCost)) {
         d_balance -= totalCost;
-        Event e = {std::string(product),
-                   quantity,
-                   price,
-                   EventType::ORDER_FILLED,
-                   {},
-                   marketData.d_timestamp};
+        common::Event e = {std::string(product),
+                           quantity,
+                           price,
+                           common::EventType::ORDER_FILLED,
+                           {},
+                           marketData.d_timestamp};
         d_positionManager.submit_event(e);
         SPDLOG_INFO("PaperTrade BUY: Product={}, Quantity={}, Price={}, "
+
                     "TotalCost={}, Balance={}, Holdings={}",
                     product,
                     quantity,
@@ -314,14 +315,15 @@ PaperTradingExecutor<T>::sell(const std::string_view& product, double quantity)
                                     holdings.value(), quantity))
     {
         d_balance += netRevenue;
-        Event e = {std::string(product),
-                   -quantity,
-                   price,
-                   EventType::ORDER_FILLED,
-                   {},
-                   marketData.d_timestamp};
+        common::Event e = {std::string(product),
+                           -quantity,
+                           price,
+                           common::EventType::ORDER_FILLED,
+                           {},
+                           marketData.d_timestamp};
         d_positionManager.submit_event(e);
         std::stringstream ss;
+
         ss << std::format(
             "PaperTrade SELL: Product={}, Quantity={}, Price={}, "
             "NetRevenue={}, "

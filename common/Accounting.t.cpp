@@ -1,5 +1,8 @@
 #include "Accounting.h"
 #include <gtest/gtest.h>
+
+using namespace crypto_trader::common;
+
 TEST(AccountingTest, FIFOSellLogic)
 {
     Accounting accounting;

@@ -1,9 +1,12 @@
 #ifndef INCLUDED_CRYPTO_TRADER_COMMON_EVENT_H
 #define INCLUDED_CRYPTO_TRADER_COMMON_EVENT_H
 
-#include <boost/mpl/int_fwd.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
+
+
+namespace crypto_trader {
+namespace common {
 
 using nlohmann::json;
 
@@ -22,5 +25,8 @@ struct Event {
     json        d_payload;
     int64_t     d_timestamp;
 };
+
+} // namespace common
+} // namespace crypto_trader
 
 #endif // INCLUDED_CRYPTO_TRADER_COMMON_EVENT_H

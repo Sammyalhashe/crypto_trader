@@ -3,6 +3,14 @@
 #include <algorithm>
 #include <spdlog/spdlog.h>
 
+#include "Accounting.h"
+#include "math.h"
+#include <algorithm>
+#include <spdlog/spdlog.h>
+
+namespace crypto_trader {
+namespace common {
+
 void Accounting::apply_event(const Event& e)
 {
     d_event_log_.push_back(e);
@@ -10,7 +18,7 @@ void Accounting::apply_event(const Event& e)
     if (e.d_type == EventType::ORDER_FILLED) {
         auto& symbolPositions    = d_positions_[e.d_symbol];
         symbolPositions.d_symbol = e.d_symbol;
-        if (crypto_trader::common::Math::isGreater(e.d_qty, 0.0)) // Buy
+        if (Math::isGreater(e.d_qty, 0.0)) // Buy
         {
             symbolPositions.d_positions_in_time.emplace_back();
             auto&  position = symbolPositions.d_positions_in_time.back();
@@ -31,9 +39,9 @@ void Accounting::apply_event(const Event& e)
         else { // Sell
             double qty_to_sell = -e.d_qty;
 
-            if (crypto_trader::common::Math::isLessOrEqual(
+            if (Math::isLessOrEqual(
                     symbolPositions.d_total_qty, 0.0) ||
-                crypto_trader::common::Math::isLess(
+                Math::isLess(
                     symbolPositions.d_total_qty, qty_to_sell))
             {
                 SPDLOG_ERROR(
@@ -45,7 +53,7 @@ void Accounting::apply_event(const Event& e)
                 return;
             }
 
-            while (crypto_trader::common::Math::isGreater(qty_to_sell, 0.0) &&
+            while (Math::isGreater(qty_to_sell, 0.0) &&
                    !symbolPositions.d_positions_in_time.empty())
             {
                 auto& position =
@@ -63,7 +71,7 @@ void Accounting::apply_event(const Event& e)
                 symbolPositions.d_total_qty -= quantity_to_sell;
                 symbolPositions.d_timestamp = e.d_timestamp;
 
-                bool shouldRemove = crypto_trader::common::Math::isLessOrEqual(
+                bool shouldRemove = Math::isLessOrEqual(
                     position.d_total_qty, 0.0);
 
                 // remove position if fully sold
@@ -77,7 +85,7 @@ void Accounting::apply_event(const Event& e)
                 }
             }
 
-            if (crypto_trader::common::Math::isGreater(
+            if (Math::isGreater(
                     symbolPositions.d_total_qty, 0.0))
             {
                 double totalCost = 0.0;
@@ -115,3 +123,6 @@ void Accounting::replay_events(const std::vector<Event>& events)
         apply_event(e);
     }
 }
+
+} // namespace common
+} // namespace crypto_trader

@@ -25,7 +25,7 @@ class MarketEventsDb {
     // sqlite database
     SQLite::Database d_db;
     // queue for batching writes to database
-    boost::lockfree::spsc_queue<Event, boost::lockfree::capacity<10000>>
+    boost::lockfree::spsc_queue<common::Event, boost::lockfree::capacity<10000>>
         d_eventQueue;
     // thread for writing the batched events to the db
     std::jthread      d_writerThread;
@@ -34,8 +34,8 @@ class MarketEventsDb {
   public:
     // TYPES
     using MarketEventsDbPtr  = std::shared_ptr<MarketEventsDb>;
-    using Events             = std::vector<Event>;
-    using SymbolPositionsVec = std::vector<SymbolPositions>;
+    using Events             = std::vector<common::Event>;
+    using SymbolPositionsVec = std::vector<common::SymbolPositions>;
 
     // CREATORS
     explicit MarketEventsDb(const std::string& dbPath);
@@ -55,12 +55,12 @@ class MarketEventsDb {
      * synchronous or async This method does not throw.
      * @return `bool` if successful
      */
-    bool logEvent(const Event& event);
+    bool logEvent(const common::Event& event);
     /**
      * @brief log a batch of events to the `events` table.
      * @return `bool` if successful
      */
-    bool logEvents(const std::vector<Event>& events);
+    bool logEvents(const std::vector<common::Event>& events);
     /**
      * @brief Return a vector containing the `Event`s since the given
      * `timestamp`. This method does not throw, but returns `std::nullopt` if
@@ -85,7 +85,7 @@ class MarketEventsDb {
      * @param snapshot
      * @return `bool` on success
      */
-    bool logSnapshot(const SymbolPositions& snapshot) noexcept(true);
+    bool logSnapshot(const common::SymbolPositions& snapshot) noexcept(true);
 
     /**
      * @brief Write a group of snapshots synchronously in a batch
@@ -93,14 +93,15 @@ class MarketEventsDb {
      * @return `bool` on success
      */
     bool
-    logSnapshots(const std::vector<SymbolPositions>& snapshots) noexcept(true);
+    logSnapshots(const std::vector<common::SymbolPositions>& snapshots) noexcept(
+        true);
 
     /**
      * @brief get latest snapshot for a given `symbol`
      * @param symbol
      * @return `std::optional<common::SymbolPositions>`
      */
-    std::optional<SymbolPositions>
+    std::optional<common::SymbolPositions>
     getLatestSnapshot(const std::string& symbol) noexcept(true);
 
     /**
@@ -115,8 +116,8 @@ class MarketEventsDb {
     bool setupPerformance() noexcept(true);
     bool runMigrations() noexcept(true);
     void writerThreadLoop() noexcept(true);
-    bool logEventSync(const Event& event);
-    bool logEventAsync(const Event& event);
+    bool logEventSync(const common::Event& event);
+    bool logEventAsync(const common::Event& event);
 
 }; // class MarketEventsDb
 

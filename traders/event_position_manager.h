@@ -3,7 +3,6 @@
 
 #include "../common/Accounting.h"
 #include "../common/Event.h"
-#include "../common/positions_snapshots.h"
 #include "../databases/market_events_db.h"
 #include "../protocols/observer.h"
 
@@ -20,19 +19,21 @@ class EventPositionManager {
     // TYPES
     using MEDP = databases::MarketEventsDb::MarketEventsDbPtr;
     // DATA
-    Accounting                         d_accounting_;
+    common::Accounting                 d_accounting_;
     std::vector<protocols::Observer *> d_observers;
     MEDP                               d_db_p;
     int64_t                            d_lastSnapshotTime{0};
+
     int64_t                            d_snapshotInterval{60000};
 
   public:
     EventPositionManager() = default;
 
     // INFO: Why is this virtual?
-    virtual void submit_event(const Event& e);
+    virtual void submit_event(const common::Event& e);
 
     void register_observer(protocols::Observer *observer);
+
     void unregister_observer(protocols::Observer *observer);
 
     // Get the current total holdings for a specific symbol.
@@ -58,7 +59,7 @@ class EventPositionManager {
     void setEventsDb(const MEDP& db);
 
     // load a snapshot directly (avoiding event replay)
-    void loadSnapshot(const common::PositionSnapshot& snapshot);
+    void loadSnapshot(const common::SymbolPositions& snapshot);
 
   private:
     // PRIVATE METHODS

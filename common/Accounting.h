@@ -8,6 +8,9 @@
 
 #include <nlohmann/json.hpp>
 
+namespace crypto_trader {
+namespace common {
+
 /**
  * @brief Represents a single position (lot) within a larger holding.
  */
@@ -83,5 +86,8 @@ class Accounting {
     PositionMap
         d_positions_; //!< Map storing aggregated positions for each symbol.
 };
+
+} // namespace common
+} // namespace crypto_trader
 
 #endif // INCLUDED_CRYPTO_TRADER_COMMON_ACCOUNTING_H

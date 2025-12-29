@@ -14,7 +14,7 @@
 namespace crypto_trader {
 namespace traders {
 
-void EventPositionManager::submit_event(const Event& e)
+void EventPositionManager::submit_event(const common::Event& e)
 {
     if (d_db_p) {
         d_db_p->logEvent(e);
@@ -22,11 +22,12 @@ void EventPositionManager::submit_event(const Event& e)
 
     d_accounting_.apply_event(e);
 
-    if (e.d_type == EventType::ORDER_FILLED) {
+    if (e.d_type == common::EventType::ORDER_FILLED) {
         common::Trade trade;
         trade.d_symbol   = e.d_symbol;
         trade.d_price    = e.d_price;
         trade.d_quantity = e.d_qty;
+
 
         for (auto observer : d_observers) {
             observer->on_trade(trade);
@@ -135,7 +136,7 @@ void EventPositionManager::takeSnapshot() const
     }
     int64_t timestamp = common::getCurrentTimestampMs();
 
-    std::vector<SymbolPositions> symbolPositions =
+    std::vector<common::SymbolPositions> symbolPositions =
         snapshot | std::views::values | std::ranges::to<std::vector>();
 
     if (d_db_p->logSnapshots(symbolPositions)) {

@@ -37,19 +37,19 @@ bool MarketEventsDb::init() noexcept(true)
     return setupPerformance() && runMigrations() && setupWriterThread();
 }
 
-bool MarketEventsDb::logEvent(const Event& event)
+bool MarketEventsDb::logEvent(const common::Event& event)
 {
     // ORDER_FILLED is the only critical event
     // since you lose tracking of position,
     // tax compliance, can't recover accurate position after crash
     // This is the source of truth for position and trading.
-    if (event.d_type == EventType::ORDER_FILLED) {
+    if (event.d_type == common::EventType::ORDER_FILLED) {
         return logEventSync(event);
     }
     return logEventAsync(event);
 }
 
-bool MarketEventsDb::logEvents(const std::vector<Event>& events)
+bool MarketEventsDb::logEvents(const std::vector<common::Event>& events)
 {
     if (events.empty())
         return true;
@@ -70,6 +70,7 @@ bool MarketEventsDb::logEvents(const std::vector<Event>& events)
             params.type      = static_cast<int>(event.d_type);
             params.payload   = event.d_payload.dump();
             params.timestamp = event.d_timestamp;
+
 
             bind(query, params);
 
@@ -99,12 +100,12 @@ MarketEventsDb::getEventsSince(int64_t timestamp) noexcept(true)
         bind(query, params);
 
         while (query.executeStep()) {
-            Event event;
+            common::Event event;
             event.d_symbol = query.getColumn("symbol").getString();
             event.d_qty    = query.getColumn("qty").getDouble();
             event.d_price  = query.getColumn("price").getDouble();
             event.d_type =
-                static_cast<EventType>(query.getColumn("type").getInt());
+                static_cast<common::EventType>(query.getColumn("type").getInt());
             std::string payload = query.getColumn("payload").getString();
             event.d_payload     = nlohmann::json::parse(payload);
             event.d_timestamp   = query.getColumn("timestamp").getInt64();
@@ -140,18 +141,19 @@ std::optional<MarketEventsDb::Events> MarketEventsDb::getEventsBySymbol(
         bind(query, params);
 
         while (query.executeStep()) {
-            Event event;
+            common::Event event;
             event.d_symbol = query.getColumn("symbol").getString();
             event.d_qty    = query.getColumn("qty").getDouble();
             event.d_price  = query.getColumn("price").getDouble();
             event.d_type =
-                static_cast<EventType>(query.getColumn("type").getInt());
+                static_cast<common::EventType>(query.getColumn("type").getInt());
             std::string payload = query.getColumn("payload").getString();
             event.d_payload     = nlohmann::json::parse(payload);
             event.d_timestamp   = query.getColumn("timestamp").getInt64();
 
             events.push_back(std::move(event));
         }
+
     }
     catch (const SQLite::Exception& e) {
         SPDLOG_ERROR("Failed to execute statement: {} with error: {}",
@@ -167,14 +169,14 @@ std::optional<MarketEventsDb::Events> MarketEventsDb::getEventsBySymbol(
     return events;
 }
 
-bool MarketEventsDb::logSnapshot(const SymbolPositions& snapshot) noexcept(
+bool MarketEventsDb::logSnapshot(const common::SymbolPositions& snapshot) noexcept(
     true)
 {
     return logSnapshots({snapshot});
 }
 
 bool MarketEventsDb::logSnapshots(
-    const std::vector<SymbolPositions>& snapshots) noexcept(true)
+    const std::vector<common::SymbolPositions>& snapshots) noexcept(true)
 {
 
     if (snapshots.empty())
@@ -230,7 +232,7 @@ bool MarketEventsDb::logSnapshots(
     return true;
 }
 
-std::optional<SymbolPositions>
+std::optional<common::SymbolPositions>
 MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
 {
     SQLite::Statement query(d_db, SQL::get_latest_snapshot);
@@ -242,7 +244,7 @@ MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
 
         if (query.executeStep()) {
             int64_t         snapshot_id = query.getColumn("id").getInt64();
-            SymbolPositions snapshot;
+            common::SymbolPositions snapshot;
             snapshot.d_symbol    = query.getColumn("symbol").getString();
             snapshot.d_total_qty = query.getColumn("total_qty").getDouble();
             snapshot.d_average_price =
@@ -260,7 +262,7 @@ MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
             inner_params.snapshot_id = snapshot_id;
             bind(innerQuery, inner_params);
 
-            std::list<Position> positions;
+            std::list<common::Position> positions;
             while (innerQuery.executeStep()) {
                 positions.emplace_back();
                 auto& p       = positions.back();
@@ -292,7 +294,7 @@ MarketEventsDb::getLatestSnapshots() noexcept(true)
     try {
         while (query.executeStep()) {
             int64_t         snapshot_id = query.getColumn("id").getInt64();
-            SymbolPositions snapshot;
+            common::SymbolPositions snapshot;
             snapshot.d_symbol    = query.getColumn("symbol").getString();
             snapshot.d_total_qty = query.getColumn("total_qty").getDouble();
             snapshot.d_average_price =
@@ -309,7 +311,7 @@ MarketEventsDb::getLatestSnapshots() noexcept(true)
             inner_params.snapshot_id = snapshot_id;
             bind(innerQuery, inner_params);
 
-            std::list<Position> positions;
+            std::list<common::Position> positions;
             while (innerQuery.executeStep()) {
                 positions.emplace_back();
                 auto& p       = positions.back();
@@ -374,15 +376,16 @@ bool MarketEventsDb::runMigrations() noexcept(true)
 void MarketEventsDb::writerThreadLoop() noexcept(true)
 {
     static constexpr int BATCH_SIZE = 100;
-    std::vector<Event>   batch;
+    std::vector<common::Event>   batch;
     batch.reserve(BATCH_SIZE);
 
-    Event event;
+    common::Event event;
     while (!d_stopWriter) {
 
         while (batch.size() < BATCH_SIZE && d_eventQueue.pop(event)) {
             batch.push_back(std::move(event));
         }
+
 
         if (!batch.empty()) {
             logEvents(batch);
@@ -426,14 +429,15 @@ bool MarketEventsDb::setupPerformance() noexcept(true)
     return true;
 }
 
-bool MarketEventsDb::logEventSync(const Event& event)
+bool MarketEventsDb::logEventSync(const common::Event& event)
 {
     return logEvents({event});
 }
 
-bool MarketEventsDb::logEventAsync(const Event& event)
+bool MarketEventsDb::logEventAsync(const common::Event& event)
 {
     if (!d_eventQueue.push(event)) {
+
         SPDLOG_WARN("Event queue full, dropping event...");
         return false;
     }
