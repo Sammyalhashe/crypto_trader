@@ -1,15 +1,14 @@
-option(ENABLE_CPPCHECK "Enable static analysis with cpphcheck" OFF)
+option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" ON)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
 if (ENABLE_CPPCHECK)
     find_program(CPPCHECK cppcheck)
     if (CPPCHECK)
-        set(CMAKE_CXX_CPPCHECK ${CPPCHECK} --suppress=missingInclude --enable=all)
+        set(CMAKE_CXX_CPPCHECK ${CPPCHECK} --suppress=missingInclude --enable=all --addon=${CMAKE_SOURCE_DIR}/cmake/naming.json)
     else()
         message(SEND_ERROR "cppcheck requested but executable not found")
     endif()
 endif()
-
 
 if (ENABLE_CLANG_TIDY)
     find_program(CLANGTIDY clang-tidy)

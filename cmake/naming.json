@@ -1,0 +1,21 @@
+{
+    "rules": {
+        "class": {
+            "name": "^[A-Z][a-zA-Z0-9]*$"
+        },
+        "struct": {
+            "name": "^[A-Z][a-zA-Z0-9]*$"
+        },
+        "function": {
+            "name": "^[a-z][a-zA-Z0-9_]*$"
+        },
+        "variable": {
+            "name": "^[a-z][a-zA-Z0-9_]*$",
+            "scope": "local"
+        },
+        "member_variable": {
+            "name": "^d_[a-zA-Z0-9_]*$",
+            "scope": "class"
+        }
+    }
+}

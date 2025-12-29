@@ -45,6 +45,7 @@
                   gcc
                   clang
                   clang-tools
+                  cppcheck
                   ninja
                   zig
                   zls
@@ -64,28 +65,24 @@
                   sqlite
                 ];
 
-                enterShell = ''
-                  if [[ -x "$(command -v conan)" ]]; then
-                      conan profile detect || true
-                  fi
-                '';
-
-                scripts.prepare.exec = ''
-                  if [[ -x "$(command -v conan)" ]]; then
-                      make prepare CONAN=1
-                  else
-                      make prepare GENERATOR=Ninja
-                  fi
-                '';
-                scripts.build.exec = "make build";
-                scripts.bo.exec = "make bo";
-                scripts.fbuild.exec = "make fast-build";
-                scripts.fbo.exec = "make fbo";
-                scripts.clean.exec = "make clean";
-                scripts.test.exec = "make test";
-                scripts.run.exec = "make run";
-                scripts.docs.exec = "cmake --build cmake.bld/Linux/full --target doc_doxygen";
-                scripts.serve-docs.exec = "python3 -m http.server 8000 --directory cmake.bld/Linux/full/doc_doxygen/html";
+                scripts = {
+                  prepare.exec = ''
+                    if [[ -x "$(command -v conan)" ]]; then
+                        make prepare CONAN=1
+                    else
+                        make prepare GENERATOR=Ninja
+                    fi
+                  '';
+                  build.exec = "make build";
+                  bo.exec = "make bo";
+                  fbuild.exec = "make fast-build";
+                  fbo.exec = "make fbo";
+                  clean.exec = "make clean";
+                  test.exec = "make test";
+                  run.exec = "make run";
+                  docs.exec = "cmake --build cmake.bld/Linux/full --target doc_doxygen";
+                  serve-docs.exec = "python3 -m http.server 8000 --directory cmake.bld/Linux/full/doc_doxygen/html";
+                };
               }
             ];
           };
