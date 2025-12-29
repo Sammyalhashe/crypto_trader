@@ -1,5 +1,6 @@
 #include "market_events_db.h"
-#include "statements.h"
+#include "bind_types.h"
+#include "queries.h"
 
 #include "../common/Accounting.h"
 #include "../common/Event.h"
@@ -12,11 +13,9 @@
 
 #include <spdlog/spdlog.h>
 
-#include <chrono>
 #include <optional>
 
 #include <nlohmann/json.hpp>
-#include <utility>
 
 namespace crypto_trader {
 namespace databases {
@@ -56,23 +55,23 @@ bool MarketEventsDb::logEvents(const std::vector<Event>& events)
         return true;
 
     // prepare the statement
-    SQLite::Statement query(
-        d_db,
-        "INSERT INTO events (symbol, qty, price, type, payload, timestamp)"
-        "VALUES (?, ?, ?, ?, ?, ?)");
+    SQLite::Statement query(d_db, SQL::insert_event);
 
     SQLite::Transaction transaction(d_db);
 
     try {
         for (const auto& event : events) {
             query.reset();
-            // bind the values
-            query.bind(1, event.d_symbol);
-            query.bind(2, event.d_qty);
-            query.bind(3, event.d_price);
-            query.bind(4, static_cast<int>(event.d_type));
-            query.bind(5, event.d_payload.dump());
-            query.bind(6, event.d_timestamp);
+
+            insert_event_params params;
+            params.symbol    = event.d_symbol;
+            params.qty       = event.d_qty;
+            params.price     = event.d_price;
+            params.type      = static_cast<int>(event.d_type);
+            params.payload   = event.d_payload.dump();
+            params.timestamp = event.d_timestamp;
+
+            bind(query, params);
 
             // execute
             query.exec();
@@ -91,23 +90,24 @@ std::optional<MarketEventsDb::Events>
 MarketEventsDb::getEventsSince(int64_t timestamp) noexcept(true)
 {
     // pass
-    SQLite::Statement query(d_db,
-                            "SELECT id, symbol, qty, price, type, payload, "
-                            "timestamp FROM events WHERE timestamp >= ?");
+    SQLite::Statement query(d_db, SQL::get_events_since);
 
     Events events;
     try {
-        query.bind(1, timestamp);
+        get_events_since_params params;
+        params.timestamp = timestamp;
+        bind(query, params);
 
         while (query.executeStep()) {
             Event event;
-            event.d_symbol = query.getColumn(1).getString();
-            event.d_qty    = query.getColumn(2).getDouble();
-            event.d_price  = query.getColumn(3).getDouble();
-            event.d_type = static_cast<EventType>(query.getColumn(4).getInt());
-            std::string payload = query.getColumn(5).getString();
+            event.d_symbol = query.getColumn("symbol").getString();
+            event.d_qty    = query.getColumn("qty").getDouble();
+            event.d_price  = query.getColumn("price").getDouble();
+            event.d_type =
+                static_cast<EventType>(query.getColumn("type").getInt());
+            std::string payload = query.getColumn("payload").getString();
             event.d_payload     = nlohmann::json::parse(payload);
-            event.d_timestamp   = query.getColumn(6).getInt64();
+            event.d_timestamp   = query.getColumn("timestamp").getInt64();
 
             events.push_back(std::move(event));
         }
@@ -129,26 +129,26 @@ std::optional<MarketEventsDb::Events> MarketEventsDb::getEventsBySymbol(
     int64_t                       start_ts,
     const std::optional<int64_t>& end_ts) noexcept(true)
 {
-    SQLite::Statement query(d_db,
-                            "SELECT id, symbol, qty, price, type, payload, "
-                            "timestamp FROM events WHERE timestamp >= ? AND "
-                            "timestamp <= ? AND symbol = ?");
+    SQLite::Statement query(d_db, SQL::get_events_by_symbol);
 
     Events events;
     try {
-        query.bind(1, start_ts);
-        query.bind(2, end_ts.value_or(common::getCurrentTimestampMs()));
-        query.bind(3, symbol);
+        get_events_by_symbol_params params;
+        params.start_ts = start_ts;
+        params.end_ts   = end_ts.value_or(common::getCurrentTimestampMs());
+        params.symbol   = symbol;
+        bind(query, params);
 
         while (query.executeStep()) {
             Event event;
-            event.d_symbol = query.getColumn(1).getString();
-            event.d_qty    = query.getColumn(2).getDouble();
-            event.d_price  = query.getColumn(3).getDouble();
-            event.d_type = static_cast<EventType>(query.getColumn(4).getInt());
-            std::string payload = query.getColumn(5).getString();
+            event.d_symbol = query.getColumn("symbol").getString();
+            event.d_qty    = query.getColumn("qty").getDouble();
+            event.d_price  = query.getColumn("price").getDouble();
+            event.d_type =
+                static_cast<EventType>(query.getColumn("type").getInt());
+            std::string payload = query.getColumn("payload").getString();
             event.d_payload     = nlohmann::json::parse(payload);
-            event.d_timestamp   = query.getColumn(6).getInt64();
+            event.d_timestamp   = query.getColumn("timestamp").getInt64();
 
             events.push_back(std::move(event));
         }
@@ -181,30 +181,26 @@ bool MarketEventsDb::logSnapshots(
         return true;
 
     // prepare the statement
-    SQLite::Statement query(
-        d_db,
-        "INSERT INTO position_snapshots (symbol, total_qty, average_price, "
-        "realized_pnl, fifo, timestamp, metadata)"
-        "VALUES (?, ?, ?, ?, ?, ?, ?)");
+    SQLite::Statement query(d_db, SQL::insert_position_snapshot);
 
-    SQLite::Statement query2(
-        d_db,
-        "INSERT INTO snapshot_lots (snapshot_id, total_qty, price, timestamp) "
-        "VALUES (?, ?, ?, ?)");
+    SQLite::Statement query2(d_db, SQL::insert_snapshot_lot);
 
     SQLite::Transaction transaction(d_db);
 
     try {
         for (const auto& snapshot : snapshots) {
             query.reset();
-            // bind the values
-            query.bind(1, snapshot.d_symbol);
-            query.bind(2, snapshot.d_total_qty);
-            query.bind(3, snapshot.d_average_price);
-            query.bind(4, snapshot.d_realizedPnl);
-            query.bind(5, snapshot.d_fifo);
-            query.bind(6, snapshot.d_timestamp);
-            query.bind(7, snapshot.d_metadata.dump());
+
+            insert_position_snapshot_params params;
+            params.symbol        = snapshot.d_symbol;
+            params.total_qty     = snapshot.d_total_qty;
+            params.average_price = snapshot.d_average_price;
+            params.realized_pnl  = snapshot.d_realizedPnl;
+            params.fifo          = snapshot.d_fifo;
+            params.timestamp     = snapshot.d_timestamp;
+            params.metadata      = snapshot.d_metadata.dump();
+
+            bind(query, params);
 
             // execute
             query.exec();
@@ -213,10 +209,14 @@ bool MarketEventsDb::logSnapshots(
 
             for (const auto& lot : snapshot.d_positions_in_time) {
                 query2.reset();
-                query2.bind(1, snapshot_id);
-                query2.bind(2, lot.d_total_qty);
-                query2.bind(3, lot.d_price);
-                query2.bind(4, lot.d_timestamp);
+
+                insert_snapshot_lot_params lot_params;
+                lot_params.snapshot_id = snapshot_id;
+                lot_params.total_qty   = lot.d_total_qty;
+                lot_params.price       = lot.d_price;
+                lot_params.timestamp   = lot.d_timestamp;
+
+                bind(query2, lot_params);
 
                 query2.exec();
             }
@@ -233,42 +233,40 @@ bool MarketEventsDb::logSnapshots(
 std::optional<SymbolPositions>
 MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
 {
-    SQLite::Statement query(d_db,
-                            "SELECT id, symbol, total_qty, average_price, "
-                            "realized_pnl, fifo, timestamp, "
-                            "metadata FROM position_snapshots "
-                            "WHERE symbol = ? "
-                            "ORDER BY timestamp DESC "
-                            "LIMIT 1");
+    SQLite::Statement query(d_db, SQL::get_latest_snapshot);
 
     try {
-        query.bind(1, symbol);
+        get_latest_snapshot_params params;
+        params.symbol = symbol;
+        bind(query, params);
+
         if (query.executeStep()) {
-            int64_t         snapshot_id = query.getColumn(0).getInt64();
+            int64_t         snapshot_id = query.getColumn("id").getInt64();
             SymbolPositions snapshot;
-            snapshot.d_symbol        = query.getColumn(1).getString();
-            snapshot.d_total_qty     = query.getColumn(2).getDouble();
-            snapshot.d_average_price = query.getColumn(3).getDouble();
-            snapshot.d_realizedPnl   = query.getColumn(4).getDouble();
-            snapshot.d_fifo          = query.getColumn(5).getInt();
-            snapshot.d_timestamp     = query.getColumn(6).getInt64();
+            snapshot.d_symbol    = query.getColumn("symbol").getString();
+            snapshot.d_total_qty = query.getColumn("total_qty").getDouble();
+            snapshot.d_average_price =
+                query.getColumn("average_price").getDouble();
+            snapshot.d_realizedPnl =
+                query.getColumn("realized_pnl").getDouble();
+            snapshot.d_fifo      = query.getColumn("fifo").getInt();
+            snapshot.d_timestamp = query.getColumn("timestamp").getInt64();
             snapshot.d_metadata =
-                nlohmann::json::parse(query.getColumn(7).getString());
+                nlohmann::json::parse(query.getColumn("metadata").getString());
 
-            SQLite::Statement innerQuery(
-                d_db,
-                "SELECT total_qty, price, timestamp FROM snapshot_lots WHERE "
-                "snapshot_id = ? ORDER BY timestamp ASC");
+            SQLite::Statement innerQuery(d_db, SQL::get_snapshot_lots);
 
-            innerQuery.bind(1, snapshot_id);
+            get_snapshot_lots_params inner_params;
+            inner_params.snapshot_id = snapshot_id;
+            bind(innerQuery, inner_params);
 
             std::list<Position> positions;
             while (innerQuery.executeStep()) {
                 positions.emplace_back();
                 auto& p       = positions.back();
-                p.d_total_qty = innerQuery.getColumn(0).getDouble();
-                p.d_price     = innerQuery.getColumn(1).getDouble();
-                p.d_timestamp = innerQuery.getColumn(2).getInt();
+                p.d_total_qty = innerQuery.getColumn("total_qty").getDouble();
+                p.d_price     = innerQuery.getColumn("price").getDouble();
+                p.d_timestamp = innerQuery.getColumn("timestamp").getInt();
             }
 
             snapshot.d_positions_in_time = std::move(positions);
@@ -288,42 +286,36 @@ MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
 std::optional<MarketEventsDb::SymbolPositionsVec>
 MarketEventsDb::getLatestSnapshots() noexcept(true)
 {
-    SQLite::Statement query(
-        d_db,
-        "SELECT id, symbol, total_qty, average_price, "
-        "realized_pnl, timestamp, "
-        "metadata FROM position_snapshots ps1 "
-        "WHERE timestamp = "
-        "(SELECT MAX(timestamp) FROM position_snapshots ps2 "
-        "WHERE ps1.symbol = ps2.symbol)");
+    SQLite::Statement query(d_db, SQL::get_latest_snapshots);
 
     SymbolPositionsVec snapshots;
     try {
         while (query.executeStep()) {
-            int64_t         snapshot_id = query.getColumn(0).getInt64();
+            int64_t         snapshot_id = query.getColumn("id").getInt64();
             SymbolPositions snapshot;
-            snapshot.d_symbol        = query.getColumn(1).getString();
-            snapshot.d_total_qty     = query.getColumn(2).getDouble();
-            snapshot.d_average_price = query.getColumn(3).getDouble();
-            snapshot.d_realizedPnl   = query.getColumn(4).getDouble();
-            snapshot.d_timestamp     = query.getColumn(5).getInt64();
+            snapshot.d_symbol    = query.getColumn("symbol").getString();
+            snapshot.d_total_qty = query.getColumn("total_qty").getDouble();
+            snapshot.d_average_price =
+                query.getColumn("average_price").getDouble();
+            snapshot.d_realizedPnl =
+                query.getColumn("realized_pnl").getDouble();
+            snapshot.d_timestamp = query.getColumn("timestamp").getInt64();
             snapshot.d_metadata =
-                nlohmann::json::parse(query.getColumn(6).getString());
+                nlohmann::json::parse(query.getColumn("metadata").getString());
 
-            SQLite::Statement innerQuery(
-                d_db,
-                "SELECT total_qty, price, timestamp FROM snapshot_lots WHERE "
-                "snapshot_id = ? ORDER BY timestamp ASC");
+            SQLite::Statement innerQuery(d_db, SQL::get_snapshot_lots);
 
-            innerQuery.bind(1, snapshot_id);
+            get_snapshot_lots_params inner_params;
+            inner_params.snapshot_id = snapshot_id;
+            bind(innerQuery, inner_params);
 
             std::list<Position> positions;
             while (innerQuery.executeStep()) {
                 positions.emplace_back();
                 auto& p       = positions.back();
-                p.d_total_qty = innerQuery.getColumn(0).getDouble();
-                p.d_price     = innerQuery.getColumn(1).getDouble();
-                p.d_timestamp = innerQuery.getColumn(2).getInt();
+                p.d_total_qty = innerQuery.getColumn("total_qty").getDouble();
+                p.d_price     = innerQuery.getColumn("price").getDouble();
+                p.d_timestamp = innerQuery.getColumn("timestamp").getInt();
             }
 
             snapshot.d_positions_in_time = std::move(positions);
@@ -357,21 +349,11 @@ bool MarketEventsDb::runMigrations() noexcept(true)
         // execute the schema strings
         try {
             SPDLOG_INFO("Creating events table...");
-            d_db.exec(CREATE_EVENTS_TABLE);
-            SPDLOG_INFO("Creating symbol_ts index...");
-            d_db.exec(CREATE_INDEX_SYMBOL_TS);
-            SPDLOG_INFO("Creating type_ts index...");
-            d_db.exec(CREATE_INDEX_TYPE_TS);
-            SPDLOG_INFO("Creating symbol_type_ts index...");
-            d_db.exec(CREATE_INDEX_SYMBOL_TYPE_TS);
+            d_db.exec(SQL::events);
             SPDLOG_INFO("Creating snapshots table...");
-            d_db.exec(CREATE_SNAPSHOTS_TABLE);
-            SPDLOG_INFO("Creating snapshots index...");
-            d_db.exec(CREATE_INDEX_SNAPSHOTS);
+            d_db.exec(SQL::position_snapshots);
             SPDLOG_INFO("Creating snapshots_lots tables...");
-            d_db.exec(CREATE_SNAPSHOT_LOTS_TABLE);
-            SPDLOG_INFO("Creating snapshot_lots index...");
-            d_db.exec(CREATE_INDEX_SNAPSHOT_LOTS);
+            d_db.exec(SQL::snapshot_lots);
         }
         catch (const SQLite::Exception& e) {
             SPDLOG_ERROR(
