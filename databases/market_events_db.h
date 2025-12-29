@@ -70,8 +70,8 @@ class MarketEventsDb {
     std::optional<Events> getEventsSince(int64_t timestamp) noexcept(true);
     /**
      * @brief Return a vector containing the `Event`s for a given `symbol`
-     * between the given `start_ts` and `end_ts`. If the optional `end_ts`
-     * isn't given, assume `end_ts` = present. This method does not throw, but
+     * between the given `startTs` and `endTs`. If the optional `endTs`
+     * isn't given, assume `endTs` = present. This method does not throw, but
      * returns `std::nullopt` if something goes wrong.
      * @return `std::optional<std::vector<Event>>`
      */

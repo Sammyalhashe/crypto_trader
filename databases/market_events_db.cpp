@@ -164,8 +164,8 @@ std::optional<MarketEventsDb::Events> MarketEventsDb::getEventsBySymbol(
 
     SPDLOG_DEBUG("Retrieved {} events between {} and {}",
                  events.size(),
-                 start_ts,
-                 end_ts.value_or(common::getCurrentTimestampMs()));
+                 startTs,
+                 endTs.value_or(common::getCurrentTimestampMs()));
     return events;
 }
 
@@ -251,6 +251,10 @@ MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
                 query.getColumn("average_price").getDouble();
             snapshot.d_realizedPnl =
                 query.getColumn("realized_pnl").getDouble();
+            snapshot.d_fifo      = query.getColumn("fifo").getInt() != 0;
+            snapshot.d_timestamp = query.getColumn("timestamp").getInt64();
+            snapshot.d_metadata  = nlohmann::json::parse(
+                query.getColumn("metadata").getString());
 
             SQLite::Statement innerQuery(d_db, SQL::get_snapshot_lots);
 
@@ -297,6 +301,7 @@ MarketEventsDb::getLatestSnapshots() noexcept(true)
                 query.getColumn("average_price").getDouble();
             snapshot.d_realizedPnl =
                 query.getColumn("realized_pnl").getDouble();
+            snapshot.d_fifo      = query.getColumn("fifo").getInt() != 0;
             snapshot.d_timestamp = query.getColumn("timestamp").getInt64();
             snapshot.d_metadata =
                 nlohmann::json::parse(query.getColumn("metadata").getString());
