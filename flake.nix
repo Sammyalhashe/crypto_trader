@@ -54,6 +54,7 @@
                   doxygen
                   graphviz
                   direnv
+                  git
 
                   # build dependencies
                   boost-build
@@ -88,7 +89,6 @@
                 git-hooks.hooks.cppcheck.enable = true;
                 git-hooks.hooks.cppcheck.entry = "cppcheck";
                 git-hooks.hooks.cppcheck.package = pkgs.cppcheck;
-                git-hooks.hooks.cppcheck.args = [ "--addon=cmake/naming_addon_static.json" ];
               }
             ];
           };

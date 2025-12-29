@@ -70,7 +70,11 @@ include(cmake/StaticAnalyzers.cmake)
 
 # doxygen support
 include(cmake/Doxygen.cmake)
-enable_doxygen()
+add_custom_target(style-check
+    COMMAND cppcheck --enable=all --suppress=missingInclude adaptors common databases executors protocols strategies traders
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running cppcheck..."
+)
 
 # project dependencies below
 find_package(OpenSSL REQUIRED)

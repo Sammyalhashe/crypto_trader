@@ -105,6 +105,10 @@ test:
 format:
 	find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec ${CLANG_FORMAT} -style=file -i {} \;
 
+.PHONY: style-check
+style-check: prepare
+	cmake --build ${BUILD_DIR} --target style-check
+
 .PHONY: docs
 docs:
 	cmake --build ${BUILD_DIR} --target doc_doxygen

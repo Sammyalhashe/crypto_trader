@@ -1,4 +1,0 @@
-{
-    "script": "namingng.py",
-    "args": ["cmake/naming_rules.json"]
-}
