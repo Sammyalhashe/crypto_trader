@@ -71,9 +71,9 @@ include(cmake/StaticAnalyzers.cmake)
 # doxygen support
 include(cmake/Doxygen.cmake)
 add_custom_target(style-check
-    COMMAND cppcheck --enable=all --suppress=missingInclude adaptors common databases executors protocols strategies traders
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/style_checker.py adaptors common databases executors protocols strategies traders
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Running cppcheck..."
+    COMMENT "Running style checker..."
 )
 
 # project dependencies below

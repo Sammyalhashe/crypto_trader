@@ -1,4 +1,3 @@
-option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" ON)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
 if (ENABLE_CLANG_TIDY)

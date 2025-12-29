@@ -86,9 +86,9 @@
                   serve-docs.exec = "python3 -m http.server 8000 --directory cmake.bld/Linux/full/doc_doxygen/html";
                 };
 
-                git-hooks.hooks.cppcheck.enable = true;
-                git-hooks.hooks.cppcheck.entry = "cppcheck";
-                git-hooks.hooks.cppcheck.package = pkgs.cppcheck;
+                git-hooks.hooks.style-check.enable = true;
+                git-hooks.hooks.style-check.entry = "python3 style_checker.py";
+                git-hooks.hooks.style-check.package = pkgs.python3;
               }
             ];
           };
