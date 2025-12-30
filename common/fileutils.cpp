@@ -116,10 +116,10 @@ int createTrapFile(const char *trapFilePath)
 
 int removeTrapFile(const MonitorConfig& config)
 {
-    int rc = close(config.d_inotify_fd);
+    int rc = close(config.d_inotifyFd);
     if (rc < 0) {
         spdlog::error("unable to close file descriptor: {}",
-                      config.d_inotify_fd);
+                      config.d_inotifyFd);
         return -1;
     }
     rc = std::remove(config.d_trapFilePath);
@@ -147,11 +147,11 @@ int handleInotifyEvents(const MonitorConfig& config)
 
     /* Loop while events can be read from inotify file descriptor. */
     for (;;) {
-        len = read(config.d_inotify_fd, buf, sizeof buf);
+        len = read(config.d_inotifyFd, buf, sizeof buf);
 
         if (-1 == len && errno != EAGAIN) {
             spdlog::error("fatal: error occurred reading the trap file: {}",
-                          config.d_inotify_fd);
+                          config.d_inotifyFd);
             return -1;
         }
 
@@ -186,15 +186,15 @@ int handleInotifyEvents(const MonitorConfig& config)
 
 void monitorTrapFile(const MonitorConfig& config)
 {
-    SPDLOG_INFO("watching inotify_fd: {}", config.d_inotify_fd);
+    SPDLOG_INFO("watching inotify_fd: {}", config.d_inotifyFd);
 
-    if (config.d_inotify_fd < 0) {
+    if (config.d_inotifyFd < 0) {
         return;
     }
 
     constexpr int nfds = 1;
     pollfd        pfds[nfds];
-    pfds[0].fd     = config.d_inotify_fd;
+    pfds[0].fd     = config.d_inotifyFd;
     pfds[0].events = POLLIN;
 
     int pollNum;
@@ -211,7 +211,7 @@ void monitorTrapFile(const MonitorConfig& config)
                 continue;
             }
             spdlog::error("error while polling inotify_fd: {}: {}",
-                          config.d_inotify_fd,
+                          config.d_inotifyFd,
                           errno);
             return;
         }

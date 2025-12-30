@@ -3,6 +3,7 @@
 
 #include "../common/types.h"
 #include "../databases/market_data_db.h"
+#include "../databases/market_events_db.h"
 #include "../protocols/executor.h"
 #include "../protocols/strategy.h"
 #include "../protocols/trader.h"
@@ -42,6 +43,7 @@ class CoinbaseTraderConfig {
     using StringVec  = std::vector<std::string>;
     using Channel    = std::variant<std::string, ChannelDefinition>;
     using ChannelVec = std::vector<Channel>;
+
     // PRIVATE DATA
     // The products to monitor/trade.
     StringVec d_products;
@@ -60,7 +62,8 @@ class CoinbaseTraderConfig {
     // Shared atomic state declaring whether the application is running.
     std::shared_ptr<std::atomic_bool> d_isRunning;
     // Determines whether to use the paper or real trading executor.
-    bool d_paperTrading;
+    bool                                         d_paperTrading;
+    databases::MarketEventsDb::MarketEventsDbPtr d_db_p;
 
   public:
     // CREATORS
@@ -82,17 +85,20 @@ class CoinbaseTraderConfig {
     CoinbaseTraderConfig& setNumThreads(unsigned int numThreads);
     CoinbaseTraderConfig& setClientType(const ClientType clientType);
     CoinbaseTraderConfig& setPaperTrading(bool paperTrading);
+    CoinbaseTraderConfig&
+    setEventsDb(const databases::MarketEventsDb::MarketEventsDbPtr& db);
 
     // PUBLIC ACCESSORS
-    const StringVec&                         products() const;
-    const boost::optional<ChannelVec>&       channels() const;
-    const strategies::TradingStrategy&       strategy() const;
-    const std::string&                       url() const;
-    const nlohmann::json&                    strategyConfig() const;
-    unsigned int                             numThreads() const;
-    const ClientType                         clientType() const;
-    const std::shared_ptr<std::atomic_bool>& isRunning() const;
-    bool                                     paperTrading() const;
+    const StringVec&                                    products() const;
+    const boost::optional<ChannelVec>&                  channels() const;
+    const strategies::TradingStrategy&                  strategy() const;
+    const std::string&                                  url() const;
+    const nlohmann::json&                               strategyConfig() const;
+    unsigned int                                        numThreads() const;
+    const ClientType                                    clientType() const;
+    const std::shared_ptr<std::atomic_bool>&            isRunning() const;
+    bool                                                paperTrading() const;
+    const databases::MarketEventsDb::MarketEventsDbPtr& eventsDb() const;
 }; // CoinbaseTraderConfig
 
 class CoinbaseTrader : public protocols::Trader {
@@ -251,6 +257,13 @@ CoinbaseTraderConfig::setPaperTrading(bool paperTrading)
     return *this;
 }
 
+inline CoinbaseTraderConfig& CoinbaseTraderConfig::setEventsDb(
+    const databases::MarketEventsDb::MarketEventsDbPtr& db)
+{
+    d_db_p = db;
+    return *this;
+}
+
 // PUBLIC ACCESSORS
 inline const CoinbaseTraderConfig::StringVec&
 CoinbaseTraderConfig::products() const
@@ -297,6 +310,12 @@ CoinbaseTraderConfig::isRunning() const
 inline bool CoinbaseTraderConfig::paperTrading() const
 {
     return d_paperTrading;
+}
+
+inline const databases::MarketEventsDb::MarketEventsDbPtr&
+CoinbaseTraderConfig::eventsDb() const
+{
+    return d_db_p;
 }
 
 } // namespace traders

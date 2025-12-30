@@ -15,11 +15,11 @@ if(APPLE)
     add_compile_options(-fexperimental-library)
 
     # 4. Target specific OSX version at least
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum OS X version" FORCE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum OS X version" FORCE)
 endif()
 
 # specify the cmake standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # if a conan build or not
@@ -29,7 +29,8 @@ SET(CACHE{CONAN} BOOL "If in a Conan build" VALUE true false)
 find_program(CCACHE ccache)
 if(CCACHE)
     message("using ccache....")
-    set(CMAKE_CXX_COMPILER_LAUNCHERS ${CCACHE})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
 else()
     message("ccache not found")
 endif()
@@ -75,6 +76,7 @@ enable_doxygen()
 find_package(OpenSSL REQUIRED)
 find_package(Boost CONFIG 1.87.0 COMPONENTS thread system serialization REQUIRED)
 find_package(spdlog 1.12.0 REQUIRED)
+find_package(SQLiteCpp REQUIRED)
 
 # NOTE: This may not be needed.
 if (Boost_Found)
@@ -117,9 +119,6 @@ foreach(dir ${subdirs})
     message("\tadding dir ${dir}...")
     add_subdirectory(${dir})
 endforeach()
-
-# target_link_directories(adaptors PRIVATE protocols)
-# target_link_directories(${PROJECT_NAME} PRIVATE ${subdirs})
 
 # zig
 set(ZIG_LIBS "")

@@ -29,7 +29,7 @@ enum class ReadFileOptions {
 
 struct MonitorConfig {
 #ifdef __linux__
-    int d_inotify_fd;
+    int d_inotifyFd;
 #endif // __linux__
     const char                        *d_trapFilePath;
     std::shared_ptr<std::atomic<bool>> d_isRunning;

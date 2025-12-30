@@ -55,3 +55,6 @@ cmake.bld/
 zig-out/
 site/
 doc_doxygen/
+
+# generated files
+databases/generated/

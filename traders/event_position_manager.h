@@ -3,7 +3,10 @@
 
 #include "../common/Accounting.h"
 #include "../common/Event.h"
+#include "../databases/market_events_db.h"
 #include "../protocols/observer.h"
+
+#include <cstdint>
 #include <optional>
 #include <string_view>
 #include <vector>
@@ -13,17 +16,25 @@ namespace traders {
 
 class EventPositionManager {
   private:
-    Accounting d_accounting_;
-    std::vector<protocols::Observer*> d_observers;
+    // TYPES
+    using MEDP = databases::MarketEventsDb::MarketEventsDbPtr;
+    // DATA
+    common::Accounting                 d_accounting;
+    std::vector<protocols::Observer *> d_observers;
+    MEDP                               d_db_p;
+    int64_t                            d_lastSnapshotTime{0};
+
+    int64_t                            d_snapshotInterval{60000};
 
   public:
     EventPositionManager() = default;
 
     // INFO: Why is this virtual?
-    virtual void submit_event(const Event& e);
+    virtual void submit_event(const common::Event& e);
 
-    void register_observer(protocols::Observer* observer);
-    void unregister_observer(protocols::Observer* observer);
+    void register_observer(protocols::Observer *observer);
+
+    void unregister_observer(protocols::Observer *observer);
 
     // Get the current total holdings for a specific symbol.
     std::optional<double>
@@ -44,6 +55,19 @@ class EventPositionManager {
 
     // Clear all positions and reset PnL for all symbols.
     void clearAll();
+
+    void setEventsDb(const MEDP& db);
+
+    // load a snapshot directly (avoiding event replay)
+    void loadSnapshot(const common::SymbolPositions& snapshot);
+
+  private:
+    // PRIVATE METHODS
+    /**
+     * @brief takes a snapshot from the internal accounting class and saves it
+     * in the database
+     */
+    void takeSnapshot() const;
 };
 
 } // namespace traders

@@ -61,6 +61,7 @@ To generate and view the Doxygen documentation locally:
 
 ## Learnings
 
-Documentation on technical concepts and design decisions:
+Documentation on technical concepts, design decisions, and contribution standards:
 
+-   [Coding Style](doc/coding_style.md): Enforced naming conventions, formatting, and static analysis rules.
 -   [Floating Point Comparisons](doc/learning/numerics/floating_point_comparisons.md): Why and how we use hybrid epsilon comparisons for currency math.

@@ -55,15 +55,27 @@ run: build
 ro:
 	${RUN_CMD}
 
-BUILD_CMD:=cmake --build ${BUILD_DIR}
+JOBS := $(shell nproc)
+BUILD_CMD := cmake --build ${BUILD_DIR} -j${JOBS}
+# NOTE: skips tests
+FAST_BUILD_CMD := cmake --build ${BUILD_DIR} --target ${EXE} -j${JOBS}
 
 .PHONY: build
 build: prepare
 	${BUILD_CMD}
 
+.PHONY: fast-build
+fast-build: prepare
+	${FAST_BUILD_CMD}
+
 .PHONY: bo
 bo:
 	${BUILD_CMD}
+
+.PHONY: fbo
+fbo:
+	${FAST_BUILD_CMD}
+
 
 .PHONY: prepare
 prepare: conan
@@ -92,6 +104,10 @@ test:
 .PHONY: format
 format:
 	find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec ${CLANG_FORMAT} -style=file -i {} \;
+
+.PHONY: style-check
+style-check: prepare
+	cmake --build ${BUILD_DIR} --target style-check
 
 .PHONY: docs
 docs:

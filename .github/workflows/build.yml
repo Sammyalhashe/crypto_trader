@@ -29,10 +29,14 @@ jobs:
       - name: Debug info
         run: nix develop --no-pure-eval -c bash -c 'echo $CMAKE_PREFIX_PATH'
 
-      # Step 5: Build
-      - name: Build
-        run: nix develop --no-pure-eval -c build
+      # Step 5: Style Check
+      - name: Style Check
+        run: nix develop --impure --no-pure-eval -c style-check
 
-      # Step 6: Test
+      # Step 6: Build
+      - name: Build
+        run: nix develop --impure --no-pure-eval -c build
+
+      # Step 7: Test
       - name: Test
-        run: nix develop --no-pure-eval -c test
+        run: nix develop --impure --no-pure-eval -c test
