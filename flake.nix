@@ -48,6 +48,8 @@
                   cppcheck
                   python3
                   ninja
+                  mold
+                  lld
                   zig
                   zls
                   cmake-language-server
