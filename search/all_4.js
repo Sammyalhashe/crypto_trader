@@ -9,12 +9,14 @@ var searchData=
   ['e_5fset_5fbasis_5fprice_6',['e_SET_BASIS_PRICE',['../classcrypto__trader_1_1strategies_1_1_hodl_strategy_config.html#a58a8c5132e6e7eb12eb47470cb64ebd3af0fb96ad901b57436d5148045866618b',1,'crypto_trader::strategies::HodlStrategyConfig']]],
   ['emit_7',['Emit',['../namespacecrypto__trader_1_1common.html#ad7f65cb8b5caeaa11e11405914149e80',1,'crypto_trader::common']]],
   ['emit_8',['emit',['../classcrypto__trader_1_1strategies_1_1_hodl_strategy_config.html#ab663378d1554381bf2dc07eaa0e2f9e2',1,'crypto_trader::strategies::HodlStrategyConfig']]],
-  ['event_9',['Event',['../struct_event.html',1,'']]],
+  ['event_9',['Event',['../structcrypto__trader_1_1common_1_1_event.html',1,'crypto_trader::common']]],
   ['event_2eh_10',['Event.h',['../_event_8h.html',1,'']]],
   ['event_5fposition_5fmanager_2ecpp_11',['event_position_manager.cpp',['../event__position__manager_8cpp.html',1,'']]],
   ['event_5fposition_5fmanager_2eh_12',['event_position_manager.h',['../event__position__manager_8h.html',1,'']]],
   ['eventpositionmanager_13',['EventPositionManager',['../classcrypto__trader_1_1traders_1_1_event_position_manager.html',1,'crypto_trader::traders::EventPositionManager'],['../classcrypto__trader_1_1traders_1_1_event_position_manager.html#a232469c34da15fac64c1ab96b25ef65b',1,'crypto_trader::traders::EventPositionManager::EventPositionManager()']]],
-  ['eventtype_14',['EventType',['../_event_8h.html#a2628ea8d12e8b2563c32f05dc7fff6fa',1,'Event.h']]],
-  ['executor_15',['Executor',['../classcrypto__trader_1_1protocols_1_1_executor.html',1,'crypto_trader::protocols']]],
-  ['executor_2eh_16',['executor.h',['../executor_8h.html',1,'']]]
+  ['events_14',['Events',['../classcrypto__trader_1_1databases_1_1_market_events_db.html#a746be1dc3d319d164ad6935f0965fa74',1,'crypto_trader::databases::MarketEventsDb']]],
+  ['eventsdb_15',['eventsDb',['../classcrypto__trader_1_1traders_1_1_coinbase_trader_config.html#af51790e1d687524a59a837aa23c3327f',1,'crypto_trader::traders::CoinbaseTraderConfig']]],
+  ['eventtype_16',['EventType',['../namespacecrypto__trader_1_1common.html#a9badf6408efb17b02b48e30159c9ffb6',1,'crypto_trader::common']]],
+  ['executor_17',['Executor',['../classcrypto__trader_1_1protocols_1_1_executor.html',1,'crypto_trader::protocols']]],
+  ['executor_2eh_18',['executor.h',['../executor_8h.html',1,'']]]
 ];

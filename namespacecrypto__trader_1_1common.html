@@ -95,11 +95,18 @@ $(function(){initNavTree('namespacecrypto__trader_1_1common.html','',''); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:Accounting" id="r_Accounting"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcrypto__trader_1_1common_1_1_accounting.html">Accounting</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manages the accounting of trading activities, tracking positions and PnL.  <a href="classcrypto__trader_1_1common_1_1_accounting.html#details">More...</a><br /></td></tr>
 <tr class="memitem:Action" id="r_Action"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcrypto__trader_1_1common_1_1_action.html">Action</a></td></tr>
+<tr class="memitem:Event" id="r_Event"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcrypto__trader_1_1common_1_1_event.html">Event</a></td></tr>
 <tr class="memitem:MarketDataCoinbase" id="r_MarketDataCoinbase"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcrypto__trader_1_1common_1_1_market_data_coinbase.html">MarketDataCoinbase</a></td></tr>
 <tr class="memitem:Math" id="r_Math"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcrypto__trader_1_1common_1_1_math.html">Math</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides static utility methods for safe floating-point comparisons.  <a href="classcrypto__trader_1_1common_1_1_math.html#details">More...</a><br /></td></tr>
 <tr class="memitem:MonitorConfig" id="r_MonitorConfig"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcrypto__trader_1_1common_1_1_monitor_config.html">MonitorConfig</a></td></tr>
+<tr class="memitem:Position" id="r_Position"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcrypto__trader_1_1common_1_1_position.html">Position</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a single position (lot) within a larger holding.  <a href="structcrypto__trader_1_1common_1_1_position.html#details">More...</a><br /></td></tr>
+<tr class="memitem:SymbolPositions" id="r_SymbolPositions"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcrypto__trader_1_1common_1_1_symbol_positions.html">SymbolPositions</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Aggregates all positions and financial data for a specific trading symbol.  <a href="structcrypto__trader_1_1common_1_1_symbol_positions.html#details">More...</a><br /></td></tr>
 <tr class="memitem:Trade" id="r_Trade"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcrypto__trader_1_1common_1_1_trade.html">Trade</a></td></tr>
 <tr class="memitem:TradeResult" id="r_TradeResult"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcrypto__trader_1_1common_1_1_trade_result.html">TradeResult</a></td></tr>
 </table><table class="memberdecls">
@@ -117,6 +124,11 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:a9badf6408efb17b02b48e30159c9ffb6" id="r_a9badf6408efb17b02b48e30159c9ffb6"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9badf6408efb17b02b48e30159c9ffb6">EventType</a> { <a class="el" href="#a9badf6408efb17b02b48e30159c9ffb6ab898f04d9c3cf0dfb48712f2614a6805">ORDER_SUBMITTED</a>
+, <a class="el" href="#a9badf6408efb17b02b48e30159c9ffb6a74bd61cf89281de731b326354c484ba9">ORDER_FILLED</a>
+, <a class="el" href="#a9badf6408efb17b02b48e30159c9ffb6aa513b6b6ee48d4a651d46d9ea2a60547">ORDER_CANCELLED</a>
+, <a class="el" href="#a9badf6408efb17b02b48e30159c9ffb6a5d067dd72933c1ae462bcff25d4fd1b1">POSITION_UPDATE</a>
+ }</td></tr>
 <tr class="memitem:af5c14fd5e6d443f0f8b8f1305da9b799" id="r_af5c14fd5e6d443f0f8b8f1305da9b799"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af5c14fd5e6d443f0f8b8f1305da9b799">ReadFileOptions</a> { <a class="el" href="#af5c14fd5e6d443f0f8b8f1305da9b799ad01d878bb2edcbca05fe010ccb4b124f">ALL_CONTENTS</a>
 , <a class="el" href="#af5c14fd5e6d443f0f8b8f1305da9b799ae273595934c5b456284c5b250c3dce93">LAST_LINE</a>
  }</td></tr>
@@ -129,6 +141,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ac8b0ed78243259a36d130ef81cb0fffb" id="r_ac8b0ed78243259a36d130ef81cb0fffb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac8b0ed78243259a36d130ef81cb0fffb">readFile</a> (std::string *fileContents, const std::string &amp;filepath, const <a class="el" href="#af5c14fd5e6d443f0f8b8f1305da9b799">ReadFileOptions</a> &amp;readFileOptions)</td></tr>
 <tr class="memitem:aa416a417e8b89c3c5ce407447d14f3c0" id="r_aa416a417e8b89c3c5ce407447d14f3c0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa416a417e8b89c3c5ce407447d14f3c0">readJsonFile</a> (<a class="el" href="#a6e9db9e9990fb36bcb49bfe17a3448e1">json</a> *parsedJson, const std::string &amp;filepath)</td></tr>
 <tr class="memitem:a9e94952a721ea038137806e15536c671" id="r_a9e94952a721ea038137806e15536c671"><td class="memItemLeft" align="right" valign="top">nlohmann::json&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9e94952a721ea038137806e15536c671">value_or</a> (const nlohmann::json &amp;<a class="el" href="#a6e9db9e9990fb36bcb49bfe17a3448e1">json</a>, const std::string &amp;key, const nlohmann::json &amp;def)</td></tr>
+<tr class="memitem:af81d4379f4f9e3ea9ca0507279ca9d2f" id="r_af81d4379f4f9e3ea9ca0507279ca9d2f"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af81d4379f4f9e3ea9ca0507279ca9d2f">getCurrentTimestampMs</a> ()</td></tr>
 <tr class="memitem:a1bd6ff1fb759556129f3b9f018312530" id="r_a1bd6ff1fb759556129f3b9f018312530"><td class="memTemplParams" colspan="2">template&lt;common::MarketData T&gt; </td></tr>
 <tr class="memitem:a1bd6ff1fb759556129f3b9f018312530 template"><td class="memItemLeft" align="right" valign="top">T::Timestamp&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1bd6ff1fb759556129f3b9f018312530">getCurrentTimestampMs</a> ()</td></tr>
 <tr class="memitem:a4f3d634ceb8e5059e7cc96f5d84b4bad" id="r_a4f3d634ceb8e5059e7cc96f5d84b4bad"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4f3d634ceb8e5059e7cc96f5d84b4bad">parseISO8601ToMillis</a> (const std::string &amp;iso8601)</td></tr>
@@ -164,6 +177,34 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="a9badf6408efb17b02b48e30159c9ffb6" name="a9badf6408efb17b02b48e30159c9ffb6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9badf6408efb17b02b48e30159c9ffb6">&#9670;&#160;</a></span>EventType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#a9badf6408efb17b02b48e30159c9ffb6">crypto_trader::common::EventType</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a9badf6408efb17b02b48e30159c9ffb6ab898f04d9c3cf0dfb48712f2614a6805" name="a9badf6408efb17b02b48e30159c9ffb6ab898f04d9c3cf0dfb48712f2614a6805"></a>ORDER_SUBMITTED&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a9badf6408efb17b02b48e30159c9ffb6a74bd61cf89281de731b326354c484ba9" name="a9badf6408efb17b02b48e30159c9ffb6a74bd61cf89281de731b326354c484ba9"></a>ORDER_FILLED&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a9badf6408efb17b02b48e30159c9ffb6aa513b6b6ee48d4a651d46d9ea2a60547" name="a9badf6408efb17b02b48e30159c9ffb6aa513b6b6ee48d4a651d46d9ea2a60547"></a>ORDER_CANCELLED&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a9badf6408efb17b02b48e30159c9ffb6a5d067dd72933c1ae462bcff25d4fd1b1" name="a9badf6408efb17b02b48e30159c9ffb6a5d067dd72933c1ae462bcff25d4fd1b1"></a>POSITION_UPDATE&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
 <a id="af5c14fd5e6d443f0f8b8f1305da9b799" name="af5c14fd5e6d443f0f8b8f1305da9b799"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af5c14fd5e6d443f0f8b8f1305da9b799">&#9670;&#160;</a></span>ReadFileOptions</h2>
 
@@ -217,8 +258,33 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="af81d4379f4f9e3ea9ca0507279ca9d2f" name="af81d4379f4f9e3ea9ca0507279ca9d2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af81d4379f4f9e3ea9ca0507279ca9d2f">&#9670;&#160;</a></span>getCurrentTimestampMs() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t crypto_trader::common::getCurrentTimestampMs </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a1bd6ff1fb759556129f3b9f018312530" name="a1bd6ff1fb759556129f3b9f018312530"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1bd6ff1fb759556129f3b9f018312530">&#9670;&#160;</a></span>getCurrentTimestampMs()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a1bd6ff1fb759556129f3b9f018312530">&#9670;&#160;</a></span>getCurrentTimestampMs() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -270,6 +336,9 @@ template&lt;common::MarketData T&gt; </div>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">int64_t crypto_trader::common::parseISO8601ToMillis </td>
@@ -278,6 +347,11 @@ template&lt;common::MarketData T&gt; </div>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

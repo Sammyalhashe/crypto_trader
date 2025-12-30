@@ -9,5 +9,5 @@ var searchData=
   ['realtradingexecutor_6',['RealTradingExecutor',['../classcrypto__trader_1_1executors_1_1_real_trading_executor.html',1,'crypto_trader::executors::RealTradingExecutor&lt; T &gt;'],['../classcrypto__trader_1_1executors_1_1_real_trading_executor.html#a392f3c30b933270a1f3d6b3bdd7f8923',1,'crypto_trader::executors::RealTradingExecutor::RealTradingExecutor()']]],
   ['realtradingexecutorconfig_7',['RealTradingExecutorConfig',['../classcrypto__trader_1_1executors_1_1_real_trading_executor_config.html',1,'crypto_trader::executors']]],
   ['register_5fobserver_8',['register_observer',['../classcrypto__trader_1_1traders_1_1_event_position_manager.html#a39ddb0cdd6ae1c53a7e0c954e5e4178a',1,'crypto_trader::traders::EventPositionManager']]],
-  ['replay_5fevents_9',['replay_events',['../class_accounting.html#a9dee29504f4548016ddacf7828197967',1,'Accounting']]]
+  ['replay_5fevents_9',['replay_events',['../classcrypto__trader_1_1common_1_1_accounting.html#a62f58b9319e3d2093181b12c810e4758',1,'crypto_trader::common::Accounting']]]
 ];

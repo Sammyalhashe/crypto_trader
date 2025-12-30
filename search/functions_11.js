@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['value_5for_0',['value_or',['../namespacecrypto__trader_1_1common.html#a9e94952a721ea038137806e15536c671',1,'crypto_trader::common']]]
+  ['websocketclient_0',['WebsocketClient',['../classcrypto__trader_1_1protocols_1_1_websocket_client.html#a8920f4309863748cdbd9387f89a2f103',1,'crypto_trader::protocols::WebsocketClient']]]
 ];

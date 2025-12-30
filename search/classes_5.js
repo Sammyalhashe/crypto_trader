@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['marketdatacoinbase_0',['MarketDataCoinbase',['../classcrypto__trader_1_1common_1_1_market_data_coinbase.html',1,'crypto_trader::common']]],
-  ['marketdatadb_1',['MarketDataDB',['../classcrypto__trader_1_1databases_1_1_market_data_d_b.html',1,'crypto_trader::databases']]],
-  ['marketdatadb_3c_20crypto_5ftrader_3a_3acommon_3a_3amarketdatacoinbase_20_3e_2',['MarketDataDB&lt; crypto_trader::common::MarketDataCoinbase &gt;',['../classcrypto__trader_1_1databases_1_1_market_data_d_b.html',1,'crypto_trader::databases']]],
-  ['math_3',['Math',['../classcrypto__trader_1_1common_1_1_math.html',1,'crypto_trader::common']]],
-  ['monitorconfig_4',['MonitorConfig',['../structcrypto__trader_1_1common_1_1_monitor_config.html',1,'crypto_trader::common']]]
+  ['inserteventparams_0',['InsertEventParams',['../structcrypto__trader_1_1databases_1_1_insert_event_params.html',1,'crypto_trader::databases']]],
+  ['insertpositionsnapshotparams_1',['InsertPositionSnapshotParams',['../structcrypto__trader_1_1databases_1_1_insert_position_snapshot_params.html',1,'crypto_trader::databases']]],
+  ['insertsnapshotlotparams_2',['InsertSnapshotLotParams',['../structcrypto__trader_1_1databases_1_1_insert_snapshot_lot_params.html',1,'crypto_trader::databases']]]
 ];

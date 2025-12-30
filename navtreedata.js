@@ -57,7 +57,6 @@ var NAVTREE =
         [ "Functions", "globals_func.html", null ],
         [ "Variables", "globals_vars.html", null ],
         [ "Typedefs", "globals_type.html", null ],
-        [ "Enumerations", "globals_enum.html", null ],
         [ "Macros", "globals_defs.html", null ]
       ] ]
     ] ]
@@ -67,8 +66,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_accounting_8cpp.html",
-"classcrypto__trader_1_1strategies_1_1_hodl_strategy_config.html",
-"namespacemembers_type.html"
+"classcrypto__trader_1_1strategies_1_1_hodl_strategy.html#aa0b6ec5c3978663a0660ed973033cdad",
+"namespacecrypto__trader_1_1common.html#aef001db606dfb37faf4d6c0856046e33"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

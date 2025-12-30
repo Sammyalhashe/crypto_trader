@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="21,5,166,50"/>
+<area shape="rect" id="Node000001" href="$classcrypto__trader_1_1adaptors_1_1_coinbase_web_socket_client_async.html" title=" " alt="" coords="230,5,467,50"/>
+<area shape="poly" id="edge6_Node000000_Node000001" title=" " alt="" coords="181,25,229,25,229,30,181,30"/>
+<area shape="rect" id="Node000002" href="$classcrypto__trader_1_1protocols_1_1_websocket_client.html" title=" " alt="" coords="5,75,182,119"/>
+<area shape="poly" id="edge8_Node000002_Node000001" title=" " alt="" coords="192,67,263,48,264,53,194,73"/>
+<area shape="rect" id="Node000003" href="$classcrypto__trader_1_1adaptors_1_1_coinbase_web_socket_client.html" title=" " alt="" coords="249,75,448,119"/>
+<area shape="poly" id="edge7_Node000002_Node000003" title=" " alt="" coords="198,94,249,94,249,100,198,100"/>
+</map>

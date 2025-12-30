@@ -1,6 +1,6 @@
 var _accounting_8h =
 [
-    [ "Position", "struct_position.html", "struct_position" ],
-    [ "SymbolPositions", "struct_symbol_positions.html", "struct_symbol_positions" ],
-    [ "Accounting", "class_accounting.html", "class_accounting" ]
+    [ "crypto_trader::common::Position", "structcrypto__trader_1_1common_1_1_position.html", "structcrypto__trader_1_1common_1_1_position" ],
+    [ "crypto_trader::common::SymbolPositions", "structcrypto__trader_1_1common_1_1_symbol_positions.html", "structcrypto__trader_1_1common_1_1_symbol_positions" ],
+    [ "crypto_trader::common::Accounting", "classcrypto__trader_1_1common_1_1_accounting.html", "classcrypto__trader_1_1common_1_1_accounting" ]
 ];

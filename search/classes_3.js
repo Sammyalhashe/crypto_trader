@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['event_0',['Event',['../struct_event.html',1,'']]],
-  ['eventpositionmanager_1',['EventPositionManager',['../classcrypto__trader_1_1traders_1_1_event_position_manager.html',1,'crypto_trader::traders']]],
-  ['executor_2',['Executor',['../classcrypto__trader_1_1protocols_1_1_executor.html',1,'crypto_trader::protocols']]]
+  ['geteventsbysymbolparams_0',['GetEventsBySymbolParams',['../structcrypto__trader_1_1databases_1_1_get_events_by_symbol_params.html',1,'crypto_trader::databases']]],
+  ['geteventssinceparams_1',['GetEventsSinceParams',['../structcrypto__trader_1_1databases_1_1_get_events_since_params.html',1,'crypto_trader::databases']]],
+  ['getlatestsnapshotparams_2',['GetLatestSnapshotParams',['../structcrypto__trader_1_1databases_1_1_get_latest_snapshot_params.html',1,'crypto_trader::databases']]],
+  ['getsnapshotlotsparams_3',['GetSnapshotLotsParams',['../structcrypto__trader_1_1databases_1_1_get_snapshot_lots_params.html',1,'crypto_trader::databases']]]
 ];

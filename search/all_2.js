@@ -6,7 +6,7 @@ var searchData=
   ['clearall_3',['clearAll',['../classcrypto__trader_1_1traders_1_1_event_position_manager.html#a1113ea40fc004772a73e4897b7e0c925',1,'crypto_trader::traders::EventPositionManager']]],
   ['clienttype_4',['ClientType',['../classcrypto__trader_1_1traders_1_1_coinbase_trader_config.html#a196a6584e664898347751512a4bfbfd5',1,'crypto_trader::traders::CoinbaseTraderConfig']]],
   ['clienttype_5',['clientType',['../classcrypto__trader_1_1traders_1_1_coinbase_trader_config.html#a6db6f8ac27d59799782c5bc252c9bf93',1,'crypto_trader::traders::CoinbaseTraderConfig']]],
-  ['close_6',['close',['../classcrypto__trader_1_1adaptors_1_1_database_websocket_client.html#a4dd1d187d04023f6c38b48bfc0c8e6d8',1,'crypto_trader::adaptors::DatabaseWebsocketClient::close()'],['../classcrypto__trader_1_1protocols_1_1_websocket_client.html#a361e084c862adaa4e4ae443bb5debaab',1,'crypto_trader::protocols::WebsocketClient::close()']]],
+  ['close_6',['close',['../classcrypto__trader_1_1protocols_1_1_websocket_client.html#a361e084c862adaa4e4ae443bb5debaab',1,'crypto_trader::protocols::WebsocketClient']]],
   ['coinbase_5fwebsocket_5fclient_2ecpp_7',['coinbase_websocket_client.cpp',['../coinbase__websocket__client_8cpp.html',1,'']]],
   ['coinbase_5fwebsocket_5fclient_2eh_8',['coinbase_websocket_client.h',['../coinbase__websocket__client_8h.html',1,'']]],
   ['coinbase_5fwebsocket_5fclient_5fasync_2ecpp_9',['coinbase_websocket_client_async.cpp',['../coinbase__websocket__client__async_8cpp.html',1,'']]],
