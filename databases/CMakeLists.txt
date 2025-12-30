@@ -18,12 +18,6 @@ target_include_directories(databases PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generat
 
 add_dependencies(databases generate_queries)
 
-target_precompile_headers(databases
-                          PRIVATE
-                          <SQLiteCpp/SQLiteCpp.h>
-                          <boost/lockfree/spsc_queue.hpp>
-                          <spdlog/spdlog.h>)
-
 target_link_libraries(databases
                       PRIVATE
                       common

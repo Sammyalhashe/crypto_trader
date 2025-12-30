@@ -8,6 +8,13 @@ include(cmake/Linker.cmake)
 
 project(crypto_trader C CXX)
 
+# Speed up build
+set(CMAKE_UNITY_BUILD ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
+# Fix for spdlog/fmt 10+ compilation on newer clang causing consteval errors
+add_compile_definitions("SPDLOG_FMT_STRING(x)=x")
+
 if(APPLE)
     message(STATUS "FORCE ENABLING C++20 CONCURRENCY FOR MACOS")
     # 1. Disable the "Your OS is too old for this" check
