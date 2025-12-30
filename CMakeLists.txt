@@ -70,25 +70,8 @@ include(cmake/StaticAnalyzers.cmake)
 
 # doxygen support
 include(cmake/Doxygen.cmake)
-add_custom_target(docs
-    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_CONFIG}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Generating Doxygen documentation..."
-    VERBATIM
-)
+enable_doxygen()
 
-add_custom_target(cppcheck
-    COMMAND cppcheck --enable=warning,style,performance,portability --suppress=missingIncludeSystem --suppress=unusedFunction --suppress=knownConditionTrueFalse --suppress=virtualCallInConstructor --suppress=noExplicitConstructor --suppress=missingOverride --suppress=shadowArgument --suppress=useStlAlgorithm --suppress=dangerousTypeCast --suppress=variableScope --suppress=unreadVariable --suppress=noConstructor --suppress=cstyleCast --suppress=unusedVariable --suppress=normalCheckLevelMaxBranches --std=c++20 --quiet --error-exitcode=1 ${CMAKE_SOURCE_DIR}/adaptors ${CMAKE_SOURCE_DIR}/common ${CMAKE_SOURCE_DIR}/databases ${CMAKE_SOURCE_DIR}/executors ${CMAKE_SOURCE_DIR}/protocols ${CMAKE_SOURCE_DIR}/strategies ${CMAKE_SOURCE_DIR}/traders
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Running cppcheck..."
-)
-
-add_custom_target(style-check
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/style_checker.py adaptors common databases executors protocols strategies traders
-    DEPENDS cppcheck
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Running style checker..."
-)
 # project dependencies below
 find_package(OpenSSL REQUIRED)
 find_package(Boost CONFIG 1.87.0 COMPONENTS thread system serialization REQUIRED)
