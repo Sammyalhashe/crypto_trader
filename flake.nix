@@ -65,6 +65,13 @@
                   gtest
                   sqlitecpp
                   sqlite
+
+                  # ocaml
+                  ocaml
+                  dune_3
+                  ocamlPackages.dream
+                  ocamlPackages.ocaml-lsp
+                  ocamlPackages.utop
                 ];
 
                 scripts = {
@@ -83,6 +90,7 @@
                   clean.exec = "make clean";
                   test.exec = "make test";
                   run.exec = "make run";
+                  dashboard.exec = "cd ocaml && dune exec crypto_trader_dashboard --watch";
                   docs.exec = "cmake --build cmake.bld/Linux/full --target doc_doxygen";
                   serve-docs.exec = "python3 -m http.server 8000 --directory cmake.bld/Linux/full/doc_doxygen/html";
                 };

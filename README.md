@@ -20,6 +20,7 @@ A high-performance cryptocurrency trading bot written in C++20, featuring real-t
 -   `adaptors/`: Exchange connectivity (WebSocket clients).
 -   `common/`: Shared utilities (Math, JSON, Time, Serialization).
 -   `executors/`: Order execution logic (Paper vs. Real).
+-   `ocaml/`: Web dashboard for monitoring and control (OCaml/Dream).
 -   `strategies/`: Trading algorithms (HODL, Simple).
 -   `traders/`: Core orchestration connecting adaptors, strategies, and executors.
 -   `zig/`: Zig modules for performance-critical math and data structures.

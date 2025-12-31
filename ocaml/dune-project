@@ -1,0 +1,13 @@
+(lang dune 3.11)
+(name crypto_trader_dashboard)
+(package
+ (name crypto_trader_dashboard)
+ (synopsis "Web dashboard for Crypto Trader")
+ (description "Control plane and monitoring dashboard for the C++ Crypto Trader")
+ (depends
+  (ocaml
+   (>= 4.14.0))
+  (dune
+   (>= 3.11))
+  (dream
+   (>= 1.0.0))))
