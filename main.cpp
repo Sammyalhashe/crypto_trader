@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 #ifdef __linux__
     const char           *trapFileName = "/tmp/crypto_trader";
     int                   inotify_fd   = common::createTrapFile(trapFileName);
-    common::MonitorConfig monitorConfig{.d_inotifyFd   = inotify_fd,
+    common::MonitorConfig monitorConfig{.d_inotifyFd    = inotify_fd,
                                         .d_trapFilePath = trapFileName,
                                         .d_isRunning    = context.d_isRunning};
 

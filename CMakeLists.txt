@@ -1,6 +1,19 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.29)
+
+
+# add custom functions
+include(cmake/Functions.cmake)
+include(cmake/Linker.cmake)
+
 
 project(crypto_trader C CXX)
+
+# Speed up build
+set(CMAKE_UNITY_BUILD ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
+# Nix compatibility
+include(cmake/NixSupport.cmake)
 
 if(APPLE)
     message(STATUS "FORCE ENABLING C++20 CONCURRENCY FOR MACOS")
@@ -21,6 +34,9 @@ endif()
 # specify the cmake standard
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Enable C++20 module support fixes
+include(cmake/CxxModules.cmake)
 
 # if a conan build or not
 SET(CACHE{CONAN} BOOL "If in a Conan build" VALUE true false)
@@ -60,7 +76,7 @@ include(cmake/Functions.cmake)
 # Also, there is a bug in clang and it specifically affects boost hence the
 # disabling of concepts in boost.
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "-fvisibility=hidden -DBOOST_ASIO_DISABLE_CONCEPTS")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -DBOOST_ASIO_DISABLE_CONCEPTS")
 endif()
 
 target_compile_options(project_flags INTERFACE ${SANITIZE})
@@ -119,6 +135,7 @@ foreach(dir ${subdirs})
     message("\tadding dir ${dir}...")
     add_subdirectory(${dir})
 endforeach()
+add_subdirectory(modules)
 
 # zig
 set(ZIG_LIBS "")
@@ -132,7 +149,8 @@ target_link_libraries(${PROJECT_NAME}
                       ${project_flags}
                       ${subdirs}
                       ${lib_deps}
-                      ${ZIG_LIBS})
+                      ${ZIG_LIBS}
+                      hello_module)
 
 # testing
 enable_testing()
