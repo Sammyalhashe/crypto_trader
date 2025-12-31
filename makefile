@@ -14,6 +14,10 @@ ifeq ($(strip $(CLANG_FORMAT)),)
 	CLANG_FORMAT=clang-format
 endif
 
+ifeq ($(strip $(GENERATOR)),)
+	GENERATOR=Ninja
+endif
+
 G=
 ifneq ($(strip $(GENERATOR)),)
 	G=-G $(GENERATOR)
