@@ -91,6 +91,7 @@
                   test.exec = "make test";
                   run.exec = "make run";
                   dashboard.exec = "cd ocaml && dune exec crypto_trader_dashboard --watch";
+                  dashboard-test.exec = "cd ocaml && dune runtest";
                   docs.exec = "cmake --build cmake.bld/Linux/full --target doc_doxygen";
                   serve-docs.exec = "python3 -m http.server 8000 --directory cmake.bld/Linux/full/doc_doxygen/html";
                 };
