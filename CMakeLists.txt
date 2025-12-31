@@ -12,14 +12,8 @@ project(crypto_trader C CXX)
 set(CMAKE_UNITY_BUILD ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 
-if(UNIX AND NOT APPLE)
-    # Fix for GTest shared libraries not being found during test discovery on Nix/Linux
-    # This forces CMake to add the paths of linked shared libraries (like those in /nix/store)
-    # to the RPATH of the build-tree executables.
-    set(CMAKE_SKIP_BUILD_RPATH FALSE)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-endif()
+# Nix compatibility
+include(cmake/NixSupport.cmake)
 
 if(APPLE)
     message(STATUS "FORCE ENABLING C++20 CONCURRENCY FOR MACOS")
