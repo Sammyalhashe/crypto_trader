@@ -39,4 +39,12 @@ if(UNIX AND NOT APPLE)
     # More critically for the build tree, it signals intent to rely on RPATHs derived
     # from link directories.
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+    # Force the build RPATH to include the directories where libraries are found.
+    # This is crucial for Nix, where libraries are in /nix/store/... and not in
+    # standard system paths.
+    # By default, CMake might strip these if it thinks they are system paths,
+    # or if CMAKE_SKIP_BUILD_RPATH is accidentally true.
+    # We explicitly tell CMake to use the link paths for the build RPATH as well.
+    list(APPEND CMAKE_BUILD_RPATH "${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")
 endif()
