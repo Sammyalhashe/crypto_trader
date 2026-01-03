@@ -14,6 +14,32 @@
 namespace crypto_trader {
 namespace traders {
 
+// CREATORS
+EventPositionManager::EventPositionManager() {}
+EventPositionManager::~EventPositionManager() {}
+
+// MANIPULATORS
+
+void EventPositionManager::register_observer(protocols::Observer *observer)
+{
+    d_observers.push_back(observer);
+}
+
+void EventPositionManager::unregister_observer(protocols::Observer *observer)
+{
+    auto it = std::find(d_observers.begin(), d_observers.end(), observer);
+    if (it != d_observers.end()) {
+        d_observers.erase(it);
+    }
+}
+
+void EventPositionManager::clear(const std::string_view& symbol) {}
+
+void EventPositionManager::clearAll() {}
+
+void EventPositionManager::setEventsDb(const MEDP& db) { d_db_p = db; }
+
+// PositionManager implementation
 void EventPositionManager::submit_event(const common::Event& e)
 {
     if (d_db_p) {
@@ -27,7 +53,6 @@ void EventPositionManager::submit_event(const common::Event& e)
         trade.d_symbol   = e.d_symbol;
         trade.d_price    = e.d_price;
         trade.d_quantity = e.d_qty;
-
 
         for (auto observer : d_observers) {
             observer->on_trade(trade);
@@ -47,19 +72,6 @@ void EventPositionManager::submit_event(const common::Event& e)
     if (now - d_lastSnapshotTime >= d_snapshotInterval) {
         takeSnapshot();
         d_lastSnapshotTime = now;
-    }
-}
-
-void EventPositionManager::register_observer(protocols::Observer *observer)
-{
-    d_observers.push_back(observer);
-}
-
-void EventPositionManager::unregister_observer(protocols::Observer *observer)
-{
-    auto it = std::find(d_observers.begin(), d_observers.end(), observer);
-    if (it != d_observers.end()) {
-        d_observers.erase(it);
     }
 }
 
@@ -106,8 +118,7 @@ EventPositionManager::unrealizedPnl(const std::string_view& symbol,
     auto        it       = snapshot.find(std::string(symbol));
 
     if (it != snapshot.end()) {
-        if (crypto_trader::common::Math::isGreater(it->second.d_totalQty,
-                                                   0.0))
+        if (crypto_trader::common::Math::isGreater(it->second.d_totalQty, 0.0))
         {
             return (currentPrice - it->second.d_averagePrice) *
                    it->second.d_totalQty;
@@ -115,13 +126,6 @@ EventPositionManager::unrealizedPnl(const std::string_view& symbol,
     }
     return std::nullopt;
 }
-
-void EventPositionManager::clear(const std::string_view& symbol) {}
-
-void EventPositionManager::clearAll() {}
-
-void EventPositionManager::setEventsDb(const MEDP& db) { d_db_p = db; }
-
 // PRIVATE METHODS
 void EventPositionManager::takeSnapshot() const
 {
