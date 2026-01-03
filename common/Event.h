@@ -4,7 +4,6 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-
 namespace crypto_trader {
 namespace common {
 

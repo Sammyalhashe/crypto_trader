@@ -111,8 +111,8 @@ TEST(MarketDataTest, thread_safety)
     std::thread writer([&database]() {
         for (int i = 0; i < 500; ++i) {
             common::MarketDataCoinbase data;
-            data.d_symbol = "BTC";
-            data.d_price = 1000.0 + i;
+            data.d_symbol   = "BTC";
+            data.d_price    = 1000.0 + i;
             data.d_sequence = i;
             database.add_data(data.d_symbol, data);
         }
@@ -136,11 +136,11 @@ TEST(MarketDataTest, auto_pruning)
 
     for (int i = 0; i < 150; ++i) {
         common::MarketDataCoinbase data;
-        data.d_symbol = "BTC";
-        data.d_price = 1000.0 + i;
+        data.d_symbol   = "BTC";
+        data.d_price    = 1000.0 + i;
         data.d_sequence = i;
         database.add_data(data.d_symbol, data);
     }
 
-    EXPECT_EQ(database.size("BTC"), 100);  // Auto-pruned to 100
+    EXPECT_EQ(database.size("BTC"), 100); // Auto-pruned to 100
 }

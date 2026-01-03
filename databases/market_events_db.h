@@ -25,7 +25,8 @@ class MarketEventsDb {
     // sqlite database
     SQLite::Database d_db;
     // queue for batching writes to database
-    boost::lockfree::spsc_queue<common::Event, boost::lockfree::capacity<10000>>
+    boost::lockfree::spsc_queue<common::Event,
+                                boost::lockfree::capacity<10000>>
         d_eventQueue;
     // thread for writing the batched events to the db
     std::jthread      d_writerThread;
@@ -92,9 +93,8 @@ class MarketEventsDb {
      * @param snapshots
      * @return `bool` on success
      */
-    bool
-    logSnapshots(const std::vector<common::SymbolPositions>& snapshots) noexcept(
-        true);
+    bool logSnapshots(
+        const std::vector<common::SymbolPositions>& snapshots) noexcept(true);
 
     /**
      * @brief get latest snapshot for a given `symbol`

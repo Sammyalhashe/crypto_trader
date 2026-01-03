@@ -147,7 +147,7 @@ void CoinbaseWebSocketClientAsync::on_handshake(beast::error_code ec)
     }
 
     SPDLOG_INFO("Writing the request:\n{}\nto coinbase",
-                 d_config.d_text.dump(4));
+                d_config.d_text.dump(4));
     d_ws.async_write(
         net::buffer(d_config.d_text.dump()),
         beast::bind_front_handler(&CoinbaseWebSocketClientAsync::on_write,

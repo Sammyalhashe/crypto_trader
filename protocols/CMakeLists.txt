@@ -3,6 +3,12 @@ set(PROTOCOLS_SRC websocket_client.cpp trader.cpp strategy.cpp position_manager.
 
 add_library(protocols STATIC ${PROTOCOLS_H} ${PROTOCOLS_SRC})
 
+target_sources(protocols
+  PUBLIC
+    FILE_SET CXX_MODULES FILES
+      risk_manager.cppm
+)
+
 target_link_libraries(protocols
                       PRIVATE
                       common

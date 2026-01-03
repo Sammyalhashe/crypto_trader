@@ -176,6 +176,7 @@ CoinbaseTrader::CoinbaseTrader(const CoinbaseTraderConfig& config)
 , d_executor()
 , d_lastSequenceNumbers()
 , d_positionManager()
+, d_riskManager()
 {
 
     if (d_config.eventsDb()) {
@@ -285,6 +286,11 @@ void CoinbaseTrader::processAction(const common::Action& action)
     }
     std::stringstream ss;
     ss << action.d_type;
+
+    SPDLOG_INFO(
+        "Checking if action {} can be processed by evaluating risk compliance",
+        action);
+
     SPDLOG_INFO("Processing action: {}", ss.str());
 
     if (d_executor) {

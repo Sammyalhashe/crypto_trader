@@ -166,7 +166,7 @@ int handleInotifyEvents(const MonitorConfig& config)
 
             if (event->mask & IN_MODIFY) {
                 SPDLOG_INFO("inotify_fd detected change in file: {}",
-                             config.d_trapFilePath);
+                            config.d_trapFilePath);
                 std::string fileContents;
                 readFile(&fileContents,
                          config.d_trapFilePath,

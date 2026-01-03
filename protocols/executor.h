@@ -49,13 +49,15 @@ class Executor {
     /**
      * @brief Retrieves the current position (holdings) for a given product.
      * @param product The symbol of the product (e.g., "BTC-USD").
-     * @return An optional containing the quantity held, or empty if no position.
+     * @return An optional containing the quantity held, or empty if no
+     * position.
      */
     virtual std::optional<double>
     getPosition(const std::string_view& product) const = 0;
 
     /**
-     * @brief Processes new ticker data to update the executor's internal state.
+     * @brief Processes new ticker data to update the executor's internal
+     * state.
      * @param product The symbol of the product for the ticker.
      * @param price The latest price of the product.
      * @param timestamp The timestamp of the ticker data.

@@ -90,7 +90,7 @@ void CoinbaseWebSocketClient::open()
 
     // Send the message
     SPDLOG_INFO("Writing the request:\n{}\nto coinbase",
-                 d_config.d_text.dump(4));
+                d_config.d_text.dump(4));
     d_ws.write(net::buffer(d_config.d_text.dump()));
 
     // read a message into the buffer
