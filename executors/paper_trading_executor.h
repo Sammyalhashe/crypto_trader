@@ -58,35 +58,42 @@ class PaperTradingExecutorConfig {
  * @brief Represents a simulated trade executed by the PaperTradingExecutor.
  */
 struct PaperTrade {
-    std::string d_symbol;    //!< The product that was traded.
-    common::Side d_side;     //!< Side of the trade (Buy or Sell).
-    std::string d_timestamp; //!< Time when the trade was finalized.
-    double d_price;          //!< Price at which the trade was executed.
-    double d_amount;         //!< Amount of product bought/sold.
-    double d_commission;     //!< Commission paid on the trade.
+    std::string  d_symbol;     //!< The product that was traded.
+    common::Side d_side;       //!< Side of the trade (Buy or Sell).
+    std::string  d_timestamp;  //!< Time when the trade was finalized.
+    double       d_price;      //!< Price at which the trade was executed.
+    double       d_amount;     //!< Amount of product bought/sold.
+    double       d_commission; //!< Commission paid on the trade.
 }; // PaperTrade
 
 /**
- * @brief A concrete implementation of the Executor protocol for paper (simulated) trading.
+ * @brief A concrete implementation of the Executor protocol for paper
+ * (simulated) trading.
  *
- * This executor manages an internal cash balance and positions, simulating trade executions
- * without interacting with real exchanges.
+ * This executor manages an internal cash balance and positions, simulating
+ * trade executions without interacting with real exchanges.
  * @tparam T The MarketData type that the executor processes.
  */
 template <common::MarketData T>
 class PaperTradingExecutor : public protocols::Executor<T> {
 
   private:
-    double d_balance;                                    //!< Current cash balance in the base currency (e.g., USD).
-    traders::EventPositionManager& d_positionManager; //!< Manages positions for different products.
-    std::unordered_map<std::string, T> d_lastMarketPrices; //!< The last market prices recorded for each product.
-    PaperTradingExecutorConfig d_config;                 //!< Configuration for the paper trader.
+    double
+        d_balance; //!< Current cash balance in the base currency (e.g., USD).
+    traders::EventPositionManager&
+        d_positionManager; //!< Manages positions for different products.
+    std::unordered_map<std::string, T>
+        d_lastMarketPrices; //!< The last market prices recorded for each
+                            //!< product.
+    PaperTradingExecutorConfig
+        d_config; //!< Configuration for the paper trader.
 
   public:
     /**
      * @brief Constructs a PaperTradingExecutor.
      * @param config The configuration for the executor.
-     * @param positionManager A reference to the EventPositionManager for tracking positions.
+     * @param positionManager A reference to the EventPositionManager for
+     * tracking positions.
      */
     PaperTradingExecutor(const PaperTradingExecutorConfig& config,
                          traders::EventPositionManager&    positionManager);
@@ -124,7 +131,8 @@ class PaperTradingExecutor : public protocols::Executor<T> {
     /**
      * @brief Gets the current position for a given product.
      * @param product The symbol of the product.
-     * @return An optional containing the quantity held, or empty if no position.
+     * @return An optional containing the quantity held, or empty if no
+     * position.
      */
     std::optional<double>
     getPosition(const std::string_view& product) const override;
@@ -140,7 +148,8 @@ class PaperTradingExecutor : public protocols::Executor<T> {
                            const T::Timestamp&     timestamp) override;
 
     /**
-     * @brief Gets the total realized Profit and Loss for the configured product.
+     * @brief Gets the total realized Profit and Loss for the configured
+     * product.
      * @param product The symbol of the product.
      * @return The total realized PnL.
      */
@@ -153,9 +162,11 @@ class PaperTradingExecutor : public protocols::Executor<T> {
     double balance() const;
 
     /**
-     * @brief Returns either the realized or unrealized PnL for the given product.
+     * @brief Returns either the realized or unrealized PnL for the given
+     * product.
      * @param product The symbol of the product.
-     * @param realize If true, returns realized PnL; otherwise, returns unrealized PnL.
+     * @param realize If true, returns realized PnL; otherwise, returns
+     * unrealized PnL.
      * @return An optional containing the PnL, or empty if not applicable.
      */
     std::optional<double> pnl(const std::string_view& product,
@@ -164,7 +175,8 @@ class PaperTradingExecutor : public protocols::Executor<T> {
     /**
      * @brief Gets the average cost basis for a given product.
      * @param product The symbol of the product.
-     * @return An optional containing the average cost basis, or empty if no position.
+     * @return An optional containing the average cost basis, or empty if no
+     * position.
      */
     std::optional<double>
     getAverageCostBasis(const std::string_view& product) const;

@@ -3,6 +3,13 @@ set(STRATEGIES_SRC simple.cpp hodl.cpp)
 
 add_library(strategies STATIC ${STRATEGIES_H} ${STRATEGIES_SRC})
 
+
+target_sources(strategies
+  PUBLIC
+    FILE_SET CXX_MODULES FILES
+      risk_manager_v1.cppm
+)
+
 if(CONAN)
     target_link_libraries(strategies
                           PRIVATE

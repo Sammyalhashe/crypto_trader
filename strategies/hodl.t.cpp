@@ -2,8 +2,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <functional>
 #include <string_view>
@@ -15,7 +15,6 @@ using namespace crypto_trader::common;
 using namespace strategies;
 using namespace traders;
 using namespace testing;
-
 
 using SV   = std::string_view;
 using Json = nlohmann::json;
@@ -36,13 +35,14 @@ void buildNewSocketMessage(Json     *json,
 
 void dummyHandleAction(const common::Action& action) {}
 
-
 class MockEventPositionManager : public EventPositionManager {
-public:
-    MOCK_METHOD(std::optional<double>, currentHoldings, (const std::string_view& symbol), (const override));
+  public:
+    MOCK_METHOD(std::optional<double>,
+                currentHoldings,
+                (const std::string_view& symbol),
+                (const override));
     MOCK_METHOD(void, submit_event, (const common::Event& e), (override));
 };
-
 
 } // namespace
 
@@ -54,7 +54,7 @@ TEST(HodlStrategyTest, XPercentRiseTest)
         .setPercentDown(5)
         .setInitStrategy(HodlStrategyConfig::e_BUY_IMMEDIATELY)
         .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
-    
+
     MockEventPositionManager mockPm;
     ON_CALL(mockPm, currentHoldings(_)).WillByDefault(Return(1.0));
     EXPECT_CALL(mockPm, submit_event(_)).Times(AtLeast(0));
@@ -85,7 +85,7 @@ TEST(HodlStrategyTest, YPercentFallTest)
         .setPercentUp(5)
         .setInitStrategy(HodlStrategyConfig::e_BUY_IMMEDIATELY)
         .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
-    
+
     MockEventPositionManager mockPm;
     ON_CALL(mockPm, currentHoldings(_)).WillByDefault(Return(1.0));
     EXPECT_CALL(mockPm, submit_event(_)).Times(AtLeast(0));
@@ -124,7 +124,7 @@ TEST(HodlStrategyTest, BASIS_PRICE_INIT)
         .setPercentUp(5)
         .setInitStrategy(HodlStrategyConfig::e_SET_BASIS_PRICE)
         .setEmit(std::bind(&dummyHandleAction, std::placeholders::_1));
-    
+
     MockEventPositionManager mockPm;
     ON_CALL(mockPm, currentHoldings(_)).WillByDefault(Return(0.0));
     EXPECT_CALL(mockPm, submit_event(_)).Times(AtLeast(0));

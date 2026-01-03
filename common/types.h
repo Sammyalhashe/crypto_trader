@@ -4,9 +4,14 @@
 #include "serialization.h"
 
 #include <cstdint>
+#include <fmt/core.h>
 #include <functional>
 #include <ostream>
 #include <string>
+
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 
 namespace crypto_trader {
 
@@ -48,8 +53,8 @@ struct Action {
 
 struct Trade {
     std::string d_symbol;
-    double d_price;
-    double d_quantity;
+    double      d_price;
+    double      d_quantity;
 };
 
 typedef std::function<void(const Action&)> Emit;
@@ -139,5 +144,57 @@ void MarketDataCoinbase::serialize(Archive&           archive,
 
 } // namespace common
 } // namespace crypto_trader
+
+/**
+ * @brief fmt formatter specialization for crypto_trader::common::Side.
+ *
+ * Allows formatting of Side enum values using fmt library.
+ * Outputs "BUY" for e_BUY, "SELL" for e_SELL, and "UNKNOWN" for other values.
+ */
+template <>
+struct fmt::formatter<crypto_trader::common::Side> {
+    constexpr auto parse(fmt::format_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(crypto_trader::common::Side s, FormatContext& ctx) const
+    {
+        switch (s) {
+        case crypto_trader::common::Side::e_BUY:
+            return fmt::format_to(ctx.out(), "BUY");
+        case crypto_trader::common::Side::e_SELL:
+            return fmt::format_to(ctx.out(), "SELL");
+        default:
+            return fmt::format_to(ctx.out(), "UNKNOWN");
+        }
+    }
+};
+
+/**
+ * @brief fmt formatter specialization for crypto_trader::common::Action.
+ *
+ * Enables custom formatting of Action objects using the fmt library.
+ * Formats as: "{Side}({product}, {quantity})", with quantity shown to two decimal places.
+ */
+template <>
+struct fmt::formatter<crypto_trader::common::Action> {
+    constexpr auto parse(fmt::format_parse_context& ctx)
+    {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const crypto_trader::common::Action& act,
+                FormatContext&                       ctx) const
+    {
+        return fmt::format_to(ctx.out(),
+                              "{}({}, {:.2f})",
+                              act.d_type,
+                              act.d_product,
+                              act.d_quantity);
+    }
+};
 
 #endif // INCLUDED_TYPES

@@ -26,7 +26,7 @@ void Accounting::apply_event(const Event& e)
                 symbolPositions.d_totalQty * symbolPositions.d_averagePrice;
             double new_order_value = e.d_qty * e.d_price;
 
-            position.d_totalQty = e.d_qty;
+            position.d_totalQty  = e.d_qty;
             position.d_price     = e.d_price;
             position.d_timestamp = e.d_timestamp;
 
@@ -39,10 +39,8 @@ void Accounting::apply_event(const Event& e)
         else { // Sell
             double qty_to_sell = -e.d_qty;
 
-            if (Math::isLessOrEqual(
-                    symbolPositions.d_totalQty, 0.0) ||
-                Math::isLess(
-                    symbolPositions.d_totalQty, qty_to_sell))
+            if (Math::isLessOrEqual(symbolPositions.d_totalQty, 0.0) ||
+                Math::isLess(symbolPositions.d_totalQty, qty_to_sell))
             {
                 SPDLOG_ERROR(
                     "Attempting to sell more {} than available.\nTotal "
@@ -71,8 +69,8 @@ void Accounting::apply_event(const Event& e)
                 symbolPositions.d_totalQty -= quantity_to_sell;
                 symbolPositions.d_timestamp = e.d_timestamp;
 
-                bool shouldRemove = Math::isLessOrEqual(
-                    position.d_totalQty, 0.0);
+                bool shouldRemove =
+                    Math::isLessOrEqual(position.d_totalQty, 0.0);
 
                 // remove position if fully sold
                 if (shouldRemove) {
@@ -85,9 +83,7 @@ void Accounting::apply_event(const Event& e)
                 }
             }
 
-            if (Math::isGreater(
-                    symbolPositions.d_totalQty, 0.0))
-            {
+            if (Math::isGreater(symbolPositions.d_totalQty, 0.0)) {
                 double totalCost = 0.0;
                 for (const auto& lot : symbolPositions.d_positions_in_time) {
                     totalCost += lot.d_price * lot.d_totalQty;
@@ -98,7 +94,7 @@ void Accounting::apply_event(const Event& e)
             else {
                 symbolPositions.d_averagePrice = 0.0;
                 symbolPositions.d_totalQty     = 0.0;
-                symbolPositions.d_timestamp     = e.d_timestamp;
+                symbolPositions.d_timestamp    = e.d_timestamp;
             }
         }
     }
