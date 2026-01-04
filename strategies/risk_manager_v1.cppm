@@ -1,14 +1,19 @@
 /**
  * @module risk_manager_v1
- * @brief Provides a concrete implementation of the RiskManager interface for crypto trading strategies.
+ * @brief Provides a concrete implementation of the RiskManager interface for
+ * crypto trading strategies.
  *
- * This module defines the `RiskManagerV1` class within the `crypto_trader::strategies` namespace.
- * `RiskManagerV1` inherits from `protocols::RiskManager` and implements the required `approve` method.
- * In its current form, `approve` always returns `true`, allowing all events to pass risk checks.
+ * This module defines the `RiskManagerV1` class within the
+ * `crypto_trader::strategies` namespace. `RiskManagerV1` inherits from
+ * `protocols::RiskManager` and implements the required `approve` method. In
+ * its current form, `approve` always returns `true`, allowing all events to
+ * pass risk checks.
  *
  * Usage:
- * - Instantiate `RiskManagerV1` and use it wherever a `RiskManager` is required.
- * - Override or modify the `approve` method to implement custom risk logic as needed.
+ * - Instantiate `RiskManagerV1` and use it wherever a `RiskManager` is
+ * required.
+ * - Override or modify the `approve` method to implement custom risk logic as
+ * needed.
  *
  * Example:
  * @code
@@ -21,9 +26,9 @@ module;
 #include "../common/Event.h"
 #include "../protocols/position_manager.h"
 
-import risk_manager;
-
 export module risk_manager_v1;
+
+import risk_manager;
 
 namespace crypto_trader {
 namespace strategies {
@@ -36,8 +41,8 @@ export class RiskManagerV1 : public protocols::RiskManager {
 
     // PUBLIC ACCESSORS
     // RiskManager implementation
-    bool approve(const common::Event& event,
-                 protocols::PositionManager * const positionManager) override;
+    bool approve(const common::Event&              event,
+                 protocols::PositionManager *const positionManager) override;
 }; // class RiskManager
 
 // class RiskManagerV1
@@ -49,10 +54,11 @@ RiskManagerV1::~RiskManagerV1() {}
 // ACCESSORS
 // RiskManager implementation
 
-bool RiskManagerV1::approve(const common::Event& event, protocols::PositionManager * const positionManager)
+bool RiskManagerV1::approve(const common::Event&              event,
+                            protocols::PositionManager *const positionManager)
 {
     return true;
 }
 
-} // closing namespace strategies
-} // closing namespace crypto_trader
+} // namespace strategies
+} // namespace crypto_trader
