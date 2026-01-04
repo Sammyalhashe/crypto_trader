@@ -1,7 +1,8 @@
 CompileFlags:
   Add:
-    - "-std=c++23"
+    - "-std=gnu++23"
     - "-fvisibility=hidden"
+    - "-fno-stack-protector"
   CompilationDatabase: ./compile_commands.json
 
 Diagnostics:

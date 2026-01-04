@@ -99,7 +99,7 @@ build_dir_prep:
 
 .PHONY: clean
 clean:
-	rm -rf ${BUILD_DIR_PREFIX}
+	rm -rf ${BUILD_DIR_PREFIX} && rm compile_commands.json
 
 .PHONY: test
 test:

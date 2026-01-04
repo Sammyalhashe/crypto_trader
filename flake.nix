@@ -69,6 +69,23 @@
                   sqlite
                 ];
 
+                enterShell = ''
+                  echo -e "\n\033[1;36mCrypto Trader Dev Environment\033[0m"
+                  echo -e "\033[1;34mAvailable commands:\033[0m"
+                  echo -e "  \033[1;32mprepare\033[0m     - Prepare the build directory"
+                  echo -e "  \033[1;32mbuild\033[0m       - Build the project (includes prepare)"
+                  echo -e "  \033[1;32mfbuild\033[0m      - Fast build (targets executable only)"
+                  echo -e "  \033[1;32mbo\033[0m          - Build Only (skips prepare)"
+                  echo -e "  \033[1;32mfbo\033[0m         - Fast Build Only (skips prepare)"
+                  echo -e "  \033[1;32mclean\033[0m       - Clean build artifacts"
+                  echo -e "  \033[1;32mtest\033[0m        - Run tests"
+                  echo -e "  \033[1;32mrun\033[0m         - Run the main application"
+                  echo -e "  \033[1;32mstyle-check\033[0m - Run style checks"
+                  echo -e "  \033[1;32mdocs\033[0m        - Generate documentation"
+                  echo -e "  \033[1;32mserve-docs\033[0m  - Serve documentation on port 8000"
+                  echo ""
+                '';
+
                 scripts = {
                   prepare.exec = ''
                     if [[ -x "$(command -v conan)" ]]; then
