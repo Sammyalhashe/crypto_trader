@@ -1,9 +1,12 @@
 CompileFlags:
   Add:
-    - "-std=c++20"
+    - "-std=c++23"
     - "-fvisibility=hidden"
-  CompilationDatabase: .
+  CompilationDatabase: ./compile_commands.json
 
 Diagnostics:
   Suppress:
     - "include-cleaner"
+
+Index:
+  Background: Skip # Faster startup
