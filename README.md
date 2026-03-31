@@ -59,6 +59,12 @@ To generate and view the Doxygen documentation locally:
     ```
     Open your web browser and navigate to `http://127.0.0.1:8000` (or the address shown in the terminal) to view.
 
+## Roadmap
+
+See [TODO.md](TODO.md) for the phased development plan and [doc/NEXT_STEPS.md](doc/NEXT_STEPS.md) for the longer-term vision.
+
+This project has a companion Python trading bot — [trading-bot-flake](https://github.com/Sammyalhashe/trading-bot-flake) — which implements the strategy research, backtesting, and risk management layers. The long-term goal is for Python to handle strategy/research and C++ to handle execution (see NEXT_STEPS for details on this architecture).
+
 ## Learnings
 
 Documentation on technical concepts, design decisions, and contribution standards:
