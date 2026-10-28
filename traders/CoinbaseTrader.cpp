@@ -264,18 +264,24 @@ void CoinbaseTrader::start()
 
 void CoinbaseTrader::stop()
 {
-    if (d_isStopped) {
+    if (d_isStopped.exchange(true)) {
         return;
     }
 
-    d_database.save(s_databaseFile);
-
-    // mark this trader as stopped.
-    d_isStopped = true;
-
     d_ioWorkGuard.reset();
-
     d_ioCtx.stop();
+
+    // Join before touching any other members: d_thread may still be mid
+    // handler (e.g. in handleNewData), and those handlers reach d_executor,
+    // d_positionManager and d_database. Members are destroyed in reverse
+    // declaration order, which destroys those before d_thread's own
+    // destructor would otherwise join it, so without this explicit join the
+    // thread could use them after they're gone.
+    if (d_thread.joinable()) {
+        d_thread.join();
+    }
+
+    d_database.save(s_databaseFile);
 }
 
 void CoinbaseTrader::processAction(const common::Action& action)

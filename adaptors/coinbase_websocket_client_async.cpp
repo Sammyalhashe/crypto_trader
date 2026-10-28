@@ -48,6 +48,7 @@ CoinbaseWebSocketClientAsync::CoinbaseWebSocketClientAsync(
 , d_resolver(net::make_strand(d_ioc))
 , d_ws(net::make_strand(d_ioc), d_ctx)
 , d_reconnectionAttempts(0)
+, d_reconnectTimer(d_ioc)
 , d_config(config)
 {
 }
@@ -96,7 +97,7 @@ void CoinbaseWebSocketClientAsync::on_connect(
         return fail(ec, "connect");
     }
 
-    d_config.d_host += ":" + std::to_string(ep.port());
+    d_hostHeader = d_config.d_host + ":" + std::to_string(ep.port());
 
     // Perform the SSL handshake
     d_ws.next_layer().async_handshake(
@@ -133,7 +134,7 @@ void CoinbaseWebSocketClientAsync::on_ssl_handshake(beast::error_code ec)
         }));
 
     d_ws.async_handshake(
-        d_config.d_host,
+        d_hostHeader,
         "/",
         beast::bind_front_handler(&CoinbaseWebSocketClientAsync::on_handshake,
                                   shared_from_this()));
@@ -178,11 +179,17 @@ void CoinbaseWebSocketClientAsync::on_read(beast::error_code ec,
             spdlog::warn("Connection lost, reconnecting (attempt {})",
                          ++d_reconnectionAttempts);
 
-            // Exponential backoff
-            std::this_thread::sleep_for(d_config.d_reconnectDelay *
-                                        (1 << (d_reconnectionAttempts - 1)));
-
-            open();
+            // Exponential backoff, scheduled on d_ioc instead of blocking its
+            // thread so other handlers can still run while we wait.
+            d_reconnectTimer.expires_after(
+                d_config.d_reconnectDelay *
+                (1 << (d_reconnectionAttempts - 1)));
+            d_reconnectTimer.async_wait(
+                [self = shared_from_this()](beast::error_code ec) {
+                    if (!ec) {
+                        self->open();
+                    }
+                });
             return;
         }
         return fail(ec, "Max reconnects exceeded");

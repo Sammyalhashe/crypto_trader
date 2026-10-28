@@ -54,6 +54,8 @@ bool MarketEventsDb::logEvents(const std::vector<common::Event>& events)
     if (events.empty())
         return true;
 
+    std::lock_guard<std::mutex> lock(d_dbMutex);
+
     // prepare the statement
     SQLite::Statement query(d_db, SQL::insert_event);
 
@@ -90,6 +92,8 @@ bool MarketEventsDb::logEvents(const std::vector<common::Event>& events)
 std::optional<MarketEventsDb::Events>
 MarketEventsDb::getEventsSince(int64_t timestamp) noexcept(true)
 {
+    std::lock_guard<std::mutex> lock(d_dbMutex);
+
     // pass
     SQLite::Statement query(d_db, SQL::get_events_since);
 
@@ -130,6 +134,8 @@ std::optional<MarketEventsDb::Events> MarketEventsDb::getEventsBySymbol(
     int64_t                       startTs,
     const std::optional<int64_t>& endTs) noexcept(true)
 {
+    std::lock_guard<std::mutex> lock(d_dbMutex);
+
     SQLite::Statement query(d_db, SQL::get_events_by_symbol);
 
     Events events;
@@ -181,6 +187,8 @@ bool MarketEventsDb::logSnapshots(
 
     if (snapshots.empty())
         return true;
+
+    std::lock_guard<std::mutex> lock(d_dbMutex);
 
     // prepare the statement
     SQLite::Statement query(d_db, SQL::insert_position_snapshot);
@@ -235,6 +243,8 @@ bool MarketEventsDb::logSnapshots(
 std::optional<common::SymbolPositions>
 MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
 {
+    std::lock_guard<std::mutex> lock(d_dbMutex);
+
     SQLite::Statement query(d_db, SQL::get_latest_snapshot);
 
     try {
@@ -288,6 +298,8 @@ MarketEventsDb::getLatestSnapshot(const std::string& symbol) noexcept(true)
 std::optional<MarketEventsDb::SymbolPositionsVec>
 MarketEventsDb::getLatestSnapshots() noexcept(true)
 {
+    std::lock_guard<std::mutex> lock(d_dbMutex);
+
     SQLite::Statement query(d_db, SQL::get_latest_snapshots);
 
     SymbolPositionsVec snapshots;
@@ -437,6 +449,8 @@ bool MarketEventsDb::logEventSync(const common::Event& event)
 
 bool MarketEventsDb::logEventAsync(const common::Event& event)
 {
+    std::lock_guard<std::mutex> lock(d_eventQueuePushMutex);
+
     if (!d_eventQueue.push(event)) {
 
         SPDLOG_WARN("Event queue full, dropping event...");
