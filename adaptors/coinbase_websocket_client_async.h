@@ -9,6 +9,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/spawn.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/beast/core/tcp_stream.hpp>
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/websocket.hpp>
@@ -84,6 +85,13 @@ class CoinbaseWebSocketClientAsync
     beast::flat_buffer d_buffer;
     // Number of reconnection attempts made after a network drop or something
     std::atomic<int> d_reconnectionAttempts;
+    // Timer used to wait out the reconnect backoff without blocking d_ioc's
+    // thread.
+    net::steady_timer d_reconnectTimer;
+    // Host header sent during the websocket handshake (host + port).
+    // Computed fresh on each connect from the immutable d_config.d_host, so
+    // reconnects don't keep appending ":<port>" to it.
+    std::string d_hostHeader;
     // The config for this object
     CoinbaseWebSocketClientAsyncConfig d_config;
 

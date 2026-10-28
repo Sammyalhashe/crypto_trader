@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <thread>
@@ -24,9 +25,19 @@ class MarketEventsDb {
     // PRIVATE DATA
     // sqlite database
     SQLite::Database d_db;
+    // Guards every access to `d_db`. A single sqlite connection is not safe
+    // to use from multiple threads without external serialization, and this
+    // class is called concurrently from each trader's thread plus its own
+    // writer thread.
+    std::mutex d_dbMutex;
     // queue for batching writes to database
     boost::lockfree::spsc_queue<common::Event, boost::lockfree::capacity<10000>>
         d_eventQueue;
+    // spsc_queue only tolerates a single producer; this guards `push()` so
+    // multiple trader threads can call `logEvent`/`logEventAsync`
+    // concurrently without violating that contract. Only the writer thread
+    // ever calls `pop()`, so the consumer side needs no lock.
+    std::mutex d_eventQueuePushMutex;
     // thread for writing the batched events to the db
     std::jthread      d_writerThread;
     std::atomic<bool> d_stopWriter{false};
