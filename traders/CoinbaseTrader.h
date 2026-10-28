@@ -1,3 +1,11 @@
+/**
+ * @file CoinbaseTrader.h
+ * @brief Defines the CoinbaseTrader and CoinbaseTraderConfig classes for trading on Coinbase using various strategies.
+ *
+ * This header provides configuration and implementation for a trader that interacts with Coinbase,
+ * supporting both synchronous and asynchronous clients, multiple strategies, risk management, and
+ * integration with market data and event databases.
+ */
 #ifndef INCLUDED_COINBASE_TRADER
 #define INCLUDED_COINBASE_TRADER
 
@@ -10,6 +18,8 @@
 #include "../protocols/websocket_client.h"
 #include "../strategies/index.h"
 #include "event_position_manager.h"
+
+import risk_manager_v1;
 
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
@@ -28,15 +38,31 @@
 namespace crypto_trader {
 namespace traders {
 
+/**
+ * @brief Configuration class for CoinbaseTrader.
+ *
+ * Holds all parameters required to configure a CoinbaseTrader instance, including products,
+ * channels, strategy, URLs, threading, client type, and database pointers.
+ */
 class CoinbaseTraderConfig {
   public:
     // PUBLIC TYPES
+    /**
+     * @brief Defines a websocket channel and its associated products.
+     */
     struct ChannelDefinition {
         std::string              d_name;
         std::vector<std::string> d_products;
     }; // ChannelDefinition
 
-    enum class ClientType { SYNC, ASYNC, COUNT }; // ClientType
+    /**
+     * @brief Enum for client type selection.
+     */
+    enum class ClientType {
+        SYNC,   ///< Synchronous client
+        ASYNC,  ///< Asynchronous client
+        COUNT   ///< Number of client types
+    };
 
   private:
     // PRIVATE TYPES
@@ -67,9 +93,18 @@ class CoinbaseTraderConfig {
 
   public:
     // CREATORS
+    /**
+     * @brief Construct a new CoinbaseTraderConfig object.
+     * @param isRunning Shared atomic flag for application running state.
+     * @param paperTrading Whether to use paper trading mode.
+     */
     explicit CoinbaseTraderConfig(
         const std::shared_ptr<std::atomic_bool>& isRunning,
         bool                                     paperTrading = false);
+
+    /**
+     * @brief Copy constructor.
+     */
     CoinbaseTraderConfig(const CoinbaseTraderConfig& orig) = default;
 
     // PUBLIC MANIPULATORS
@@ -101,6 +136,12 @@ class CoinbaseTraderConfig {
     const databases::MarketEventsDb::MarketEventsDbPtr& eventsDb() const;
 }; // CoinbaseTraderConfig
 
+/**
+ * @brief CoinbaseTrader implementation for trading on Coinbase.
+ *
+ * Manages websocket connections, trading strategies, risk management, threading, and database integration.
+ * Uses a RiskManagerV1 for risk checks and an EventPositionManager for position management.
+ */
 class CoinbaseTrader : public protocols::Trader {
   private:
     // STATIC DATA
@@ -133,10 +174,20 @@ class CoinbaseTrader : public protocols::Trader {
     std::unordered_map<std::string, int64_t> d_lastSequenceNumbers;
     // Position Manager
     EventPositionManager d_positionManager;
+    // Risk Manager
+    strategies::RiskManagerV1 d_riskManager;
 
   public:
     // CREATORS
+    /**
+     * @brief Construct a new CoinbaseTrader object.
+     * @param config Configuration for the trader.
+     */
     CoinbaseTrader(const CoinbaseTraderConfig& config);
+
+    /**
+     * @brief Destructor.
+     */
     ~CoinbaseTrader();
 
     // DELETED METHODS
@@ -144,24 +195,55 @@ class CoinbaseTrader : public protocols::Trader {
     CoinbaseTrader& operator=(const CoinbaseTrader& orig) = delete;
 
     // PUBLIC MANIPULATORS
-    // Process an incoming action.
+    /**
+     * @brief Process an incoming action.
+     * @param action The action to process.
+     */
     void processAction(const common::Action& action);
-    // Handle new data available to the trader.
+
+    /**
+     * @brief Handle new data available to the trader.
+     * @param buffer Data buffer.
+     */
     void handleNewData(const std::string_view& buffer);
 
     // protocols::Trader
+    /**
+     * @brief Listen for incoming data (protocols::Trader override).
+     * @param buffer Data buffer.
+     */
     void listen(const std::string_view& buffer) override;
-    // Start the trader.
+
+    /**
+     * @brief Start the trader.
+     */
     void start() override;
-    // Stop the trader.
+
+    /**
+     * @brief Stop the trader.
+     */
     void stop() override;
 
   private:
     // PRIVATE MANIPULATORS
+    /**
+     * @brief Initialize the websocket client.
+     */
     void initWebsocketClient();
 
+    /**
+     * @brief Check the sequence number for a product.
+     * @param product Product name.
+     * @param sequence Sequence number.
+     * @return true if sequence is valid, false otherwise.
+     */
     bool checkSequenceNumber(const std::string_view& product,
                              int64_t                 sequence);
+
+    /**
+     * @brief Handle a ticker message.
+     * @param msg JSON message.
+     */
     void handleTickerMessage(const nlohmann::json& msg);
 
 }; // CoinbaseTrader
@@ -172,6 +254,12 @@ class CoinbaseTrader : public protocols::Trader {
 // TYPES
 // ClientType
 
+/**
+ * @brief Output operator for CoinbaseTraderConfig::ClientType.
+ * @param out Output stream.
+ * @param clientType Client type.
+ * @return Reference to output stream.
+ */
 inline std::ostream&
 operator<<(std::ostream&                           out,
            const CoinbaseTraderConfig::ClientType& clientType)

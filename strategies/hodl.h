@@ -26,15 +26,19 @@ class HodlStrategyConfig {
      */
     enum InitStrategy {
         e_BUY_IMMEDIATELY = 0, //!< Buy immediately when the strategy starts.
-        e_SET_BASIS_PRICE = 1  //!< Set current price as basis and wait for dip.
+        e_SET_BASIS_PRICE = 1 //!< Set current price as basis and wait for dip.
     }; // InitStrategy
 
   private:
-    InitStrategy d_initStrategy; //!< Action to take when the strategy first starts.
-    float d_percentUp;           //!< Percentage increase to trigger a sell for profit.
-    float d_percentDown;         //!< Percentage decrease to trigger a buy if the market dips.
-    common::Emit d_emit;         //!< Callback function used by the strategy to emit actions.
-    double d_buyAmount;          //!< Amount in USD (or base currency) to use for buy orders.
+    InitStrategy
+          d_initStrategy; //!< Action to take when the strategy first starts.
+    float d_percentUp;   //!< Percentage increase to trigger a sell for profit.
+    float d_percentDown; //!< Percentage decrease to trigger a buy if the
+                         //!< market dips.
+    common::Emit
+           d_emit; //!< Callback function used by the strategy to emit actions.
+    double d_buyAmount; //!< Amount in USD (or base currency) to use for buy
+                        //!< orders.
 
   public:
     /**
@@ -105,7 +109,8 @@ class HodlStrategyConfig {
 }; // HodlStrategyConfig
 
 /**
- * @brief Implements a "Buy and Hold" strategy with dynamic adjustments based on price movements.
+ * @brief Implements a "Buy and Hold" strategy with dynamic adjustments based
+ * on price movements.
  *
  * This strategy aims to buy on dips and potentially sell on significant gains.
  */
@@ -116,20 +121,28 @@ class HodlStrategy : public protocols::Strategy, public protocols::Observer {
      * @brief Minimal state maintained for each trading symbol.
      */
     struct SymbolState {
-        double lastBuyPrice   = 0.0; //!< The price of the last buy order for this symbol.
-        bool   hasBoughtAgain = false; //!< True if a buy has occurred after a previous sell signal.
-        bool   waitingForSell = false; //!< True if the strategy is currently holding and waiting for a sell condition.
+        double lastBuyPrice =
+            0.0; //!< The price of the last buy order for this symbol.
+        bool hasBoughtAgain = false; //!< True if a buy has occurred after a
+                                     //!< previous sell signal.
+        bool waitingForSell =
+            false; //!< True if the strategy is currently holding and waiting
+                   //!< for a sell condition.
     };
 
-    std::unordered_map<std::string, SymbolState> d_symbolStates; //!< Map of symbol states.
-    traders::EventPositionManager&               d_positionManager; //!< Reference to the position manager.
-    HodlStrategyConfig d_config;                                //!< Configuration for this HodlStrategy instance.
+    std::unordered_map<std::string, SymbolState>
+        d_symbolStates; //!< Map of symbol states.
+    traders::EventPositionManager&
+        d_positionManager; //!< Reference to the position manager.
+    HodlStrategyConfig
+        d_config; //!< Configuration for this HodlStrategy instance.
 
   public:
     /**
      * @brief Constructs a HodlStrategy.
      * @param config The configuration for the strategy.
-     * @param positionManager A reference to the EventPositionManager for tracking positions.
+     * @param positionManager A reference to the EventPositionManager for
+     * tracking positions.
      */
     HodlStrategy(const HodlStrategyConfig&      config,
                  traders::EventPositionManager& positionManager);

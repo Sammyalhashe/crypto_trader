@@ -16,8 +16,8 @@ namespace common {
  */
 struct Position {
     double  d_totalQty = 0.0; //!< Quantity of the asset in this lot.
-    double  d_price     = 0.0; //!< Price at which this lot was acquired.
-    int64_t d_timestamp;       //!< Timestamp when this lot was acquired.
+    double  d_price    = 0.0; //!< Price at which this lot was acquired.
+    int64_t d_timestamp;      //!< Timestamp when this lot was acquired.
 };
 
 /**
@@ -25,9 +25,9 @@ struct Position {
  * symbol.
  */
 struct SymbolPositions {
-    std::string d_symbol;          //!< The trading symbol (e.g., "BTC-USD").
+    std::string d_symbol;         //!< The trading symbol (e.g., "BTC-USD").
     double      d_totalQty = 0.0; //!< Total quantity of the asset held.
-    double d_averagePrice = 0.0; //!< Weighted average price of all held lots.
+    double d_averagePrice  = 0.0; //!< Weighted average price of all held lots.
     std::list<Position> d_positions_in_time =
         {}; //!< List of individual lots, ordered by time or FIFO/LIFO.
     bool d_fifo =

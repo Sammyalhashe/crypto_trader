@@ -31,7 +31,8 @@ class MarketEventsDb {
     // writer thread.
     std::mutex d_dbMutex;
     // queue for batching writes to database
-    boost::lockfree::spsc_queue<common::Event, boost::lockfree::capacity<10000>>
+    boost::lockfree::spsc_queue<common::Event,
+                                boost::lockfree::capacity<10000>>
         d_eventQueue;
     // spsc_queue only tolerates a single producer; this guards `push()` so
     // multiple trader threads can call `logEvent`/`logEventAsync`
@@ -103,9 +104,8 @@ class MarketEventsDb {
      * @param snapshots
      * @return `bool` on success
      */
-    bool
-    logSnapshots(const std::vector<common::SymbolPositions>& snapshots) noexcept(
-        true);
+    bool logSnapshots(
+        const std::vector<common::SymbolPositions>& snapshots) noexcept(true);
 
     /**
      * @brief get latest snapshot for a given `symbol`
